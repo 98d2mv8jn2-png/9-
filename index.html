@@ -17,6 +17,7 @@
       --success: #10b981;
       --danger: #ef4444;
       --gold: #fbbf24;
+      --gold-bg: #713f12;
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --radius: 8px;
@@ -41,7 +42,7 @@
     .stat-val { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
     .stat-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 
-    /* 快捷打卡按鈕列 */
+    /* 快捷打卡區 */
     .quick-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
     .btn-quick { background: #334155; color: var(--text); border: 1px solid #475569; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s; }
     .btn-quick:hover { background: #475569; border-color: var(--primary); color: #fff; }
@@ -70,7 +71,7 @@
     .badge-pending { background: #450a0a; color: #fca5a5; }
     .badge-opened { background: #064e3b; color: #6ee7b7; }
     .badge-tier-3 { background: #831843; color: #fbcfe8; font-weight: 700; border: 1px solid #f472b6; }
-    .badge-target { background: #713f12; color: #fde047; border: 1px solid var(--gold); }
+    .badge-target { background: var(--gold-bg); color: #fde047; border: 1px solid var(--gold); }
     .badge-grade-good { background: #065f46; color: #a7f3d0; }
     .badge-grade-normal { background: #1e293b; color: #cbd5e1; border: 1px solid #475569; }
     .badge-grade-bad { background: #262626; color: #737373; }
@@ -78,8 +79,39 @@
     .del-btn { color: var(--danger); cursor: pointer; border: none; background: none; font-size: 0.75rem; width: auto; }
     .action-btn { color: var(--primary); cursor: pointer; border: none; background: none; font-size: 0.75rem; width: auto; font-weight: 600; }
     
-    /* 批量開券卡片表格 */
     .batch-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+
+    /* 心願選擇標籤按鈕樣式 */
+    .target-picker-group { margin-bottom: 10px; }
+    .target-picker-title { font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 5px; }
+    .target-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .target-chip {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: var(--text-muted);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.15s;
+    }
+    .target-chip:hover { border-color: var(--primary); color: #fff; }
+    .target-chip.active {
+      background: var(--gold-bg);
+      border-color: var(--gold);
+      color: #fde047;
+      font-weight: 600;
+    }
+    .active-target-tag {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .active-target-tag:hover {
+      text-decoration: line-through;
+    }
   </style>
 </head>
 <body>
@@ -242,19 +274,44 @@
         </div>
       </div>
 
-      <!-- 心願目標單 Target List -->
+      <!-- 心願目標單 (點選式設定) -->
       <div class="card">
         <div class="card-title">
-          <span>🎯 心願單清單</span>
-          <button class="btn-subtle" onclick="toggleTargetConfig()">設定目標</button>
+          <span>🎯 心願目標清單 (<span id="target-count">0</span>)</span>
+          <button class="btn-subtle" onclick="toggleTargetConfig()">選擇清單</button>
         </div>
-        <div id="target-summary" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
-          尚無設定心願技能
+        <div id="target-summary" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
+          尚未選取任何心願目標
         </div>
+
+        <!-- 點選式設定彈出面板 -->
         <div id="target-config-box" style="display: none; margin-top: 10px;" class="sub-box">
-          <label>以逗號隔開目標關鍵字（例如：先鋒, 打者洞察力, K博士）：</label>
-          <input type="text" id="target-input" style="margin-top: 5px;" placeholder="先鋒, 打者洞察力, K博士">
-          <button class="btn-subtle" style="margin-top: 8px;" onclick="saveTargets()">儲存目標</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted);">點擊標籤快速選取 / 取消</span>
+            <button class="btn-subtle" onclick="clearAllTargets()" style="color: var(--danger);">清空全部</button>
+          </div>
+
+          <div class="target-picker-group">
+            <div class="target-picker-title">⚾ 打者白技</div>
+            <div class="target-chips" id="chips-batter-skills"></div>
+          </div>
+
+          <div class="target-picker-group">
+            <div class="target-picker-title">⚾ 投手白技</div>
+            <div class="target-chips" id="chips-pitcher-skills"></div>
+          </div>
+
+          <div class="target-picker-group">
+            <div class="target-picker-title">👔 打擊教練</div>
+            <div class="target-chips" id="chips-batter-coaches"></div>
+          </div>
+
+          <div class="target-picker-group">
+            <div class="target-picker-title">👔 投手教練</div>
+            <div class="target-chips" id="chips-pitcher-coaches"></div>
+          </div>
+
+          <button class="btn-primary" style="margin-top: 8px;" onclick="toggleTargetConfig()">完成選取</button>
         </div>
       </div>
 
@@ -318,7 +375,7 @@
     </div>
   </div>
 
-  <!-- 批量開券浮動彈窗 -->
+  <!-- 批量開券彈窗 -->
   <div id="batch-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px;">
     <div class="card" style="width: 100%; max-width: 650px; max-height: 85vh; display: flex; flex-direction: column;">
       <div class="card-title">
@@ -370,7 +427,6 @@
   </div>
 
   <script>
-    // 完整資料庫
     const skillList = {
       '打者': ['精準打擊', '先鋒', '最強打者', '天生巨星', '機會製造者', '打者洞察力', '壞球打者', '老手', '打者默契'],
       '投手': ['精準控球', '速球型投手', '先守後攻', '牛棚日', '工作馬', '投手洞察力', '完美先生', '合力投球', '投手默契']
@@ -387,13 +443,12 @@
     };
 
     const STORAGE_KEY = 'coach_tickets_tracker_dark_v1';
-    const TARGET_KEY = 'coach_tickets_targets';
+    const TARGET_KEY = 'coach_tickets_targets_v2';
     const GAS_KEY = 'coach_tickets_gas_url';
 
     let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     let targets = JSON.parse(localStorage.getItem(TARGET_KEY) || '["先鋒", "打者洞察力", "K博士"]');
 
-    // DOM 元素
     const itemTypeEl = document.getElementById('item-type');
     const methodEl = document.getElementById('obtain-method');
     const seasonGroup = document.getElementById('season-group');
@@ -451,7 +506,6 @@
     skillCategoryEl.addEventListener('change', () => populateSelect(skillList, skillCategoryEl, skillNameEl));
     coachCategoryEl.addEventListener('change', () => populateSelect(coachList, coachCategoryEl, coachNameEl));
 
-    // 快捷打卡
     function quickCheckIn(type, method) {
       records.unshift({
         id: Date.now(),
@@ -467,7 +521,6 @@
       saveAndRender();
     }
 
-    // 表單提交
     document.getElementById('record-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const type = itemTypeEl.value;
@@ -521,7 +574,7 @@
       };
     }
 
-    // 批量開券彈窗
+    // 批量開券
     function openBatchModal() {
       document.getElementById('batch-modal').style.display = 'flex';
       buildBatchRows();
@@ -536,7 +589,6 @@
       const container = document.getElementById('batch-rows-container');
       container.innerHTML = '';
 
-      // 計算庫存
       let stock = 0;
       records.forEach(r => {
         if (r.type === type && r.status === '未開啟') stock += r.quantity;
@@ -611,7 +663,6 @@
       let openedCount = 0;
 
       rows.forEach((row, i) => {
-        // 從舊到新扣除未開庫存
         const unopenRec = records.slice().reverse().find(r => r.type === type && r.status === '未開啟');
         if (!unopenRec) return;
 
@@ -656,29 +707,78 @@
       alert(`已成功批量開出 ${openedCount} 張 ${type}！`);
     }
 
-    // 心願清單
+    // ========== 心願選擇邏輯 (點選式標籤) ==========
     function toggleTargetConfig() {
       const el = document.getElementById('target-config-box');
-      el.style.display = el.style.display === 'none' ? 'block' : 'none';
-      document.getElementById('target-input').value = targets.join(', ');
+      const isClosed = el.style.display === 'none';
+      el.style.display = isClosed ? 'block' : 'none';
+      if (isClosed) {
+        renderPickerChips();
+      }
     }
 
-    function saveTargets() {
-      const raw = document.getElementById('target-input').value;
-      targets = raw.split(/[,，]/).map(s => s.trim()).filter(s => s.length > 0);
+    function createChips(containerId, items) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = items.map(name => {
+        const activeClass = targets.includes(name) ? 'active' : '';
+        return `<div class="target-chip ${activeClass}" onclick="toggleChip(this, '${name}')">${name}</div>`;
+      }).join('');
+    }
+
+    function renderPickerChips() {
+      createChips('chips-batter-skills', skillList['打者']);
+      createChips('chips-pitcher-skills', skillList['投手']);
+      createChips('chips-batter-coaches', coachList['打擊']);
+      createChips('chips-pitcher-coaches', coachList['投手']);
+    }
+
+    function toggleChip(chipEl, name) {
+      const idx = targets.indexOf(name);
+      if (idx > -1) {
+        targets.splice(idx, 1);
+        chipEl.classList.remove('active');
+      } else {
+        targets.push(name);
+        chipEl.classList.add('active');
+      }
       localStorage.setItem(TARGET_KEY, JSON.stringify(targets));
-      toggleTargetConfig();
       renderTargets();
       renderTable();
     }
 
+    function removeTarget(name) {
+      const idx = targets.indexOf(name);
+      if (idx > -1) {
+        targets.splice(idx, 1);
+        localStorage.setItem(TARGET_KEY, JSON.stringify(targets));
+        renderTargets();
+        renderTable();
+        renderPickerChips();
+      }
+    }
+
+    function clearAllTargets() {
+      if (confirm('確定要清空所有心願目標嗎？')) {
+        targets = [];
+        localStorage.setItem(TARGET_KEY, JSON.stringify(targets));
+        renderTargets();
+        renderTable();
+        renderPickerChips();
+      }
+    }
+
     function renderTargets() {
       const box = document.getElementById('target-summary');
+      document.getElementById('target-count').innerText = targets.length;
       if (targets.length === 0) {
-        box.innerText = '尚無設定心願目標';
+        box.innerText = '尚未選取任何心願目標（點擊右上角「選擇清單」展開選取）';
         return;
       }
-      box.innerHTML = targets.map(t => `<span class="badge badge-target" style="margin-right:4px; margin-bottom:4px;">🎯 ${t}</span>`).join(' ');
+      box.innerHTML = targets.map(t => `
+        <span class="badge badge-target active-target-tag" onclick="removeTarget('${t}')" title="點擊直接移除">
+          🎯 ${t} ✕
+        </span>
+      `).join(' ');
     }
 
     function deleteRecord(id) {
@@ -737,8 +837,8 @@
         if (r.status === '未開啟') {
           statusHtml = `<span class="badge badge-pending">未開啟 (${r.quantity}張)</span>`;
         } else if (r.status === '已開啟' && r.content) {
-          const isTarget = targets.some(t => r.content.name.includes(t));
-          const targetTag = isTarget ? ` <span class="badge badge-target">🎯目標</span>` : '';
+          const isTarget = targets.includes(r.content.name);
+          const targetTag = isTarget ? ` <span class="badge badge-target">🎯心願</span>` : '';
 
           if (r.type === '白金技能教練券') {
             const tierBadge = r.content.tier === 'III' ? 'badge-tier-3' : 'badge-coach';
@@ -796,7 +896,6 @@
       document.getElementById('kpi-unopened-skill').innerText = unopenSkill;
       document.getElementById('kpi-unopened-coach').innerText = unopenCoach;
 
-      // 歐非檢定
       if (totalOpenedSkill > 0) {
         const rate = ((tier3Count / totalOpenedSkill) * 100).toFixed(1);
         document.getElementById('kpi-tier3-rate').innerText = `${rate}%`;
@@ -806,7 +905,6 @@
         document.getElementById('kpi-tier3-count').innerText = `尚無開券紀錄`;
       }
 
-      // 季數期望值
       if (totalSeasons > 0 && leagueDropTickets > 0) {
         const avgSeason = (totalSeasons / leagueDropTickets).toFixed(1);
         document.getElementById('kpi-seasons-exp').innerText = `約 ${avgSeason} 季 / 張`;
@@ -816,7 +914,6 @@
         document.getElementById('kpi-seasons-sub').innerText = `需記錄季數`;
       }
 
-      // 保底週期
       if (pityDates.length >= 2) {
         const sorted = pityDates.sort((a, b) => a - b);
         const diffDays = Math.round((sorted[sorted.length - 1] - sorted[0]) / (1000 * 60 * 60 * 24));
@@ -832,7 +929,6 @@
     let monthlyChart = null, tierChart = null, coachGradeChart = null, skillRankChart = null, coachRankChart = null;
 
     function renderCharts() {
-      // 月份趨勢
       const monthlyData = {};
       records.forEach(r => {
         const month = r.date.substring(0, 7);
@@ -865,7 +961,6 @@
         }
       });
 
-      // 階級分佈
       const tierCounts = { 'I 階': 0, 'II 階': 0, 'III 階': 0 };
       const skillNameCounts = {};
       const coachGradeCounts = { '優良': 0, '普通': 0, '劣等': 0 };
@@ -904,7 +999,6 @@
         options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc' } } } }
       });
 
-      // 白技排行
       const sortedSkills = Object.entries(skillNameCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
       if (skillRankChart) skillRankChart.destroy();
       skillRankChart = new Chart(document.getElementById('skillRankChart').getContext('2d'), {
@@ -923,7 +1017,6 @@
         }
       });
 
-      // 教練排行
       const sortedCoaches = Object.entries(coachNameCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
       if (coachRankChart) coachRankChart.destroy();
       coachRankChart = new Chart(document.getElementById('coachRankChart').getContext('2d'), {
@@ -943,7 +1036,6 @@
       });
     }
 
-    // 雲端同步
     function toggleCloudModal() {
       const el = document.getElementById('cloud-modal');
       el.style.display = el.style.display === 'none' ? 'flex' : 'none';
@@ -961,7 +1053,7 @@
       if (!url) return alert('請先填入 Google Apps Script Web App URL！');
       saveCloudUrl();
       try {
-        const resp = await fetch(url, {
+        await fetch(url, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
@@ -973,7 +1065,6 @@
       }
     }
 
-    // 檔案匯出
     function exportData(format) {
       if (records.length === 0) return alert('無任何記錄可匯出');
       if (format === 'csv') {
@@ -1022,7 +1113,6 @@
       reader.readAsText(file);
     }
 
-    // 初始化設定
     updateFormLogic();
     populateSelect(skillList, skillCategoryEl, skillNameEl);
     populateSelect(coachList, coachCategoryEl, coachNameEl);

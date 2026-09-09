@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教練券獲取追蹤器</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent: #d97706;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 24px 16px; max-width: 1100px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    
+    .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+      .grid-main { grid-template-columns: 350px 1fr; }
+    }
+    
+    .card { background: var(--card); border-radius: var(--radius); padding: 20px; border: 1fr solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 14px; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+    
+    /* 統計指標卡 */
+    .stat-card { text-align: center; padding: 14px; }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-val { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+    .stat-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* 表單元件 */
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+    select, input, button { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; }
+    select:focus, input:focus { outline: none; border-color: var(--primary-light); }
+    button.btn-primary { background: var(--primary); color: #fff; font-weight: 600; border: none; cursor: pointer; transition: 0.2s; }
+    button.btn-primary:hover { background: #172554; }
+    button.btn-subtle { background: transparent; color: var(--text-muted); border: 1px solid var(--border); cursor: pointer; padding: 6px 12px; font-size: 0.85rem; }
+    button.btn-subtle:hover { background: #f3f4f6; color: var(--text); }
+
+    /* 清單表格 */
+    .table-container { max-height: 400px; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f9fafb; position: sticky; top: 0; color: var(--text-muted); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-amber { background: #fef3c7; color: #92400e; }
+    .del-btn { color: #ef4444; cursor: pointer; border: none; background: none; font-size: 0.8rem; }
+    .del-btn:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <h1>⚾ 教練券獲取追蹤器</h1>
+
+  <!-- 統計指標列 -->
+  <div class="grid grid-3" style="margin-bottom: 20px;">
+    <div class="card stat-card">
+      <div class="stat-label">白金教練券 總計</div>
+      <div class="stat-val" id="kpi-total-coach">0</div>
+      <div class="stat-sub" id="kpi-freq-coach">平均頻率: --</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">白金技能教練券 總計</div>
+      <div class="stat-val" id="kpi-total-skill">0</div>
+      <div class="stat-sub" id="kpi-freq-skill">平均頻率: --</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">近 30 天累計獲得</div>
+      <div class="stat-val" id="kpi-recent">0</div>
+      <div class="stat-sub">教練: <span id="kpi-recent-coach">0</span> | 技能: <span id="kpi-recent-skill">0</span></div>
+    </div>
+  </div>
+
+  <div class="grid grid-main">
+    <!-- 左側：登記表單 -->
+    <div class="card">
+      <div class="card-title">新增獲取紀錄</div>
+      <form id="record-form">
+        <div class="form-group">
+          <label for="item-type">道具種類</label>
+          <select id="item-type" required>
+            <option value="白金教練券">白金教練券</option>
+            <option value="白金技能教練券">白金技能教練券</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="obtain-method">獲得方式</label>
+          <select id="obtain-method" required>
+            <!-- 動態填入 -->
+          </select>
+        </div>
+
+        <div class="form-group" id="memo-group" style="display: none;">
+          <label for="memo">備註來源</label>
+          <input type="text" id="memo" placeholder="例如：活動簽到、特別禮包">
+        </div>
+
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label for="obtain-date">獲得日期</label>
+            <input type="date" id="obtain-date" required>
+          </div>
+          <div class="form-group">
+            <label for="quantity">數量</label>
+            <input type="number" id="quantity" min="1" value="1" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 8px;">登記記錄</button>
+      </form>
+
+      <div style="margin-top: 24px; display: flex; gap: 8px;">
+        <button class="btn-subtle" onclick="exportData('csv')">匯出 CSV</button>
+        <button class="btn-subtle" onclick="exportData('json')">備份 JSON</button>
+        <button class="btn-subtle" onclick="document.getElementById('import-file').click()">匯入備份</button>
+        <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(event)">
+      </div>
+    </div>
+
+    <!-- 右側：統計圖表 -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">每月份獲取趨勢</div>
+        <canvas id="monthlyChart" height="120"></canvas>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">白金技能來源分佈</div>
+          <canvas id="sourceSkillChart" height="150"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title">白金教練來源分佈</div>
+          <canvas id="sourceCoachChart" height="150"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 下方：歷史明細 -->
+  <div class="card" style="margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div class="card-title" style="margin: 0; border: none; padding: 0;">歷史登記記錄 (<span id="record-count">0</span>)</div>
+      <button class="btn-subtle" onclick="clearAllData()">清空所有記錄</button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>道具名稱</th>
+            <th>獲取管道</th>
+            <th>備註</th>
+            <th>數量</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="records-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'coach_tickets_tracker_data';
+    let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+    const methodOptions = {
+      '白金教練券': ['刷聯賽拿到', '其他方式'],
+      '白金技能教練券': ['刷聯賽', '聯賽60000分保底', '其他方式']
+    };
+
+    const itemTypeEl = document.getElementById('item-type');
+    const methodEl = document.getElementById('obtain-method');
+    const memoGroup = document.getElementById('memo-group');
+    const memoEl = document.getElementById('memo');
+    const dateEl = document.getElementById('obtain-date');
+
+    // 預設今天日期
+    dateEl.value = new Date().toISOString().split('T')[0];
+
+    function updateMethodOptions() {
+      const type = itemTypeEl.value;
+      const opts = methodOptions[type];
+      methodEl.innerHTML = opts.map(o => `<option value="${o}">${o}</option>`).join('');
+      checkMemoVisibility();
+    }
+
+    function checkMemoVisibility() {
+      memoGroup.style.display = methodEl.value === '其他方式' ? 'block' : 'none';
+      if (methodEl.value !== '其他方式') memoEl.value = '';
+    }
+
+    itemTypeEl.addEventListener('change', updateMethodOptions);
+    methodEl.addEventListener('change', checkMemoVisibility);
+    updateMethodOptions();
+
+    // 登記事件
+    document.getElementById('record-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newRecord = {
+        id: Date.now(),
+        date: dateEl.value,
+        type: itemTypeEl.value,
+        method: methodEl.value,
+        memo: memoEl.value.trim(),
+        quantity: parseInt(document.getElementById('quantity').value, 10)
+      };
+      records.unshift(newRecord);
+      saveAndRender();
+      memoEl.value = '';
+      document.getElementById('quantity').value = 1;
+    });
+
+    function deleteRecord(id) {
+      if (confirm('確定要刪除這筆紀錄嗎？')) {
+        records = records.filter(r => r.id !== id);
+        saveAndRender();
+      }
+    }
+
+    function clearAllData() {
+      if (confirm('確定要清空所有紀錄嗎？此動作無法復原！建議先匯出備份。')) {
+        records = [];
+        saveAndRender();
+      }
+    }
+
+    function saveAndRender() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      renderTable();
+      renderKPIs();
+      renderCharts();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('records-tbody');
+      document.getElementById('record-count').innerText = records.length;
+      if (records.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">尚未有任何記錄</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = records.map(r => `
+        <tr>
+          <td>${r.date}</td>
+          <td><span class="badge ${r.type === '白金教練券' ? 'badge-amber' : 'badge-blue'}">${r.type}</span></td>
+          <td>${r.method}</td>
+          <td>${r.memo || '-'}</td>
+          <td style="font-weight: 600;">+${r.quantity}</td>
+          <td><button class="del-btn" onclick="deleteRecord(${r.id})">刪除</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderKPIs() {
+      let totalCoach = 0, totalSkill = 0;
+      let coachDates = [], skillDates = [];
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+      let recentCoach = 0, recentSkill = 0;
+
+      records.forEach(r => {
+        const rDate = new Date(r.date);
+        const qty = r.quantity;
+        const isRecent = rDate >= thirtyDaysAgo;
+
+        if (r.type === '白金教練券') {
+          totalCoach += qty;
+          coachDates.push(rDate);
+          if (isRecent) recentCoach += qty;
+        } else {
+          totalSkill += qty;
+          skillDates.push(rDate);
+          if (isRecent) recentSkill += qty;
+        }
+      });
+
+      document.getElementById('kpi-total-coach').innerText = totalCoach;
+      document.getElementById('kpi-total-skill').innerText = totalSkill;
+      document.getElementById('kpi-recent').innerText = recentCoach + recentSkill;
+      document.getElementById('kpi-recent-coach').innerText = recentCoach;
+      document.getElementById('kpi-recent-skill').innerText = recentSkill;
+
+      function calcFreq(dates, total) {
+        if (dates.length < 2 || total === 0) return '資料不足';
+        const sorted = dates.sort((a, b) => a - b);
+        const diffDays = Math.max(1, Math.round((sorted[sorted.length - 1] - sorted[0]) / (1000 * 60 * 60 * 24)));
+        const avg = (diffDays / total).toFixed(1);
+        return `約 ${avg} 天 / 張`;
+      }
+
+      document.getElementById('kpi-freq-coach').innerText = `平均頻率: ${calcFreq(coachDates, totalCoach)}`;
+      document.getElementById('kpi-freq-skill').innerText = `平均頻率: ${calcFreq(skillDates, totalSkill)}`;
+    }
+
+    // 圖表實例
+    let monthlyChart = null, sourceSkillChart = null, sourceCoachChart = null;
+
+    function renderCharts() {
+      // 1. 月份統計
+      const monthlyData = {};
+      records.forEach(r => {
+        const month = r.date.substring(0, 7); // YYYY-MM
+        if (!monthlyData[month]) monthlyData[month] = { coach: 0, skill: 0 };
+        if (r.type === '白金教練券') monthlyData[month].coach += r.quantity;
+        else monthlyData[month].skill += r.quantity;
+      });
+
+      const months = Object.keys(monthlyData).sort();
+      const coachCounts = months.map(m => monthlyData[m].coach);
+      const skillCounts = months.map(m => monthlyData[m].skill);
+
+      if (monthlyChart) monthlyChart.destroy();
+      const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+      monthlyChart = new Chart(ctxMonthly, {
+        type: 'bar',
+        data: {
+          labels: months.length ? months : ['無資料'],
+          datasets: [
+            { label: '白金教練券', data: coachCounts, backgroundColor: '#f59e0b' },
+            { label: '白金技能教練券', data: skillCounts, backgroundColor: '#3b82f6' }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+
+      // 2. 管道分佈
+      function createDoughnut(canvasId, type, chartInstance) {
+        const counts = {};
+        records.filter(r => r.type === type).forEach(r => {
+          counts[r.method] = (counts[r.method] || 0) + r.quantity;
+        });
+        const labels = Object.keys(counts);
+        const data = Object.values(counts);
+
+        if (chartInstance) chartInstance.destroy();
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels.length ? labels : ['無資料'],
+            datasets: [{
+              data: data.length ? data : [1],
+              backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+      }
+
+      sourceSkillChart = createDoughnut('sourceSkillChart', '白金技能教練券', sourceSkillChart);
+      sourceCoachChart = createDoughnut('sourceCoachChart', '白金教練券', sourceCoachChart);
+    }
+
+    // 匯出 CSV / JSON
+    function exportData(format) {
+      if (records.length === 0) return alert('目前沒有任何記錄可匯出');
+      let blob, filename;
+      if (format === 'csv') {
+        const header = ['日期', '道具種類', '獲得管道', '備註', '數量'];
+        const rows = records.map(r => [r.date, r.type, r.method, `"${(r.memo||'').replace(/"/g, '""')}"`, r.quantity]);
+        const csvContent = '\uFEFF' + [header.join(','), ...rows.map(e => e.join(','))].join('\n');
+        blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        filename = `coach_tickets_${new Date().toISOString().split('T')[0]}.csv`;
+      } else {
+        blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
+        filename = `coach_tickets_backup_${new Date().toISOString().split('T')[0]}.json`;
+      }
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+
+    // 匯入 JSON
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const imported = JSON.parse(evt.target.result);
+          if (Array.isArray(imported)) {
+            records = imported;
+            saveAndRender();
+            alert('匯入成功！');
+          } else {
+            alert('檔案格式不相符');
+          }
+        } catch (err) {
+          alert('讀取失敗，請確認檔案為正確的 JSON 備份檔');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // 初始化渲染
+    saveAndRender();
+  </script>
+</body>
+</html>

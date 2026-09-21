@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>白教/白技教統計系統</title>
+  <title>教練券與白技抽取管理系統 (Morandi Edition)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --card-inner: #0f172a;
-      --border: #334155;
-      --primary: #38bdf8;
-      --primary-hover: #0284c7;
-      --accent: #f59e0b;
-      --success: #10b981;
-      --danger: #ef4444;
-      --gold: #fbbf24;
-      --gold-bg: #713f12;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
+      /* 莫蘭迪柔和色盤 */
+      --bg: #F4F0EA;          /* 燕麥灰底色 */
+      --card: #FFFFFF;        /* 卡片純白 */
+      --card-inner: #FAF8F5;  /* 內襯米白 */
+      --border: #E2DDD5;      /* 柔和框線 */
+      --primary: #7C90A0;     /* 石板藍灰 */
+      --primary-hover: #627585;
+      --accent: #C6AC85;      /* 暖沙黃 */
+      --success: #8F9F8A;     /* 鼠尾草綠 */
+      --danger: #B88484;      /* 豆沙粉紅 */
+      --gold: #C6AC85;        
+      --gold-bg: #FDFBF7;
+      --text: #5C544D;        /* 深灰褐色字體 */
+      --text-muted: #9E978F;  /* 淺灰字體 */
       --radius: 8px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -33,10 +34,9 @@
       .grid-main { grid-template-columns: 380px 1fr; }
     }
     
-    /* 讓 KPI 區塊自動適應寬度 */
     .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 14px; }
 
-    .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); }
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
     .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     
     .stat-card { text-align: center; padding: 10px; }
@@ -46,40 +46,42 @@
 
     /* 快捷打卡區 */
     .quick-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
-    .btn-quick { background: #334155; color: var(--text); border: 1px solid #475569; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s; }
-    .btn-quick:hover { background: #475569; border-color: var(--primary); color: #fff; }
-    .btn-league { background: #064e3b; border-color: #047857; color: #a7f3d0; }
-    .btn-league:hover { background: #047857; border-color: #10b981; color: #fff; }
+    .btn-quick { background: #FFFFFF; color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .btn-quick:hover { background: var(--card-inner); border-color: var(--primary); color: var(--primary); }
+    .btn-league { background: #F2F5F1; border-color: #C0CFC1; color: #768772; }
+    .btn-league:hover { background: var(--success); border-color: var(--success); color: #fff; }
 
     .form-group { margin-bottom: 10px; }
     label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
-    select, input, button { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-inner); color: var(--text); font-size: 0.85rem; }
-    select:focus, input:focus { outline: none; border-color: var(--primary); }
+    select, input, button { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-inner); color: var(--text); font-size: 0.85rem; transition: 0.15s; }
+    select:focus, input:focus { outline: none; border-color: var(--primary); background: #FFFFFF; }
     
-    button.btn-primary { background: var(--primary-hover); color: #fff; font-weight: 600; border: none; cursor: pointer; }
-    button.btn-primary:hover { background: #0369a1; }
+    button.btn-primary { background: var(--primary); color: #fff; font-weight: 600; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(124, 144, 160, 0.2); }
+    button.btn-primary:hover { background: var(--primary-hover); }
     button.btn-success { background: var(--success); color: #fff; font-weight: 600; border: none; cursor: pointer; }
+    button.btn-success:hover { background: #7C8F77; }
     button.btn-subtle { background: transparent; color: var(--text-muted); border: 1px solid var(--border); cursor: pointer; padding: 4px 8px; font-size: 0.75rem; width: auto; }
-    button.btn-subtle:hover { background: #334155; color: #fff; }
+    button.btn-subtle:hover { background: var(--card-inner); color: var(--text); }
 
     .sub-box { background: var(--card-inner); border: 1px dashed var(--border); padding: 12px; border-radius: 6px; margin-bottom: 10px; }
 
-    .table-container { max-height: 420px; overflow-y: auto; }
+    .table-container { max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    th, td { padding: 8px 6px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: #0f172a; position: sticky; top: 0; color: var(--text-muted); z-index: 10; }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #EBE6DF; position: sticky; top: 0; color: var(--text); z-index: 10; font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
 
-    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-    .badge-coach { background: #78350f; color: #fde68a; }
-    .badge-skill { background: #1e3a8a; color: #bfdbfe; }
-    .badge-pending { background: #450a0a; color: #fca5a5; }
-    .badge-opened { background: #064e3b; color: #6ee7b7; }
-    .badge-tier-3 { background: #831843; color: #fbcfe8; font-weight: 700; border: 1px solid #f472b6; }
-    .badge-target { background: var(--gold-bg); color: #fde047; border: 1px solid var(--gold); }
-    .badge-grade-good { background: #065f46; color: #a7f3d0; }
-    .badge-grade-normal { background: #1e293b; color: #cbd5e1; border: 1px solid #475569; }
-    .badge-grade-bad { background: #262626; color: #737373; }
-    .badge-league { background: #022c22; color: #34d399; border: 1px solid #059669; }
+    .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .badge-coach { background: #B39D82; color: #FFF; }
+    .badge-skill { background: #889CAE; color: #FFF; }
+    .badge-pending { background: #D5B4B4; color: #FFF; }
+    .badge-opened { background: #8F9F8A; color: #FFF; }
+    .badge-tier-3 { background: #B88484; color: #FFF; border: 1px solid #A87676; }
+    .badge-target { background: var(--gold-bg); color: #A68A61; border: 1px solid var(--gold); }
+    .badge-grade-good { background: #8F9F8A; color: #FFF; }
+    .badge-grade-normal { background: #C4C4C4; color: #FFF; border: 1px solid #B0B0B0; }
+    .badge-grade-bad { background: #9E978F; color: #FFF; }
+    .badge-league { background: #9CB0A5; color: #FFF; border: 1px solid #84968C; }
 
     .del-btn { color: var(--danger); cursor: pointer; border: none; background: none; font-size: 0.75rem; width: auto; padding: 4px; }
     .action-btn { color: var(--primary); cursor: pointer; border: none; background: none; font-size: 0.75rem; width: auto; font-weight: 600; padding: 4px; }
@@ -90,23 +92,23 @@
     .target-picker-group { margin-bottom: 10px; }
     .target-picker-title { font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 5px; }
     .target-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-    .target-chip { background: #1e293b; border: 1px solid #334155; color: var(--text-muted); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; user-select: none; transition: 0.15s; }
-    .target-chip:hover { border-color: var(--primary); color: #fff; }
-    .target-chip.active { background: var(--gold-bg); border-color: var(--gold); color: #fde047; font-weight: 600; }
-    .active-target-tag { cursor: pointer; display: inline-flex; align-items: center; gap: 3px; }
-    .active-target-tag:hover { text-decoration: line-through; }
+    .target-chip { background: #FFFFFF; border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 14px; font-size: 0.75rem; cursor: pointer; user-select: none; transition: 0.15s; }
+    .target-chip:hover { border-color: var(--primary); color: var(--primary); }
+    .target-chip.active { background: var(--gold-bg); border-color: var(--gold); color: #A68A61; font-weight: 600; }
+    .active-target-tag { cursor: pointer; display: inline-flex; align-items: center; gap: 3px; border-radius: 12px; }
+    .active-target-tag:hover { text-decoration: line-through; opacity: 0.8; }
   </style>
 </head>
 <body>
 
   <!-- 自動備份提醒橫幅 -->
-  <div id="backup-reminder" style="display: none; background: #991b1b; color: #fecaca; padding: 10px; border-radius: var(--radius); margin-bottom: 14px; font-weight: 600; text-align: center; border: 1px solid #f87171;">
+  <div id="backup-reminder" style="display: none; background: #D5B4B4; color: #FFF; padding: 10px; border-radius: var(--radius); margin-bottom: 14px; font-weight: 600; text-align: center; border: 1px solid #B88484; text-shadow: 0 1px 1px rgba(0,0,0,0.1);">
     ⚠️ 距離您上次備份資料已超過 7 天，建議您匯出或同步雲端，以免清除瀏覽器快取時遺失心血！
-    <button class="btn-subtle" style="margin-left: 10px; border-color: #fca5a5; color: #fff;" onclick="dismissBackupReminder()">我已知道</button>
+    <button class="btn-subtle" style="margin-left: 10px; border-color: #FFF; color: #FFF;" onclick="dismissBackupReminder()">我已知道</button>
   </div>
 
   <h1>
-    <span>⚾ 教練券與白技追蹤 (Dark Edition)</span>
+    <span>⚾ 教練券與白技追蹤 (Morandi Edition)</span>
     <button class="btn-subtle" onclick="toggleCloudModal()">☁️ 雲端同步設定</button>
   </h1>
 
@@ -124,7 +126,7 @@
     <div class="card stat-card">
       <div class="stat-label">未開庫存 (技能 / 教練)</div>
       <div class="stat-val" style="color: var(--danger);">
-        <span id="kpi-unopened-skill">0</span> <span style="font-size: 0.9rem; color: var(--text-muted);">/</span> <span id="kpi-unopened-coach">0</span>
+        <span id="kpi-unopened-skill">0</span> <span style="font-size: 0.9rem; color: var(--border);">/</span> <span id="kpi-unopened-coach">0</span>
       </div>
       <div class="stat-sub">
         <a href="javascript:void(0)" onclick="openBatchModal()" style="color: var(--primary); text-decoration: underline;">一鍵批量開箱</a>
@@ -137,7 +139,7 @@
     </div>
     <div class="card stat-card">
       <div class="stat-label">連續未出大獎 (墊刀指數)</div>
-      <div class="stat-val" id="kpi-streak" style="color: var(--accent);">0</div>
+      <div class="stat-val" id="kpi-streak" style="color: var(--primary);">0</div>
       <div class="stat-sub">自上次 III階/優良 至今</div>
     </div>
     <div class="card stat-card">
@@ -249,7 +251,7 @@
         <div id="target-config-box" style="display: none; margin-top: 10px;" class="sub-box">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="font-size: 0.75rem; color: var(--text-muted);">點擊標籤快速選取 / 取消</span>
-            <button class="btn-subtle" onclick="clearAllTargets()" style="color: var(--danger);">清空全部</button>
+            <button class="btn-subtle" onclick="clearAllTargets()" style="color: var(--danger); border-color: transparent;">清空全部</button>
           </div>
           <div class="target-picker-group"><div class="target-picker-title">⚾ 打者白技</div><div class="target-chips" id="chips-batter-skills"></div></div>
           <div class="target-picker-group"><div class="target-picker-title">⚾ 投手白技</div><div class="target-chips" id="chips-pitcher-skills"></div></div>
@@ -335,11 +337,11 @@
   </div>
 
   <!-- 聯賽結算彈窗 -->
-  <div id="league-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px;">
+  <div id="league-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
     <div class="card" style="width: 100%; max-width: 350px;">
       <div class="card-title">
         <span>🏁 登記聯賽結算</span>
-        <button class="btn-subtle" onclick="closeLeagueModal()">✕</button>
+        <button class="btn-subtle" style="border:none;" onclick="closeLeagueModal()">✕</button>
       </div>
       <div style="margin-bottom: 12px; font-size: 0.8rem; color: var(--text-muted);">
         當聯賽跑完一輪時，請在此登記以累計總季數，系統將自動為您計算每季的掉寶率。
@@ -357,11 +359,11 @@
   </div>
 
   <!-- 批量開券彈窗 -->
-  <div id="batch-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px;">
+  <div id="batch-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
     <div class="card" style="width: 100%; max-width: 650px; max-height: 85vh; display: flex; flex-direction: column;">
       <div class="card-title">
         <span>⚡ 批量開箱模式</span>
-        <button class="btn-subtle" onclick="closeBatchModal()">✕</button>
+        <button class="btn-subtle" style="border:none;" onclick="closeBatchModal()">✕</button>
       </div>
       <div class="grid grid-2" style="margin-bottom: 10px;">
         <select id="batch-ticket-type" onchange="buildBatchRows()">
@@ -384,11 +386,11 @@
   </div>
 
   <!-- 單筆紀錄編輯彈窗 -->
-  <div id="edit-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px;">
+  <div id="edit-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
     <div class="card" style="width: 100%; max-width: 450px;">
       <div class="card-title">
         <span>✏️ 編輯單筆紀錄</span>
-        <button class="btn-subtle" onclick="document.getElementById('edit-modal').style.display='none'">✕</button>
+        <button class="btn-subtle" style="border:none;" onclick="document.getElementById('edit-modal').style.display='none'">✕</button>
       </div>
       <input type="hidden" id="edit-id">
       <div class="grid grid-2" style="margin-bottom: 10px;">
@@ -406,11 +408,11 @@
   </div>
 
   <!-- 雲端設定彈窗 -->
-  <div id="cloud-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px;">
+  <div id="cloud-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
     <div class="card" style="width: 100%; max-width: 480px;">
       <div class="card-title">
         <span>☁️ Google 試算表 Web App 串接</span>
-        <button class="btn-subtle" onclick="toggleCloudModal()">✕</button>
+        <button class="btn-subtle" style="border:none;" onclick="toggleCloudModal()">✕</button>
       </div>
       <div class="form-group"><label>GAS Web App URL：</label><input type="url" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec"></div>
       <div style="display: flex; gap: 8px; margin-top: 12px;">
@@ -436,7 +438,7 @@
       '白金教練券': ['刷聯賽拿到', '其他方式']
     };
 
-    const STORAGE_KEY = 'coach_tickets_tracker_dark_v1';
+    const STORAGE_KEY = 'coach_tickets_tracker_dark_v1'; // 保持原Key確保無痛升級
     const TARGET_KEY = 'coach_tickets_targets_v2';
     const GAS_KEY = 'coach_tickets_gas_url';
     const BACKUP_KEY = 'coach_tickets_last_backup';
@@ -790,7 +792,7 @@
         let actionBtn = `<button class="action-btn" onclick="openEditModal(${r.id})">編輯</button><button class="del-btn" onclick="deleteRecord(${r.id})">刪除</button>`;
 
         if (r.type === '聯賽進度') {
-          return `<tr><td>${r.date}</td><td><span class="badge badge-league">🏁 聯賽進度結算</span></td><td>${r.method}</td><td>${r.memo || '-'}</td><td style="font-weight: 600; color: #34d399;">+${r.seasons} 季</td><td style="color:var(--text-muted);">自動累計</td><td>${actionBtn}</td></tr>`;
+          return `<tr><td>${r.date}</td><td><span class="badge badge-league">🏁 聯賽進度結算</span></td><td>${r.method}</td><td>${r.memo || '-'}</td><td style="font-weight: 600; color: var(--success);">+${r.seasons} 季</td><td style="color:var(--text-muted);">自動累計</td><td>${actionBtn}</td></tr>`;
         }
 
         if (r.status === '未開啟') {
@@ -861,7 +863,7 @@
       if (totalSeasons > 0) {
         const skillRate = (leagueSkillTickets / totalSeasons).toFixed(2);
         const coachRate = (leagueCoachTickets / totalSeasons).toFixed(2);
-        document.getElementById('kpi-seasons-exp').innerHTML = `<span style="color:#fde68a;">教 ${coachRate}</span> <span style="font-size:0.9rem;color:var(--text-muted);align-self:center;">|</span> <span style="color:#bfdbfe;">技 ${skillRate}</span>`;
+        document.getElementById('kpi-seasons-exp').innerHTML = `<span style="color:var(--accent);">教 ${coachRate}</span> <span style="font-size:0.9rem;color:var(--border);align-self:center;">|</span> <span style="color:var(--primary);">技 ${skillRate}</span>`;
         document.getElementById('kpi-seasons-sub').innerText = `累計完賽 ${totalSeasons} 季`;
       } else {
         document.getElementById('kpi-seasons-exp').innerText = `--`;
@@ -897,11 +899,11 @@
 
       if (monthlyChart) monthlyChart.destroy();
       monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
-        type: 'bar', data: { labels: months.length ? months : ['無資料'], datasets: [{ label: '白金技能教練券', data: skillCounts, backgroundColor: '#38bdf8' }, { label: '白金教練券', data: coachCounts, backgroundColor: '#f59e0b' }] },
-        options: { responsive: true, scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } } }, plugins: { legend: { labels: { color: '#f8fafc' } } } }
+        type: 'bar', data: { labels: months.length ? months : ['無資料'], datasets: [{ label: '白金技能教練券', data: skillCounts, backgroundColor: '#7C90A0' }, { label: '白金教練券', data: coachCounts, backgroundColor: '#C6AC85' }] },
+        options: { responsive: true, scales: { x: { ticks: { color: '#9E978F' }, grid: { color: '#EAE6DF' } }, y: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E978F' }, grid: { color: '#EAE6DF' } } }, plugins: { legend: { labels: { color: '#5C544D' } } } }
       });
 
-      const colorPalette = ['#10b981', '#f59e0b', '#ef4444'];
+      const colorPalette = ['#8F9F8A', '#C6AC85', '#B88484'];
       const tierCounts = { 'III 階': 0, 'II 階': 0, 'I 階': 0 };
       const coachGradeCounts = { '優良': 0, '普通': 0, '劣等': 0 };
       const skillNameCounts = {}, coachNameCounts = {};
@@ -920,34 +922,30 @@
       });
 
       if (tierChart) tierChart.destroy();
-      tierChart = new Chart(document.getElementById('tierChart').getContext('2d'), { type: 'pie', data: { labels: Object.keys(tierCounts), datasets: [{ data: Object.values(tierCounts), backgroundColor: colorPalette }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc' } } } } });
+      tierChart = new Chart(document.getElementById('tierChart').getContext('2d'), { type: 'pie', data: { labels: Object.keys(tierCounts), datasets: [{ data: Object.values(tierCounts), backgroundColor: colorPalette }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#5C544D' } } } } });
       if (coachGradeChart) coachGradeChart.destroy();
-      coachGradeChart = new Chart(document.getElementById('coachGradeChart').getContext('2d'), { type: 'pie', data: { labels: Object.keys(coachGradeCounts), datasets: [{ data: Object.values(coachGradeCounts), backgroundColor: colorPalette }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc' } } } } });
+      coachGradeChart = new Chart(document.getElementById('coachGradeChart').getContext('2d'), { type: 'pie', data: { labels: Object.keys(coachGradeCounts), datasets: [{ data: Object.values(coachGradeCounts), backgroundColor: colorPalette }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#5C544D' } } } } });
 
       const sortedSkills = Object.entries(skillNameCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
       if (skillRankChart) skillRankChart.destroy();
-      skillRankChart = new Chart(document.getElementById('skillRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedSkills.length ? sortedSkills.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedSkills.length ? sortedSkills.map(s => s[1]) : [0], backgroundColor: '#38bdf8' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#f8fafc' }, grid: { color: '#334155' } } }, plugins: { legend: { display: false } } } });
+      skillRankChart = new Chart(document.getElementById('skillRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedSkills.length ? sortedSkills.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedSkills.length ? sortedSkills.map(s => s[1]) : [0], backgroundColor: '#7C90A0' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E978F' }, grid: { color: '#EAE6DF' } }, y: { ticks: { color: '#5C544D' }, grid: { color: '#EAE6DF' } } }, plugins: { legend: { display: false } } } });
       const sortedCoaches = Object.entries(coachNameCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
       if (coachRankChart) coachRankChart.destroy();
-      coachRankChart = new Chart(document.getElementById('coachRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedCoaches.length ? sortedCoaches.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedCoaches.length ? sortedCoaches.map(s => s[1]) : [0], backgroundColor: '#f59e0b' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#f8fafc' }, grid: { color: '#334155' } } }, plugins: { legend: { display: false } } } });
+      coachRankChart = new Chart(document.getElementById('coachRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedCoaches.length ? sortedCoaches.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedCoaches.length ? sortedCoaches.map(s => s[1]) : [0], backgroundColor: '#C6AC85' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E978F' }, grid: { color: '#EAE6DF' } }, y: { ticks: { color: '#5C544D' }, grid: { color: '#EAE6DF' } } }, plugins: { legend: { display: false } } } });
     }
 
     function toggleCloudModal() { document.getElementById('cloud-modal').style.display = document.getElementById('cloud-modal').style.display === 'none' ? 'flex' : 'none'; document.getElementById('gas-url').value = localStorage.getItem(GAS_KEY) || ''; }
     function saveCloudUrl() { localStorage.setItem(GAS_KEY, document.getElementById('gas-url').value.trim()); alert('GAS URL 已儲存！'); }
     
-    // ==================================
-    // 修正：將 targets 也一起打包進匯出檔案
-    // ==================================
     function exportData(format) {
       if (records.length === 0) return alert('無任何記錄可匯出');
       if (format === 'csv') {
         const header = ['日期', '道具種類', '獲得管道', '消耗季數', '備註', '數量', '狀態', '定位類別', '名稱', '階級/評級', '數值細項'];
         const rows = records.map(r => [ r.date, r.type, r.method, r.seasons || 0, `"${(r.memo||'').replace(/"/g, '""')}"`, r.quantity, r.status || '-', r.content ? r.content.category : '', r.content ? r.content.name : '', r.content ? (r.content.tier ? `${r.content.tier}階` : r.content.grade) : '', r.content ? `"${(r.content.detail||'').replace(/"/g, '""')}"` : '' ]);
-        downloadFile('\uFEFF' + [header.join(','), ...rows.map(e => e.join(','))].join('\n'), `tickets_tracker_dark_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
+        downloadFile('\uFEFF' + [header.join(','), ...rows.map(e => e.join(','))].join('\n'), `tickets_tracker_morandi_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
       } else {
-        // 新增：打包成包含 records 與 targets 的物件
         const backupData = { records: records, targets: targets };
-        downloadFile(JSON.stringify(backupData, null, 2), `tickets_backup_dark_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+        downloadFile(JSON.stringify(backupData, null, 2), `tickets_backup_morandi_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
       }
       updateBackupTime();
     }
@@ -963,29 +961,17 @@
       reader.onload = function(evt) {
         try {
           const imported = JSON.parse(evt.target.result);
-          
           if (Array.isArray(imported)) {
-            // 向下相容：舊版備份格式 (只有陣列)
-            records = imported;
-            saveAndRender(); 
-            alert('匯入成功！(舊版備份格式)');
+            records = imported; saveAndRender(); alert('匯入成功！(舊版備份格式)');
           } else if (imported && Array.isArray(imported.records)) {
-            // 新版備份格式：包含 records 與 targets
             records = imported.records;
-            if (Array.isArray(imported.targets)) {
-              targets = imported.targets;
-              localStorage.setItem(TARGET_KEY, JSON.stringify(targets));
-            }
-            saveAndRender(); 
-            alert('匯入成功！(已包含心願清單)');
-          } else {
-            alert('檔案格式不相符');
-          }
+            if (Array.isArray(imported.targets)) { targets = imported.targets; localStorage.setItem(TARGET_KEY, JSON.stringify(targets)); }
+            saveAndRender(); alert('匯入成功！(已包含心願清單)');
+          } else { alert('檔案格式不相符'); }
         } catch (err) { alert('讀取失敗，請確認檔案格式'); }
       };
       reader.readAsText(file);
     }
-    // ==================================
 
     async function syncToCloud() {
       const url = document.getElementById('gas-url').value.trim();

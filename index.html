@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>白教/白技教掉落統計系統 V3</title>
+  <title>白教/白技教掉落統計系統 V3.1</title>
   
   <!-- 引入 Chart.js, Datalabels 與 html2canvas (用於截圖) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -32,12 +32,24 @@
     .tab-content.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    .grid { display: grid; gap: 14px; }
-    .grid-2 { grid-template-columns: 1fr 1fr; }
-    .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 14px; }
-    @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+    /* ======================================= */
+    /* 修正區：RWD 排版邏輯 (解決圓餅圖超出版面) */
+    /* ======================================= */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 14px; }
+    
+    /* 當螢幕寬度大於 500px (橫向或平板) 時，才變成雙欄 */
+    @media (min-width: 500px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 768px) { 
+      .grid-3 { grid-template-columns: repeat(3, 1fr); } 
+    }
 
-    .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    /* 加入 min-width: 0; 防止 Chart.js 畫布把 Grid 容器撐破 */
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 0; }
+    /* ======================================= */
+
     .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     
     .stat-card { text-align: center; padding: 10px; position: relative; }
@@ -110,7 +122,7 @@
 
   <!-- 頂部 Header & 導覽列 -->
   <div class="header-container">
-    <h1>⚾ 掉落統計系統 V3</h1>
+    <h1>⚾ 掉落統計系統 V3.1</h1>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('dashboard')">📊 總覽數據</button>
       <button class="tab-btn" onclick="switchTab('records')">📝 歷史明細</button>
@@ -120,7 +132,7 @@
 
   <!-- ==================== Tab 1: 總覽 Dashboard ==================== -->
   <div id="tab-dashboard" class="tab-content active">
-    <!-- 快捷打卡區 (橫向滑動) -->
+    <!-- 快捷打卡區 -->
     <div class="quick-bar">
       <button class="btn-quick btn-league" onclick="openLeagueModal()">🏁 登記聯賽結算</button>
       <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL, '刷聯賽')">⚡ +1 聯賽技能券</button>
@@ -128,7 +140,6 @@
       <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL, '聯賽60000分保底')">📦 +1 6萬保底</button>
     </div>
 
-    <!-- 匯出截圖區域基準點 -->
     <div id="export-area" style="background: var(--bg); padding: 10px 0;">
       <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
         <span style="font-size: 0.85rem; color: var(--text-muted);">核心數據指標</span>
@@ -136,7 +147,6 @@
       </div>
       
       <div class="grid-kpi">
-        <!-- 運氣檢測儀 -->
         <div class="card stat-card">
           <div id="luck-badge" class="luck-tag luck-normal">計算中</div>
           <div class="stat-label">白技 III 階出貨率</div>
@@ -169,7 +179,7 @@
         </div>
       </div>
 
-      <!-- 圖表區 -->
+      <!-- 圖表區 (修正排版) -->
       <div class="grid" style="margin-top: 14px;">
         <div class="card">
           <div class="card-title" style="font-size:0.85rem;">每月份獲取總數趨勢</div>
@@ -208,8 +218,6 @@
 
   <!-- ==================== Tab 3: 設定 Settings ==================== -->
   <div id="tab-settings" class="tab-content">
-    
-    <!-- 心願設定 -->
     <div class="card" style="margin-bottom: 14px;">
       <div class="card-title">🎯 心願目標設定 (<span id="target-count">0</span>)</div>
       <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">點擊標籤切換選取狀態，選中的目標會在明細中高亮顯示。</div>
@@ -221,7 +229,6 @@
       </div>
     </div>
 
-    <!-- 批量開箱與庫存 -->
     <div class="card" style="margin-bottom: 14px;">
       <div class="card-title">📦 庫存管理與開箱</div>
       <div class="grid grid-2">
@@ -230,7 +237,6 @@
       </div>
     </div>
 
-    <!-- 資料管理 -->
     <div class="card">
       <div class="card-title">⚙️ 資料管理與備份</div>
       <div class="grid grid-2" style="margin-bottom: 10px;">
@@ -246,12 +252,10 @@
     </div>
   </div>
 
-  <!-- 懸浮新增按鈕 (FAB) -->
   <button class="fab" onclick="openAddModal()">+</button>
 
   <!-- ==================== 彈出視窗 Modals ==================== -->
   
-  <!-- 1. 新增紀錄 (緊湊型雙欄 Modal) -->
   <div id="add-modal" class="modal-backdrop">
     <div class="modal-content">
       <div class="card-title"><span>📝 新增獲取紀錄</span><button class="btn-subtle" style="border:none;" onclick="closeModal('add-modal')">✕</button></div>
@@ -266,17 +270,13 @@
         
         <div class="sub-box" style="margin-top: 4px;">
           <div class="form-group" style="margin-bottom: 8px;"><label>狀態</label><select id="open-status"><option value="未開啟">暫存不開 (累計庫存)</option><option value="已開啟">立即開啟 (填寫明細)</option></select></div>
-          
-          <div id="detail-fields" style="display:none;" class="grid grid-2">
-            <!-- 動態插入明細欄位 -->
-          </div>
+          <div id="detail-fields" style="display:none;" class="grid grid-2"></div>
         </div>
         <button type="submit" class="btn-primary" style="margin-top: 8px; padding: 12px;">確認新增</button>
       </form>
     </div>
   </div>
 
-  <!-- 2. 聯賽結算 Modal -->
   <div id="league-modal" class="modal-backdrop">
     <div class="modal-content" style="max-width: 300px;">
       <div class="card-title"><span>🏁 登記聯賽</span><button class="btn-subtle" style="border:none;" onclick="closeModal('league-modal')">✕</button></div>
@@ -286,7 +286,6 @@
     </div>
   </div>
 
-  <!-- 3. 優良教練檢視 Modal -->
   <div id="good-coach-modal" class="modal-backdrop">
     <div class="modal-content">
       <div class="card-title"><span>⭐ 現役優良教練</span><button class="btn-subtle" style="border:none;" onclick="closeModal('good-coach-modal')">✕</button></div>
@@ -294,7 +293,6 @@
     </div>
   </div>
 
-  <!-- 4. 自訂 Confirm Modal -->
   <div id="confirm-modal" class="modal-backdrop" style="z-index: 10000;">
     <div class="modal-content" style="max-width: 320px; text-align: center;">
       <div style="font-size: 1.1rem; margin-bottom: 16px; font-weight: 600;" id="confirm-msg"></div>
@@ -305,7 +303,6 @@
     </div>
   </div>
 
-  <!-- 5. 雲端設定與編輯 (精簡化保留) -->
   <div id="cloud-modal" class="modal-backdrop">
     <div class="modal-content"><div class="card-title"><span>☁️ GAS 雲端同步</span><button class="btn-subtle" style="border:none;" onclick="closeModal('cloud-modal')">✕</button></div><div class="form-group"><label>Web App URL</label><input type="url" id="gas-url"></div><button class="btn-primary" style="margin-top:8px;" onclick="syncToCloud()">同步</button><button class="btn-subtle" style="margin-top:8px; width:100%;" onclick="saveCloudUrl()">儲存網址</button></div>
   </div>
@@ -314,7 +311,6 @@
     <div class="modal-content"><div class="card-title"><span>✏️ 編輯紀錄</span><button class="btn-subtle" style="border:none;" onclick="closeModal('edit-modal')">✕</button></div><input type="hidden" id="edit-id"><div class="form-group"><label>日期</label><input type="date" id="edit-date"></div><div class="form-group"><label>備註/數值</label><input type="text" id="edit-memo"></div><button class="btn-primary" onclick="saveEdit()">儲存</button></div>
   </div>
 
-  <!-- 6. 批量開箱 (省略 UI 展開，維持原邏輯) -->
   <div id="batch-modal" class="modal-backdrop">
     <div class="modal-content" style="max-width: 500px;"><div class="card-title"><span>⚡ 批量開箱</span><button class="btn-subtle" style="border:none;" onclick="closeModal('batch-modal')">✕</button></div><div class="grid grid-2" style="margin-bottom:10px;"><select id="batch-type" onchange="buildBatch()"><option value="白金技能教練券">技能券</option><option value="白金教練券">教練券</option></select><select id="batch-count" onchange="buildBatch()"><option value="1">1 張</option><option value="3">3 張</option><option value="5">5 張</option></select></div><div id="batch-rows" style="max-height: 40vh; overflow-y:auto; margin-bottom:10px;"></div><button class="btn-success" onclick="submitBatch()">確認開出</button></div>
   </div>
@@ -331,7 +327,7 @@
     let targets = JSON.parse(localStorage.getItem('coach_v3_tar') || '["先鋒", "打者洞察力"]');
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // --- UI 切換與輔助 ---
+    // UI 切換
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -351,10 +347,10 @@
     }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    // --- 新增表單邏輯 (彈窗版) ---
+    // 新增表單
     function openAddModal() {
       document.getElementById('obtain-date').value = todayStr;
-      document.getElementById('obtain-date').max = todayStr; // 防呆：禁止未來日期
+      document.getElementById('obtain-date').max = todayStr;
       updateFormFields(); document.getElementById('add-modal').style.display = 'flex';
     }
     function updateFormFields() {
@@ -368,7 +364,7 @@
       const isOpen = document.getElementById('open-status').value === STAT.OPEN;
       const df = document.getElementById('detail-fields');
       if(!isOpen) { df.style.display = 'none'; return; }
-      df.style.display = 'grid'; // grid-2
+      df.style.display = 'grid'; 
       if (type === ITEM.SKILL) {
         df.innerHTML = `
           <div class="form-group" style="grid-column: span 2;"><select id="detail-cat" onchange="updName(skillList)"><option value="打者">打者</option><option value="投手">投手</option></select></div>
@@ -406,7 +402,7 @@
       closeModal('add-modal'); saveAndRender(); showToast('紀錄已新增'); document.getElementById('quantity').value = 1;
     });
 
-    // --- 快捷功能 ---
+    // 快捷功能
     function openLeagueModal() { document.getElementById('league-date').value=todayStr; document.getElementById('league-date').max=todayStr; document.getElementById('league-modal').style.display='flex'; }
     function submitLeague() {
       const s = parseFloat(document.getElementById('league-seasons').value)||1;
@@ -415,7 +411,7 @@
     }
     function quickCheckIn(type, method) { records.unshift({ id:Date.now(), date:todayStr, type, method, seasons:0, memo:'快捷', quantity:1, status:STAT.UNOPEN, content:null }); saveAndRender(); showToast(`+1 ${type}`); }
 
-    // --- 核心算繪與邏輯 ---
+    // 算繪與邏輯
     function saveAndRender() {
       localStorage.setItem('coach_v3_rec', JSON.stringify(records));
       updateMonthFilter(); renderKPIs(); renderCharts(); renderTable(); renderTargets(); renderGoodCoaches();
@@ -438,7 +434,6 @@
       document.getElementById('kpi-unopened-skill').innerText=uS; document.getElementById('kpi-unopened-coach').innerText=uC;
       document.getElementById('kpi-streak-skill').innerText=sSk; document.getElementById('kpi-streak-coach').innerText=sCo;
       
-      // 運氣評分系統 (RNG Analyzer)
       const rate = tS > 0 ? (t3/tS)*100 : 0;
       document.getElementById('kpi-tier3-rate').innerText = tS > 0 ? `${rate.toFixed(1)}%` : `0%`;
       document.getElementById('kpi-tier3-count').innerText = tS > 0 ? `${t3} / ${tS} 張` : `無紀錄`;
@@ -518,7 +513,6 @@
     async function deleteRec(id) { if(await customConfirm('確定刪除？')) { records=records.filter(r=>r.id!==id); saveAndRender(); showToast('已刪除'); } }
     async function clearAllData() { if(await customConfirm('將清空所有資料且無法復原，確定？')) { records=[]; saveAndRender(); showToast('已清空'); } }
 
-    // 截圖功能 (html2canvas)
     function exportScreenshot() {
       showToast('正在生成戰報圖，請稍候...');
       const target = document.getElementById('export-area');
@@ -529,7 +523,6 @@
       }).catch(err => showToast('截圖失敗', 'error'));
     }
 
-    // 簡化的編輯 (僅供改日期備註/數值)
     function openEdit(id) {
       const r = records.find(x=>x.id===id); if(!r) return;
       document.getElementById('edit-id').value=id; document.getElementById('edit-date').value=r.date; document.getElementById('edit-memo').value = r.type===ITEM.LEAGUE?'':(r.content?r.content.detail||'':r.memo||'');
@@ -542,7 +535,6 @@
       closeModal('edit-modal'); saveAndRender(); showToast('更新成功');
     }
 
-    // JSON 匯出匯入
     function exportData(fmt) {
       const link=document.createElement('a'); link.download=`backup_${todayStr}.json`; link.href=URL.createObjectURL(new Blob([JSON.stringify({records,targets})], {type:'application/json'})); link.click();
     }
@@ -550,7 +542,6 @@
       const fr=new FileReader(); fr.onload=function(evt){ try{ const d=JSON.parse(evt.target.result); records=d.records||d; targets=d.targets||targets; saveAndRender(); showToast('還原成功'); }catch{showToast('格式錯誤','error');} }; if(e.target.files[0]) fr.readAsText(e.target.files[0]); e.target.value='';
     }
 
-    // 批量開箱骨架 (同前版)
     function openBatchModal() { document.getElementById('batch-modal').style.display='flex'; buildBatch(); }
     function buildBatch() { 
       const t=document.getElementById('batch-type').value, c=parseInt(document.getElementById('batch-count').value); 

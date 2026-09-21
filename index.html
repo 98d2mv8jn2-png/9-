@@ -3,24 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>白教/白技教統計系統</title>
+  <title>教練券與白技抽取管理系統 (Dark Morandi Edition)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      /* 莫蘭迪柔和色盤 */
-      --bg: #F4F0EA;          /* 燕麥灰底色 */
-      --card: #FFFFFF;        /* 卡片純白 */
-      --card-inner: #FAF8F5;  /* 內襯米白 */
-      --border: #E2DDD5;      /* 柔和框線 */
-      --primary: #7C90A0;     /* 石板藍灰 */
-      --primary-hover: #627585;
-      --accent: #C6AC85;      /* 暖沙黃 */
-      --success: #8F9F8A;     /* 鼠尾草綠 */
-      --danger: #B88484;      /* 豆沙粉紅 */
-      --gold: #C6AC85;        
-      --gold-bg: #FDFBF7;
-      --text: #5C544D;        /* 深灰褐色字體 */
-      --text-muted: #9E978F;  /* 淺灰字體 */
+      /* 深色莫蘭迪色盤 */
+      --bg: #1A1C23;          /* 深灰藍底色 */
+      --card: #252830;        /* 深色卡片 */
+      --card-inner: #1E2128;  /* 深色內襯 */
+      --border: #3A3F4A;      /* 柔和暗框線 */
+      
+      --primary: #8598A7;     /* 莫蘭迪藍灰 (適應暗底) */
+      --primary-hover: #9CB0BE;
+      --accent: #C4B097;      /* 莫蘭迪沙黃 */
+      --success: #92A38D;     /* 莫蘭迪鼠尾草綠 */
+      --danger: #BE8C8C;      /* 莫蘭迪豆沙紅 */
+      
+      --gold: #C4B097;        
+      --gold-bg: rgba(196, 176, 151, 0.15);
+      
+      --text: #E8E4DF;        /* 燕麥灰白字體 */
+      --text-muted: #9E9B96;  /* 淺灰字體 */
       --radius: 8px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -36,7 +39,7 @@
     
     .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 14px; }
 
-    .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
     
     .stat-card { text-align: center; padding: 10px; }
@@ -46,20 +49,20 @@
 
     /* 快捷打卡區 */
     .quick-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
-    .btn-quick { background: #FFFFFF; color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .btn-quick:hover { background: var(--card-inner); border-color: var(--primary); color: var(--primary); }
-    .btn-league { background: #F2F5F1; border-color: #C0CFC1; color: #768772; }
-    .btn-league:hover { background: var(--success); border-color: var(--success); color: #fff; }
+    .btn-quick { background: var(--card-inner); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s; }
+    .btn-quick:hover { background: var(--card); border-color: var(--primary); color: var(--primary); }
+    .btn-league { background: rgba(146, 163, 141, 0.15); border-color: var(--success); color: var(--success); }
+    .btn-league:hover { background: var(--success); color: #1A1C23; }
 
     .form-group { margin-bottom: 10px; }
     label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
     select, input, button { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-inner); color: var(--text); font-size: 0.85rem; transition: 0.15s; }
-    select:focus, input:focus { outline: none; border-color: var(--primary); background: #FFFFFF; }
+    select:focus, input:focus { outline: none; border-color: var(--primary); background: var(--card); }
     
-    button.btn-primary { background: var(--primary); color: #fff; font-weight: 600; border: none; cursor: pointer; box-shadow: 0 2px 4px rgba(124, 144, 160, 0.2); }
+    button.btn-primary { background: var(--primary); color: #1A1C23; font-weight: 600; border: none; cursor: pointer; }
     button.btn-primary:hover { background: var(--primary-hover); }
-    button.btn-success { background: var(--success); color: #fff; font-weight: 600; border: none; cursor: pointer; }
-    button.btn-success:hover { background: #7C8F77; }
+    button.btn-success { background: var(--success); color: #1A1C23; font-weight: 600; border: none; cursor: pointer; }
+    button.btn-success:hover { background: #A3B49E; }
     button.btn-subtle { background: transparent; color: var(--text-muted); border: 1px solid var(--border); cursor: pointer; padding: 4px 8px; font-size: 0.75rem; width: auto; }
     button.btn-subtle:hover { background: var(--card-inner); color: var(--text); }
 
@@ -68,20 +71,20 @@
     .table-container { max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
     th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: #EBE6DF; position: sticky; top: 0; color: var(--text); z-index: 10; font-weight: 600; }
+    th { background: #1E2128; position: sticky; top: 0; color: var(--text-muted); z-index: 10; font-weight: 600; }
     tr:last-child td { border-bottom: none; }
 
     .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-    .badge-coach { background: #B39D82; color: #FFF; }
-    .badge-skill { background: #889CAE; color: #FFF; }
-    .badge-pending { background: #D5B4B4; color: #FFF; }
-    .badge-opened { background: #8F9F8A; color: #FFF; }
-    .badge-tier-3 { background: #B88484; color: #FFF; border: 1px solid #A87676; }
-    .badge-target { background: var(--gold-bg); color: #A68A61; border: 1px solid var(--gold); }
-    .badge-grade-good { background: #8F9F8A; color: #FFF; }
-    .badge-grade-normal { background: #C4C4C4; color: #FFF; border: 1px solid #B0B0B0; }
-    .badge-grade-bad { background: #9E978F; color: #FFF; }
-    .badge-league { background: #9CB0A5; color: #FFF; border: 1px solid #84968C; }
+    .badge-coach { background: rgba(196, 176, 151, 0.2); color: #C4B097; border: 1px solid rgba(196, 176, 151, 0.4); }
+    .badge-skill { background: rgba(133, 152, 167, 0.2); color: #8598A7; border: 1px solid rgba(133, 152, 167, 0.4); }
+    .badge-pending { background: rgba(190, 140, 140, 0.2); color: #BE8C8C; border: 1px solid rgba(190, 140, 140, 0.4); }
+    .badge-opened { background: rgba(146, 163, 141, 0.2); color: #92A38D; border: 1px solid rgba(146, 163, 141, 0.4); }
+    .badge-tier-3 { background: rgba(190, 140, 140, 0.3); color: #E8E4DF; border: 1px solid #BE8C8C; }
+    .badge-target { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold); }
+    .badge-grade-good { background: rgba(146, 163, 141, 0.3); color: #E8E4DF; border: 1px solid #92A38D; }
+    .badge-grade-normal { background: rgba(158, 155, 150, 0.2); color: #9E9B96; border: 1px solid #9E9B96; }
+    .badge-grade-bad { background: rgba(58, 63, 74, 0.5); color: #777B84; }
+    .badge-league { background: rgba(146, 163, 141, 0.1); color: #92A38D; border: 1px dotted #92A38D; }
 
     .del-btn { color: var(--danger); cursor: pointer; border: none; background: none; font-size: 0.75rem; width: auto; padding: 4px; }
     .action-btn { color: var(--primary); cursor: pointer; border: none; background: none; font-size: 0.75rem; width: auto; font-weight: 600; padding: 4px; }
@@ -92,9 +95,9 @@
     .target-picker-group { margin-bottom: 10px; }
     .target-picker-title { font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 5px; }
     .target-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-    .target-chip { background: #FFFFFF; border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 14px; font-size: 0.75rem; cursor: pointer; user-select: none; transition: 0.15s; }
+    .target-chip { background: var(--card-inner); border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 14px; font-size: 0.75rem; cursor: pointer; user-select: none; transition: 0.15s; }
     .target-chip:hover { border-color: var(--primary); color: var(--primary); }
-    .target-chip.active { background: var(--gold-bg); border-color: var(--gold); color: #A68A61; font-weight: 600; }
+    .target-chip.active { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); font-weight: 600; }
     .active-target-tag { cursor: pointer; display: inline-flex; align-items: center; gap: 3px; border-radius: 12px; }
     .active-target-tag:hover { text-decoration: line-through; opacity: 0.8; }
   </style>
@@ -102,13 +105,13 @@
 <body>
 
   <!-- 自動備份提醒橫幅 -->
-  <div id="backup-reminder" style="display: none; background: #D5B4B4; color: #FFF; padding: 10px; border-radius: var(--radius); margin-bottom: 14px; font-weight: 600; text-align: center; border: 1px solid #B88484; text-shadow: 0 1px 1px rgba(0,0,0,0.1);">
+  <div id="backup-reminder" style="display: none; background: rgba(190, 140, 140, 0.2); color: var(--danger); padding: 10px; border-radius: var(--radius); margin-bottom: 14px; font-weight: 600; text-align: center; border: 1px solid var(--danger);">
     ⚠️ 距離您上次備份資料已超過 7 天，建議您匯出或同步雲端，以免清除瀏覽器快取時遺失心血！
-    <button class="btn-subtle" style="margin-left: 10px; border-color: #FFF; color: #FFF;" onclick="dismissBackupReminder()">我已知道</button>
+    <button class="btn-subtle" style="margin-left: 10px; border-color: var(--danger); color: var(--danger);" onclick="dismissBackupReminder()">我已知道</button>
   </div>
 
   <h1>
-    <span>⚾ 教練券與白技追蹤 (Morandi Edition)</span>
+    <span>⚾ 教練券與白技追蹤 (Dark Morandi)</span>
     <button class="btn-subtle" onclick="toggleCloudModal()">☁️ 雲端同步設定</button>
   </h1>
 
@@ -337,7 +340,7 @@
   </div>
 
   <!-- 聯賽結算彈窗 -->
-  <div id="league-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
+  <div id="league-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
     <div class="card" style="width: 100%; max-width: 350px;">
       <div class="card-title">
         <span>🏁 登記聯賽結算</span>
@@ -359,7 +362,7 @@
   </div>
 
   <!-- 批量開券彈窗 -->
-  <div id="batch-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
+  <div id="batch-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
     <div class="card" style="width: 100%; max-width: 650px; max-height: 85vh; display: flex; flex-direction: column;">
       <div class="card-title">
         <span>⚡ 批量開箱模式</span>
@@ -380,13 +383,13 @@
       <div id="batch-rows-container" style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 10px;"></div>
       <div style="display: flex; gap: 8px; justify-content: flex-end;">
         <button class="btn-subtle" onclick="closeBatchModal()">取消</button>
-        <button class="btn-success" style="width: auto; padding: 8px 16px;" onclick="submitBatchOpen()">確認批量開出</button>
+        <button class="btn-success" style="width: auto; padding: 8px 16px; color:#1A1C23;" onclick="submitBatchOpen()">確認批量開出</button>
       </div>
     </div>
   </div>
 
   <!-- 單筆紀錄編輯彈窗 -->
-  <div id="edit-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
+  <div id="edit-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
     <div class="card" style="width: 100%; max-width: 450px;">
       <div class="card-title">
         <span>✏️ 編輯單筆紀錄</span>
@@ -408,7 +411,7 @@
   </div>
 
   <!-- 雲端設定彈窗 -->
-  <div id="cloud-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
+  <div id="cloud-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(2px);">
     <div class="card" style="width: 100%; max-width: 480px;">
       <div class="card-title">
         <span>☁️ Google 試算表 Web App 串接</span>
@@ -438,7 +441,7 @@
       '白金教練券': ['刷聯賽拿到', '其他方式']
     };
 
-    const STORAGE_KEY = 'coach_tickets_tracker_dark_v1'; // 保持原Key確保無痛升級
+    const STORAGE_KEY = 'coach_tickets_tracker_dark_v1';
     const TARGET_KEY = 'coach_tickets_targets_v2';
     const GAS_KEY = 'coach_tickets_gas_url';
     const BACKUP_KEY = 'coach_tickets_last_backup';
@@ -899,11 +902,11 @@
 
       if (monthlyChart) monthlyChart.destroy();
       monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
-        type: 'bar', data: { labels: months.length ? months : ['無資料'], datasets: [{ label: '白金技能教練券', data: skillCounts, backgroundColor: '#7C90A0' }, { label: '白金教練券', data: coachCounts, backgroundColor: '#C6AC85' }] },
-        options: { responsive: true, scales: { x: { ticks: { color: '#9E978F' }, grid: { color: '#EAE6DF' } }, y: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E978F' }, grid: { color: '#EAE6DF' } } }, plugins: { legend: { labels: { color: '#5C544D' } } } }
+        type: 'bar', data: { labels: months.length ? months : ['無資料'], datasets: [{ label: '白金技能教練券', data: skillCounts, backgroundColor: '#8598A7' }, { label: '白金教練券', data: coachCounts, backgroundColor: '#C4B097' }] },
+        options: { responsive: true, scales: { x: { ticks: { color: '#9E9B96' }, grid: { color: '#3A3F4A' } }, y: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E9B96' }, grid: { color: '#3A3F4A' } } }, plugins: { legend: { labels: { color: '#E8E4DF' } } } }
       });
 
-      const colorPalette = ['#8F9F8A', '#C6AC85', '#B88484'];
+      const colorPalette = ['#92A38D', '#C4B097', '#BE8C8C'];
       const tierCounts = { 'III 階': 0, 'II 階': 0, 'I 階': 0 };
       const coachGradeCounts = { '優良': 0, '普通': 0, '劣等': 0 };
       const skillNameCounts = {}, coachNameCounts = {};
@@ -922,16 +925,16 @@
       });
 
       if (tierChart) tierChart.destroy();
-      tierChart = new Chart(document.getElementById('tierChart').getContext('2d'), { type: 'pie', data: { labels: Object.keys(tierCounts), datasets: [{ data: Object.values(tierCounts), backgroundColor: colorPalette }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#5C544D' } } } } });
+      tierChart = new Chart(document.getElementById('tierChart').getContext('2d'), { type: 'pie', data: { labels: Object.keys(tierCounts), datasets: [{ data: Object.values(tierCounts), backgroundColor: colorPalette }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#E8E4DF' } } } } });
       if (coachGradeChart) coachGradeChart.destroy();
-      coachGradeChart = new Chart(document.getElementById('coachGradeChart').getContext('2d'), { type: 'pie', data: { labels: Object.keys(coachGradeCounts), datasets: [{ data: Object.values(coachGradeCounts), backgroundColor: colorPalette }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#5C544D' } } } } });
+      coachGradeChart = new Chart(document.getElementById('coachGradeChart').getContext('2d'), { type: 'pie', data: { labels: Object.keys(coachGradeCounts), datasets: [{ data: Object.values(coachGradeCounts), backgroundColor: colorPalette }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#E8E4DF' } } } } });
 
       const sortedSkills = Object.entries(skillNameCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
       if (skillRankChart) skillRankChart.destroy();
-      skillRankChart = new Chart(document.getElementById('skillRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedSkills.length ? sortedSkills.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedSkills.length ? sortedSkills.map(s => s[1]) : [0], backgroundColor: '#7C90A0' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E978F' }, grid: { color: '#EAE6DF' } }, y: { ticks: { color: '#5C544D' }, grid: { color: '#EAE6DF' } } }, plugins: { legend: { display: false } } } });
+      skillRankChart = new Chart(document.getElementById('skillRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedSkills.length ? sortedSkills.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedSkills.length ? sortedSkills.map(s => s[1]) : [0], backgroundColor: '#8598A7' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E9B96' }, grid: { color: '#3A3F4A' } }, y: { ticks: { color: '#E8E4DF' }, grid: { color: '#3A3F4A' } } }, plugins: { legend: { display: false } } } });
       const sortedCoaches = Object.entries(coachNameCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
       if (coachRankChart) coachRankChart.destroy();
-      coachRankChart = new Chart(document.getElementById('coachRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedCoaches.length ? sortedCoaches.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedCoaches.length ? sortedCoaches.map(s => s[1]) : [0], backgroundColor: '#C6AC85' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E978F' }, grid: { color: '#EAE6DF' } }, y: { ticks: { color: '#5C544D' }, grid: { color: '#EAE6DF' } } }, plugins: { legend: { display: false } } } });
+      coachRankChart = new Chart(document.getElementById('coachRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedCoaches.length ? sortedCoaches.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedCoaches.length ? sortedCoaches.map(s => s[1]) : [0], backgroundColor: '#C4B097' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#9E9B96' }, grid: { color: '#3A3F4A' } }, y: { ticks: { color: '#E8E4DF' }, grid: { color: '#3A3F4A' } } }, plugins: { legend: { display: false } } } });
     }
 
     function toggleCloudModal() { document.getElementById('cloud-modal').style.display = document.getElementById('cloud-modal').style.display === 'none' ? 'flex' : 'none'; document.getElementById('gas-url').value = localStorage.getItem(GAS_KEY) || ''; }
@@ -942,10 +945,10 @@
       if (format === 'csv') {
         const header = ['日期', '道具種類', '獲得管道', '消耗季數', '備註', '數量', '狀態', '定位類別', '名稱', '階級/評級', '數值細項'];
         const rows = records.map(r => [ r.date, r.type, r.method, r.seasons || 0, `"${(r.memo||'').replace(/"/g, '""')}"`, r.quantity, r.status || '-', r.content ? r.content.category : '', r.content ? r.content.name : '', r.content ? (r.content.tier ? `${r.content.tier}階` : r.content.grade) : '', r.content ? `"${(r.content.detail||'').replace(/"/g, '""')}"` : '' ]);
-        downloadFile('\uFEFF' + [header.join(','), ...rows.map(e => e.join(','))].join('\n'), `tickets_tracker_morandi_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
+        downloadFile('\uFEFF' + [header.join(','), ...rows.map(e => e.join(','))].join('\n'), `tickets_tracker_dark_morandi_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
       } else {
         const backupData = { records: records, targets: targets };
-        downloadFile(JSON.stringify(backupData, null, 2), `tickets_backup_morandi_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+        downloadFile(JSON.stringify(backupData, null, 2), `tickets_backup_dark_morandi_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
       }
       updateBackupTime();
     }

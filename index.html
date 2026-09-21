@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>白教/白技教統計系統 (Dark Morandi Edition)</title>
+  <title>教練券與白技抽取管理系統 (Dark Morandi Edition)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -325,7 +325,7 @@
       <table>
         <thead>
           <tr>
-            <th>日期</th>
+            <th>日期(掉落日)</th>
             <th>類別/道具</th>
             <th>管道來源</th>
             <th>備註</th>
@@ -397,7 +397,7 @@
       </div>
       <input type="hidden" id="edit-id">
       <div class="grid grid-2" style="margin-bottom: 10px;">
-        <div class="form-group"><label>日期</label><input type="date" id="edit-date"></div>
+        <div class="form-group"><label>日期 (掉落日)</label><input type="date" id="edit-date"></div>
         <div class="form-group" id="edit-qty-group"><label>數量</label><input type="number" id="edit-qty" min="1"></div>
         <div class="form-group" id="edit-seasons-group" style="display:none;"><label>季數</label><input type="number" id="edit-seasons" min="0.1" step="0.1"></div>
       </div>
@@ -601,6 +601,9 @@
     function onBatchCatChange(selectEl, idx) { document.getElementById(`batch-name-${idx}`).innerHTML = skillList[selectEl.value].map(s => `<option value="${s}">${s}</option>`).join(''); }
     function onBatchCoachCatChange(selectEl, idx) { document.getElementById(`batch-coach-name-${idx}`).innerHTML = coachList[selectEl.value].map(s => `<option value="${s}">${s}</option>`).join(''); }
 
+    // ==========================================
+    // 修正：批量開箱時繼承最舊那張券的「掉落日期」
+    // ==========================================
     function submitBatchOpen() {
       const type = document.getElementById('batch-ticket-type').value;
       const rows = document.querySelectorAll('.batch-row');
@@ -608,6 +611,7 @@
 
       let openedCount = 0;
       rows.forEach((row, i) => {
+        // slice().reverse() 讓我們從陣列尾部（最舊的紀錄）開始尋找未開的券
         const unopenRec = records.slice().reverse().find(r => r.type === type && r.status === '未開啟');
         if (!unopenRec) return;
 
@@ -618,10 +622,30 @@
           content = { category: row.querySelector('.batch-coach-cat').value, name: row.querySelector('.batch-coach-name').value, grade: row.querySelector('.batch-grade').value, detail: row.querySelector('.batch-detail').value.trim() };
         }
 
-        if (unopenRec.quantity > 1) { unopenRec.quantity -= 1; } 
-        else { records = records.filter(r => r.id !== unopenRec.id); }
+        let inheritedSeasons = 0;
+        if (unopenRec.quantity > 1) { 
+          unopenRec.quantity -= 1; 
+          // 若只消耗部分數量，原本的季數留給母單，不重複計算
+        } else { 
+          inheritedSeasons = unopenRec.seasons || 0;
+          records = records.filter(r => r.id !== unopenRec.id); 
+        }
 
-        records.unshift({ id: Date.now() + i, date: new Date().toISOString().split('T')[0], type: type, method: unopenRec.method, seasons: 0, memo: '批量開券', quantity: 1, status: '已開啟', content: content });
+        // 繼承掉落日與備註
+        const dropDate = unopenRec.date;
+        const newMemo = unopenRec.memo ? unopenRec.memo + ' (批量開出)' : '批量開出';
+
+        records.unshift({ 
+          id: Date.now() + i, 
+          date: dropDate, 
+          type: type, 
+          method: unopenRec.method, 
+          seasons: inheritedSeasons, 
+          memo: newMemo, 
+          quantity: 1, 
+          status: '已開啟', 
+          content: content 
+        });
         openedCount++;
       });
       closeBatchModal(); saveAndRender();

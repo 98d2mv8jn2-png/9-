@@ -112,7 +112,6 @@
 
   <!-- 快捷打卡區 -->
   <div class="quick-bar">
-    <!-- 新增：聯賽完賽獨立按鈕 -->
     <button class="btn-quick btn-league" onclick="openLeagueModal()">🏁 登記聯賽完賽進度</button>
     <div style="width: 1px; height: 20px; background: var(--border); margin: 0 4px;"></div>
     <button class="btn-quick" onclick="quickCheckIn('白金技能教練券', '刷聯賽')">⚡ +1 聯賽白金技能券 (未開)</button>
@@ -120,7 +119,7 @@
     <button class="btn-quick" onclick="quickCheckIn('白金技能教練券', '聯賽60000分保底')">📦 +1 6萬保底技能券 (未開)</button>
   </div>
 
-  <!-- KPI 數據面版 (改為 grid-kpi 自動排列 5 個卡片) -->
+  <!-- KPI 數據面版 -->
   <div class="grid-kpi">
     <div class="card stat-card">
       <div class="stat-label">未開庫存 (技能 / 教練)</div>
@@ -141,7 +140,6 @@
       <div class="stat-val" id="kpi-streak" style="color: var(--accent);">0</div>
       <div class="stat-sub">自上次 III階/優良 至今</div>
     </div>
-    <!-- 升級：聯賽平均掉落 (張/季) -->
     <div class="card stat-card">
       <div class="stat-label">聯賽平均掉落 (張/季)</div>
       <div class="stat-val" id="kpi-seasons-exp" style="font-size: 1.15rem; display: flex; justify-content: center; gap: 8px;">--</div>
@@ -169,7 +167,6 @@
             </select>
           </div>
 
-          <!-- 移除原本的消耗季數，讓表單更乾淨 -->
           <div class="form-group">
             <label for="obtain-method">獲得方式</label>
             <select id="obtain-method" required></select>
@@ -466,7 +463,6 @@
 
     dateEl.value = new Date().toISOString().split('T')[0];
 
-    // 檢查備份提醒
     function checkBackup() {
       const lastBackup = localStorage.getItem(BACKUP_KEY);
       if (!lastBackup) {
@@ -512,7 +508,6 @@
     skillCategoryEl.addEventListener('change', () => populateSelect(skillList, skillCategoryEl, skillNameEl));
     coachCategoryEl.addEventListener('change', () => populateSelect(coachList, coachCategoryEl, coachNameEl));
 
-    // ===== 聯賽進度結算邏輯 =====
     function openLeagueModal() {
       document.getElementById('league-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('league-modal').style.display = 'flex';
@@ -523,27 +518,16 @@
       const d = document.getElementById('league-date').value;
       const s = parseFloat(document.getElementById('league-seasons').value) || 1;
       records.unshift({
-        id: Date.now(),
-        date: d,
-        type: '聯賽進度',
-        method: '賽季結算',
-        seasons: s,
-        memo: `登記完賽 ${s} 季`,
-        quantity: 0,
-        status: '-',
-        content: null
+        id: Date.now(), date: d, type: '聯賽進度', method: '賽季結算', seasons: s, memo: `登記完賽 ${s} 季`, quantity: 0, status: '-', content: null
       });
-      closeLeagueModal();
-      saveAndRender();
+      closeLeagueModal(); saveAndRender();
     }
 
-    // 快捷打卡
     function quickCheckIn(type, method) {
       records.unshift({ id: Date.now(), date: new Date().toISOString().split('T')[0], type: type, method: method, seasons: 0, memo: '快捷打卡', quantity: 1, status: '未開啟', content: null });
       saveAndRender();
     }
 
-    // 表單新增紀錄
     document.getElementById('record-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const type = itemTypeEl.value;
@@ -552,29 +536,20 @@
       
       if (isOpen && qty > 1) {
         for (let i = 0; i < qty; i++) { records.unshift(createRecordObj(type, 1, isOpen, 0, i)); }
-      } else {
-        records.unshift(createRecordObj(type, qty, isOpen, 0, 0));
-      }
+      } else { records.unshift(createRecordObj(type, qty, isOpen, 0, 0)); }
 
-      saveAndRender();
-      memoEl.value = '';
-      coachValEl.value = '';
-      document.getElementById('quantity').value = 1;
+      saveAndRender(); memoEl.value = ''; coachValEl.value = ''; document.getElementById('quantity').value = 1;
     });
 
     function createRecordObj(type, qty, isOpen, seasons, offset) {
       let content = null;
       if (isOpen) {
-        if (type === '白金技能教練券') {
-          content = { category: skillCategoryEl.value, name: skillNameEl.value, tier: skillTierEl.value };
-        } else {
-          content = { category: coachCategoryEl.value, name: coachNameEl.value, grade: coachGradeEl.value, detail: coachValEl.value.trim() };
-        }
+        if (type === '白金技能教練券') { content = { category: skillCategoryEl.value, name: skillNameEl.value, tier: skillTierEl.value }; } 
+        else { content = { category: coachCategoryEl.value, name: coachNameEl.value, grade: coachGradeEl.value, detail: coachValEl.value.trim() }; }
       }
       return { id: Date.now() + offset, date: dateEl.value, type: type, method: methodEl.value, seasons: seasons, memo: memoEl.value.trim(), quantity: qty, status: isOpen ? '已開啟' : '未開啟', content: content };
     }
 
-    // 批量開券
     function openBatchModal() { document.getElementById('batch-modal').style.display = 'flex'; buildBatchRows(); }
     function closeBatchModal() { document.getElementById('batch-modal').style.display = 'none'; }
     function buildBatchRows() {
@@ -648,7 +623,6 @@
       alert(`已成功批量開出 ${openedCount} 張 ${type}！`);
     }
 
-    // 單筆編輯邏輯
     function openEditModal(id) {
       const r = records.find(x => x.id === id);
       if(!r) return;
@@ -722,11 +696,9 @@
           }
         }
       }
-      document.getElementById('edit-modal').style.display = 'none';
-      saveAndRender();
+      document.getElementById('edit-modal').style.display = 'none'; saveAndRender();
     }
 
-    // 心願目標
     function toggleTargetConfig() {
       const el = document.getElementById('target-config-box');
       const isClosed = el.style.display === 'none';
@@ -749,8 +721,7 @@
       const idx = targets.indexOf(name);
       if (idx > -1) { targets.splice(idx, 1); chipEl.classList.remove('active'); } 
       else { targets.push(name); chipEl.classList.add('active'); }
-      localStorage.setItem(TARGET_KEY, JSON.stringify(targets));
-      renderTargets(); renderTable();
+      localStorage.setItem(TARGET_KEY, JSON.stringify(targets)); renderTargets(); renderTable();
     }
     function removeTarget(name) {
       const idx = targets.indexOf(name);
@@ -812,24 +783,14 @@
       });
 
       document.getElementById('record-count').innerText = filteredRecords.length;
-      if (filteredRecords.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 16px;">沒有符合條件的紀錄</td></tr>`; return;
-      }
+      if (filteredRecords.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 16px;">沒有符合條件的紀錄</td></tr>`; return; }
 
       tbody.innerHTML = filteredRecords.map(r => {
         let statusHtml = '-';
         let actionBtn = `<button class="action-btn" onclick="openEditModal(${r.id})">編輯</button><button class="del-btn" onclick="deleteRecord(${r.id})">刪除</button>`;
 
         if (r.type === '聯賽進度') {
-          return `<tr>
-            <td>${r.date}</td>
-            <td><span class="badge badge-league">🏁 聯賽進度結算</span></td>
-            <td>${r.method}</td>
-            <td>${r.memo || '-'}</td>
-            <td style="font-weight: 600; color: #34d399;">+${r.seasons} 季</td>
-            <td style="color:var(--text-muted);">自動累計</td>
-            <td>${actionBtn}</td>
-          </tr>`;
+          return `<tr><td>${r.date}</td><td><span class="badge badge-league">🏁 聯賽進度結算</span></td><td>${r.method}</td><td>${r.memo || '-'}</td><td style="font-weight: 600; color: #34d399;">+${r.seasons} 季</td><td style="color:var(--text-muted);">自動累計</td><td>${actionBtn}</td></tr>`;
         }
 
         if (r.status === '未開啟') {
@@ -847,15 +808,7 @@
           }
         }
         
-        return `<tr>
-          <td>${r.date}</td>
-          <td><span class="badge ${r.type === '白金教練券' ? 'badge-coach' : 'badge-skill'}">${r.type}</span></td>
-          <td>${r.method}</td>
-          <td>${r.memo || '-'}</td>
-          <td style="font-weight: 600;">+${r.quantity}</td>
-          <td>${statusHtml}</td>
-          <td>${actionBtn}</td>
-        </tr>`;
+        return `<tr><td>${r.date}</td><td><span class="badge ${r.type === '白金教練券' ? 'badge-coach' : 'badge-skill'}">${r.type}</span></td><td>${r.method}</td><td>${r.memo || '-'}</td><td style="font-weight: 600;">+${r.quantity}</td><td>${statusHtml}</td><td>${actionBtn}</td></tr>`;
       }).join('');
     }
 
@@ -866,12 +819,10 @@
       let pityDates = [], streak = 0, foundJackpot = false;
 
       records.forEach(r => {
-        // 庫存計算
         if (r.status === '未開啟') {
           if (r.type === '白金技能教練券') unopenSkill += r.quantity;
           else if (r.type === '白金教練券') unopenCoach += r.quantity;
         } 
-        // 技能券出貨率與墊刀
         else if (r.status === '已開啟' && r.content) {
           if (r.type === '白金技能教練券') {
             totalOpenedSkill += r.quantity;
@@ -883,13 +834,12 @@
           }
         }
 
-        // 聯賽季數與掉寶率計算
         if (r.type === '聯賽進度') {
           totalSeasons += (r.seasons || 0);
         } else if (r.method.includes('刷聯賽')) {
           if (r.type === '白金技能教練券') leagueSkillTickets += r.quantity;
           if (r.type === '白金教練券') leagueCoachTickets += r.quantity;
-          if (r.seasons) totalSeasons += r.seasons; // 相容過去填的舊季數
+          if (r.seasons) totalSeasons += r.seasons;
         }
 
         if (r.method.includes('60000分保底')) { pityDates.push(new Date(r.date)); }
@@ -908,7 +858,6 @@
         document.getElementById('kpi-tier3-count').innerText = `尚無開券紀錄`;
       }
 
-      // 更新：平均每季掉落率
       if (totalSeasons > 0) {
         const skillRate = (leagueSkillTickets / totalSeasons).toFixed(2);
         const coachRate = (leagueCoachTickets / totalSeasons).toFixed(2);
@@ -978,7 +927,6 @@
       const sortedSkills = Object.entries(skillNameCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
       if (skillRankChart) skillRankChart.destroy();
       skillRankChart = new Chart(document.getElementById('skillRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedSkills.length ? sortedSkills.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedSkills.length ? sortedSkills.map(s => s[1]) : [0], backgroundColor: '#38bdf8' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#f8fafc' }, grid: { color: '#334155' } } }, plugins: { legend: { display: false } } } });
-
       const sortedCoaches = Object.entries(coachNameCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
       if (coachRankChart) coachRankChart.destroy();
       coachRankChart = new Chart(document.getElementById('coachRankChart').getContext('2d'), { type: 'bar', data: { labels: sortedCoaches.length ? sortedCoaches.map(s => s[0]) : ['尚無資料'], datasets: [{ label: '開出次數', data: sortedCoaches.length ? sortedCoaches.map(s => s[1]) : [0], backgroundColor: '#f59e0b' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#f8fafc' }, grid: { color: '#334155' } } }, plugins: { legend: { display: false } } } });
@@ -986,6 +934,59 @@
 
     function toggleCloudModal() { document.getElementById('cloud-modal').style.display = document.getElementById('cloud-modal').style.display === 'none' ? 'flex' : 'none'; document.getElementById('gas-url').value = localStorage.getItem(GAS_KEY) || ''; }
     function saveCloudUrl() { localStorage.setItem(GAS_KEY, document.getElementById('gas-url').value.trim()); alert('GAS URL 已儲存！'); }
+    
+    // ==================================
+    // 修正：將 targets 也一起打包進匯出檔案
+    // ==================================
+    function exportData(format) {
+      if (records.length === 0) return alert('無任何記錄可匯出');
+      if (format === 'csv') {
+        const header = ['日期', '道具種類', '獲得管道', '消耗季數', '備註', '數量', '狀態', '定位類別', '名稱', '階級/評級', '數值細項'];
+        const rows = records.map(r => [ r.date, r.type, r.method, r.seasons || 0, `"${(r.memo||'').replace(/"/g, '""')}"`, r.quantity, r.status || '-', r.content ? r.content.category : '', r.content ? r.content.name : '', r.content ? (r.content.tier ? `${r.content.tier}階` : r.content.grade) : '', r.content ? `"${(r.content.detail||'').replace(/"/g, '""')}"` : '' ]);
+        downloadFile('\uFEFF' + [header.join(','), ...rows.map(e => e.join(','))].join('\n'), `tickets_tracker_dark_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
+      } else {
+        // 新增：打包成包含 records 與 targets 的物件
+        const backupData = { records: records, targets: targets };
+        downloadFile(JSON.stringify(backupData, null, 2), `tickets_backup_dark_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+      }
+      updateBackupTime();
+    }
+    
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], { type: type });
+      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; link.click();
+    }
+    
+    function importData(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const imported = JSON.parse(evt.target.result);
+          
+          if (Array.isArray(imported)) {
+            // 向下相容：舊版備份格式 (只有陣列)
+            records = imported;
+            saveAndRender(); 
+            alert('匯入成功！(舊版備份格式)');
+          } else if (imported && Array.isArray(imported.records)) {
+            // 新版備份格式：包含 records 與 targets
+            records = imported.records;
+            if (Array.isArray(imported.targets)) {
+              targets = imported.targets;
+              localStorage.setItem(TARGET_KEY, JSON.stringify(targets));
+            }
+            saveAndRender(); 
+            alert('匯入成功！(已包含心願清單)');
+          } else {
+            alert('檔案格式不相符');
+          }
+        } catch (err) { alert('讀取失敗，請確認檔案格式'); }
+      };
+      reader.readAsText(file);
+    }
+    // ==================================
+
     async function syncToCloud() {
       const url = document.getElementById('gas-url').value.trim();
       if (!url) return alert('請先填入 Google Apps Script Web App URL！');
@@ -994,32 +995,6 @@
         await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: records, targets: targets }) });
         updateBackupTime(); alert('同步指令已發送至 Google 試算表！');
       } catch (err) { alert('同步失敗，請確認網址是否具備匿名存取權限。'); }
-    }
-    function exportData(format) {
-      if (records.length === 0) return alert('無任何記錄可匯出');
-      if (format === 'csv') {
-        const header = ['日期', '道具種類', '獲得管道', '消耗季數', '備註', '數量', '狀態', '定位類別', '名稱', '階級/評級', '數值細項'];
-        const rows = records.map(r => [ r.date, r.type, r.method, r.seasons || 0, `"${(r.memo||'').replace(/"/g, '""')}"`, r.quantity, r.status || '-', r.content ? r.content.category : '', r.content ? r.content.name : '', r.content ? (r.content.tier ? `${r.content.tier}階` : r.content.grade) : '', r.content ? `"${(r.content.detail||'').replace(/"/g, '""')}"` : '' ]);
-        downloadFile('\uFEFF' + [header.join(','), ...rows.map(e => e.join(','))].join('\n'), `tickets_tracker_dark_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8;');
-      } else {
-        downloadFile(JSON.stringify(records, null, 2), `tickets_backup_dark_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
-      }
-      updateBackupTime();
-    }
-    function downloadFile(content, filename, type) {
-      const blob = new Blob([content], { type: type });
-      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; link.click();
-    }
-    function importData(e) {
-      const file = e.target.files[0]; if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const imported = JSON.parse(evt.target.result);
-          if (Array.isArray(imported)) { records = imported; saveAndRender(); alert('匯入成功！'); } else { alert('檔案格式不相符'); }
-        } catch (err) { alert('讀取失敗，請確認檔案格式'); }
-      };
-      reader.readAsText(file);
     }
 
     updateFormLogic();

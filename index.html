@@ -33,18 +33,13 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ======================================= */
-    /* 修正區：RWD 排版邏輯 (解決圓餅圖超出版面) */
+    /* RWD 排版邏輯 (解決圓餅圖超出版面) */
     /* ======================================= */
     .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
     .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 14px; }
     
-    /* 當螢幕寬度大於 500px (橫向或平板) 時，才變成雙欄 */
-    @media (min-width: 500px) {
-      .grid-2 { grid-template-columns: 1fr 1fr; }
-    }
-    @media (min-width: 768px) { 
-      .grid-3 { grid-template-columns: repeat(3, 1fr); } 
-    }
+    @media (min-width: 500px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
 
     /* 加入 min-width: 0; 防止 Chart.js 畫布把 Grid 容器撐破 */
     .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 0; }
@@ -132,7 +127,6 @@
 
   <!-- ==================== Tab 1: 總覽 Dashboard ==================== -->
   <div id="tab-dashboard" class="tab-content active">
-    <!-- 快捷打卡區 -->
     <div class="quick-bar">
       <button class="btn-quick btn-league" onclick="openLeagueModal()">🏁 登記聯賽結算</button>
       <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL, '刷聯賽')">⚡ +1 聯賽技能券</button>
@@ -179,7 +173,7 @@
         </div>
       </div>
 
-      <!-- 圖表區 (修正排版) -->
+      <!-- 圖表區 -->
       <div class="grid" style="margin-top: 14px;">
         <div class="card">
           <div class="card-title" style="font-size:0.85rem;">每月份獲取總數趨勢</div>
@@ -255,7 +249,6 @@
   <button class="fab" onclick="openAddModal()">+</button>
 
   <!-- ==================== 彈出視窗 Modals ==================== -->
-  
   <div id="add-modal" class="modal-backdrop">
     <div class="modal-content">
       <div class="card-title"><span>📝 新增獲取紀錄</span><button class="btn-subtle" style="border:none;" onclick="closeModal('add-modal')">✕</button></div>
@@ -466,7 +459,12 @@
       });
       const ms = Object.keys(mD).sort();
       updChart('monthlyChart','bar',ms.length?ms:['無'], [{label:'技',data:ms.map(m=>mD[m].s),backgroundColor:'#8598A7'},{label:'教',data:ms.map(m=>mD[m].c),backgroundColor:'#C4B097'}], {scales:{x:{display:false},y:{display:false}}, plugins:{legend:{display:false}}});
-      const pieOpt = { plugins:{ datalabels:{color:'#1A1C23',font:{weight:'bold'},formatter:(v,c)=>{let s=c.chart.data.datasets[0].data.reduce((a,b)=>a+b,0); return (s===0||v===0)?null:(v*100/s).toFixed(0)+"%";}}, legend:{position:'right',labels:{color:'#E8E4DF', boxWidth:10}} }};
+      
+      // ==========================================
+      // 修正區：強制顯示圓餅圖上的百分比 (display: true)
+      // ==========================================
+      const pieOpt = { plugins:{ datalabels:{ display: true, color:'#1A1C23',font:{weight:'bold'},formatter:(v,c)=>{let s=c.chart.data.datasets[0].data.reduce((a,b)=>a+b,0); return (s===0||v===0)?null:(v*100/s).toFixed(0)+"%";}}, legend:{position:'right',labels:{color:'#E8E4DF', boxWidth:10}} }};
+      
       updChart('tierChart','pie',Object.keys(tC),[{data:Object.values(tC),backgroundColor:['#BE8C8C','#92A38D','#9E9B96']}], pieOpt);
       updChart('coachGradeChart','pie',Object.keys(gC),[{data:Object.values(gC),backgroundColor:['#BE8C8C','#92A38D','#9E9B96']}], pieOpt);
     }

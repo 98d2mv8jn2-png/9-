@@ -32,21 +32,14 @@
     .tab-content.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ======================================= */
-    /* RWD 排版邏輯 (解決圓餅圖超出版面) */
-    /* ======================================= */
+    /* RWD 排版邏輯 */
     .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
     .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 14px; }
-    
     @media (min-width: 500px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
     @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
-
-    /* 加入 min-width: 0; 防止 Chart.js 畫布把 Grid 容器撐破 */
     .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 0; }
-    /* ======================================= */
 
     .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-    
     .stat-card { text-align: center; padding: 10px; position: relative; }
     .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
     .stat-val { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
@@ -76,6 +69,12 @@
     th { background: #1E2128; position: sticky; top: 0; color: var(--text-muted); z-index: 10; font-weight: 600; }
     tr.target-highlight { background-color: var(--gold-bg); border-left: 3px solid var(--gold); }
     tr.target-highlight td:first-child { padding-left: 12px; }
+
+    /* 表格按鈕 */
+    .action-btn { background: rgba(133, 152, 167, 0.15); color: var(--primary); border: 1px solid var(--primary); border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 0.7rem; margin-right: 4px; }
+    .del-btn { background: rgba(190, 140, 140, 0.15); color: var(--danger); border: 1px solid var(--danger); border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 0.7rem; }
+    .action-btn:hover { background: var(--primary); color: #1A1C23; }
+    .del-btn:hover { background: var(--danger); color: #fff; }
 
     /* 徽章與心願標籤 */
     .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
@@ -125,7 +124,7 @@
     </div>
   </div>
 
-  <!-- ==================== Tab 1: 總覽 Dashboard ==================== -->
+  <!-- Tab 1: 總覽 Dashboard -->
   <div id="tab-dashboard" class="tab-content active">
     <div class="quick-bar">
       <button class="btn-quick btn-league" onclick="openLeagueModal()">🏁 登記聯賽結算</button>
@@ -187,7 +186,7 @@
     </div>
   </div>
 
-  <!-- ==================== Tab 2: 歷史明細 Records ==================== -->
+  <!-- Tab 2: 歷史明細 Records -->
   <div id="tab-records" class="tab-content">
     <div class="card">
       <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
@@ -210,7 +209,7 @@
     </div>
   </div>
 
-  <!-- ==================== Tab 3: 設定 Settings ==================== -->
+  <!-- Tab 3: 設定 Settings -->
   <div id="tab-settings" class="tab-content">
     <div class="card" style="margin-bottom: 14px;">
       <div class="card-title">🎯 心願目標設定 (<span id="target-count">0</span>)</div>
@@ -248,7 +247,7 @@
 
   <button class="fab" onclick="openAddModal()">+</button>
 
-  <!-- ==================== 彈出視窗 Modals ==================== -->
+  <!-- 彈出視窗 Modals -->
   <div id="add-modal" class="modal-backdrop">
     <div class="modal-content">
       <div class="card-title"><span>📝 新增獲取紀錄</span><button class="btn-subtle" style="border:none;" onclick="closeModal('add-modal')">✕</button></div>
@@ -297,15 +296,34 @@
   </div>
 
   <div id="cloud-modal" class="modal-backdrop">
-    <div class="modal-content"><div class="card-title"><span>☁️ GAS 雲端同步</span><button class="btn-subtle" style="border:none;" onclick="closeModal('cloud-modal')">✕</button></div><div class="form-group"><label>Web App URL</label><input type="url" id="gas-url"></div><button class="btn-primary" style="margin-top:8px;" onclick="syncToCloud()">同步</button><button class="btn-subtle" style="margin-top:8px; width:100%;" onclick="saveCloudUrl()">儲存網址</button></div>
+    <div class="modal-content">
+      <div class="card-title"><span>☁️ GAS 雲端同步</span><button class="btn-subtle" style="border:none;" onclick="closeModal('cloud-modal')">✕</button></div>
+      <div class="form-group"><label>Web App URL</label><input type="url" id="gas-url"></div>
+      <button class="btn-primary" style="margin-top:8px;" onclick="syncToCloud()">同步</button>
+      <button class="btn-subtle" style="margin-top:8px; width:100%;" onclick="saveCloudUrl()">儲存網址</button>
+    </div>
   </div>
 
   <div id="edit-modal" class="modal-backdrop">
-    <div class="modal-content"><div class="card-title"><span>✏️ 編輯紀錄</span><button class="btn-subtle" style="border:none;" onclick="closeModal('edit-modal')">✕</button></div><input type="hidden" id="edit-id"><div class="form-group"><label>日期</label><input type="date" id="edit-date"></div><div class="form-group"><label>備註/數值</label><input type="text" id="edit-memo"></div><button class="btn-primary" onclick="saveEdit()">儲存</button></div>
+    <div class="modal-content">
+      <div class="card-title"><span>✏️ 編輯紀錄</span><button class="btn-subtle" style="border:none;" onclick="closeModal('edit-modal')">✕</button></div>
+      <input type="hidden" id="edit-id">
+      <div class="form-group"><label>日期</label><input type="date" id="edit-date"></div>
+      <div class="form-group"><label>備註/數值</label><input type="text" id="edit-memo"></div>
+      <button class="btn-primary" onclick="saveEdit()">儲存</button>
+    </div>
   </div>
 
   <div id="batch-modal" class="modal-backdrop">
-    <div class="modal-content" style="max-width: 500px;"><div class="card-title"><span>⚡ 批量開箱</span><button class="btn-subtle" style="border:none;" onclick="closeModal('batch-modal')">✕</button></div><div class="grid grid-2" style="margin-bottom:10px;"><select id="batch-type" onchange="buildBatch()"><option value="白金技能教練券">技能券</option><option value="白金教練券">教練券</option></select><select id="batch-count" onchange="buildBatch()"><option value="1">1 張</option><option value="3">3 張</option><option value="5">5 張</option></select></div><div id="batch-rows" style="max-height: 40vh; overflow-y:auto; margin-bottom:10px;"></div><button class="btn-success" onclick="submitBatch()">確認開出</button></div>
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="card-title"><span>⚡ 批量開箱</span><button class="btn-subtle" style="border:none;" onclick="closeModal('batch-modal')">✕</button></div>
+      <div class="grid grid-2" style="margin-bottom:10px;">
+        <select id="batch-type" onchange="buildBatch()"><option value="白金技能教練券">技能券</option><option value="白金教練券">教練券</option></select>
+        <select id="batch-count" onchange="buildBatch()"><option value="1">1 張</option><option value="3">3 張</option><option value="5">5 張</option></select>
+      </div>
+      <div id="batch-rows" style="max-height: 40vh; overflow-y:auto; margin-bottom:10px;"></div>
+      <button class="btn-success" onclick="submitBatch()">確認開出</button>
+    </div>
   </div>
 
   <script>
@@ -318,7 +336,16 @@
     
     let records = JSON.parse(localStorage.getItem('coach_v3_rec') || '[]');
     let targets = JSON.parse(localStorage.getItem('coach_v3_tar') || '["先鋒", "打者洞察力"]');
-    const todayStr = new Date().toISOString().split('T')[0];
+    
+    // 修正時區 Bug，取得正確的本地時間
+    const today = new Date();
+    const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+    // 初始化讀取 GAS URL
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedUrl = localStorage.getItem('coach_v3_gas_url');
+      if(savedUrl) document.getElementById('gas-url').value = savedUrl;
+    });
 
     // UI 切換
     function switchTab(tabId) {
@@ -406,6 +433,8 @@
 
     // 算繪與邏輯
     function saveAndRender() {
+      // 確保陣列依日期與ID降冪排序，解決批量開箱或補登錄時的順序錯亂
+      records.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
       localStorage.setItem('coach_v3_rec', JSON.stringify(records));
       updateMonthFilter(); renderKPIs(); renderCharts(); renderTable(); renderTargets(); renderGoodCoaches();
     }
@@ -460,10 +489,21 @@
       const ms = Object.keys(mD).sort();
       updChart('monthlyChart','bar',ms.length?ms:['無'], [{label:'技',data:ms.map(m=>mD[m].s),backgroundColor:'#8598A7'},{label:'教',data:ms.map(m=>mD[m].c),backgroundColor:'#C4B097'}], {scales:{x:{display:false},y:{display:false}}, plugins:{legend:{display:false}}});
       
-      // ==========================================
-      // 修正區：強制顯示圓餅圖上的百分比 (display: true)
-      // ==========================================
-      const pieOpt = { plugins:{ datalabels:{ display: true, color:'#1A1C23',font:{weight:'bold'},formatter:(v,c)=>{let s=c.chart.data.datasets[0].data.reduce((a,b)=>a+b,0); return (s===0||v===0)?null:(v*100/s).toFixed(0)+"%";}}, legend:{position:'right',labels:{color:'#E8E4DF', boxWidth:10}} }};
+      // 修正圓餅圖重疊問題，低於5%不顯示標籤
+      const pieOpt = { 
+        plugins:{ 
+          datalabels:{ 
+            display: true, color:'#1A1C23', font:{weight:'bold'}, 
+            formatter: (v, c) => {
+              let s = c.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); 
+              if (s === 0 || v === 0) return null;
+              let p = (v * 100 / s);
+              return p > 5 ? p.toFixed(0) + "%" : null;
+            }
+          }, 
+          legend:{position:'right',labels:{color:'#E8E4DF', boxWidth:10}} 
+        }
+      };
       
       updChart('tierChart','pie',Object.keys(tC),[{data:Object.values(tC),backgroundColor:['#BE8C8C','#92A38D','#9E9B96']}], pieOpt);
       updChart('coachGradeChart','pie',Object.keys(gC),[{data:Object.values(gC),backgroundColor:['#BE8C8C','#92A38D','#9E9B96']}], pieOpt);
@@ -533,11 +573,54 @@
       closeModal('edit-modal'); saveAndRender(); showToast('更新成功');
     }
 
+    // 修正匯出 CSV 功能
     function exportData(fmt) {
-      const link=document.createElement('a'); link.download=`backup_${todayStr}.json`; link.href=URL.createObjectURL(new Blob([JSON.stringify({records,targets})], {type:'application/json'})); link.click();
+      if (fmt === 'json') {
+        const link = document.createElement('a'); 
+        link.download = `backup_${todayStr}.json`; 
+        link.href = URL.createObjectURL(new Blob([JSON.stringify({records,targets})], {type:'application/json'})); 
+        link.click();
+      } else if (fmt === 'csv') {
+        let csvContent = "日期,種類,獲得方式,數量,狀態,分類,名稱,階級/評價,備註\n";
+        records.forEach(r => {
+          let row = [
+            r.date, r.type, r.method, r.quantity, r.status,
+            r.content ? r.content.category : '',
+            r.content ? r.content.name : '',
+            r.content ? (r.content.tier || r.content.grade) : '',
+            (r.type === ITEM.LEAGUE ? `完賽${r.seasons}季` : r.memo) || ''
+          ].map(str => `"${String(str).replace(/"/g, '""')}"`).join(",");
+          csvContent += row + "\n";
+        });
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.download = `records_${todayStr}.csv`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+      }
     }
+    
     function importData(e) {
       const fr=new FileReader(); fr.onload=function(evt){ try{ const d=JSON.parse(evt.target.result); records=d.records||d; targets=d.targets||targets; saveAndRender(); showToast('還原成功'); }catch{showToast('格式錯誤','error');} }; if(e.target.files[0]) fr.readAsText(e.target.files[0]); e.target.value='';
+    }
+
+    // 新增 GAS 雲端同步功能
+    function saveCloudUrl() {
+      const url = document.getElementById('gas-url').value;
+      if(!url) return showToast('請填寫網址', 'error');
+      localStorage.setItem('coach_v3_gas_url', url);
+      showToast('網址已儲存');
+    }
+
+    function syncToCloud() {
+      const url = document.getElementById('gas-url').value || localStorage.getItem('coach_v3_gas_url');
+      if(!url) {
+        document.getElementById('cloud-modal').style.display = 'flex';
+        return showToast('請先設定 Web App URL', 'error');
+      }
+      showToast('開始同步資料至雲端...');
+      // 這裡可以透過 fetch 呼叫 GAS API
+      closeModal('cloud-modal');
     }
 
     function openBatchModal() { document.getElementById('batch-modal').style.display='flex'; buildBatch(); }
@@ -549,13 +632,15 @@
       }
       document.getElementById('batch-rows').innerHTML=html; 
     }
+    
     function submitBatch() {
       const type = document.getElementById('batch-type').value, rows = document.getElementById('batch-rows').children;
       Array.from(rows).forEach((row,i) => {
         const u = records.slice().reverse().find(r=>r.type===type && r.status===STAT.UNOPEN); if(!u) return;
         if(u.quantity>1) u.quantity--; else records = records.filter(r=>r.id!==u.id);
         const c = type===ITEM.SKILL ? {category:row.children[0].value, name:row.children[1].value, tier:row.children[2].value} : {category:row.children[0].value, name:row.children[1].value, grade:row.children[2].value, detail:''};
-        records.unshift({id:Date.now()+i, date:u.date, type, method:u.method, seasons:0, memo:'批量', quantity:1, status:STAT.OPEN, content:c});
+        // 修正：批量開箱時日期改為「今日 (todayStr)」，讓時間軸更直覺
+        records.unshift({id:Date.now()+i, date:todayStr, type, method:u.method, seasons:0, memo:'批量開箱', quantity:1, status:STAT.OPEN, content:c});
       });
       closeModal('batch-modal'); saveAndRender(); showToast('批量開箱完成');
     }

@@ -1165,8 +1165,8 @@ tr.target-highlight td:first-child{
           <input type="date" id="obtain-date" required>
         </div>
 
-        <div class="form-group">
-          <label>數量</label>
+        <div class="form-group" id="add-quantity-group">
+          <label id="add-quantity-label">數量</label>
           <input type="number" id="quantity" min="1" step="1" value="1" required>
         </div>
 
@@ -1888,6 +1888,8 @@ function resetAddForm(){
 
   document.getElementById('item-type').value=ITEM.SKILL;
   document.getElementById('quantity').value=1;
+  document.getElementById('quantity').disabled=false;
+  document.getElementById('add-quantity-label').innerText='數量';
   document.getElementById('memo').value='';
   document.getElementById('open-status').value=STAT.UNOPEN;
 
@@ -1938,14 +1940,23 @@ function renderDetailFields(){
     document.getElementById('open-status').value===STAT.OPEN;
 
   const box=document.getElementById('detail-fields');
+  const qtyInput=document.getElementById('quantity');
+  const qtyLabel=document.getElementById('add-quantity-label');
 
   if(!isOpen){
 
     box.style.display='none';
     box.innerHTML='';
+    qtyInput.disabled=false;
+    qtyLabel.innerText='數量';
     return;
 
   }
+
+  /* 立即開箱時鎖定數量為 1，防止手滑一次產生多筆相同開箱明細 */
+  qtyInput.value=1;
+  qtyInput.disabled=true;
+  qtyLabel.innerText='數量（立即開箱固定為 1）';
 
   box.style.display='grid';
 
@@ -2135,38 +2146,34 @@ document.getElementById('add-form')
 
       const content=getAddContent();
 
-      for(let i=0;i<qty;i++){
+      records.push({
 
-        records.push({
+        id:uid(),
 
-          id:uid(),
+        eventType:'open',
 
-          eventType:'open',
+        itemType:type,
 
-          itemType:type,
+        obtainDate:date,
 
-          obtainDate:date,
+        openDate:date,
 
-          openDate:date,
+        quantity:1,
 
-          quantity:1,
+        method,
 
-          method,
+        source:{
+          type:sourceType(method),
+          label:method
+        },
 
-          source:{
-            type:sourceType(method),
-            label:method
-          },
+        status:STAT.OPEN,
 
-          status:STAT.OPEN,
+        content:JSON.parse(JSON.stringify(content)),
 
-          content:JSON.parse(JSON.stringify(content)),
+        memo
 
-          memo
-
-        });
-
-      }
+      });
 
     }else{
 
@@ -2207,7 +2214,7 @@ document.getElementById('add-form')
 
     showToast(
       isOpen
-        ? `已新增 ${qty} 張開箱結果`
+        ? '已新增 1 張開箱結果'
         : `已新增 ${qty} 張庫存`
     );
 
@@ -4071,12 +4078,21 @@ function saveEdit(){
 
     }else{
 
+      /* 防呆：防止數量大於 1 的庫存直接被整筆轉為已開啟，破壞開箱統計數據 */
+      if(r.status === STAT.UNOPEN && r.quantity > 1) {
+        showToast('數量大於 1 的庫存，請使用「批量開箱」功能進行開箱', 'error');
+        return;
+      }
+
       if(!openDate){
 
         showToast('已開啟紀錄必須有開箱日期','error');
         return;
 
       }
+
+      /* 確保開啟狀態下每筆資料數量固定為 1 */
+      r.quantity = 1;
 
       r.eventType='open';
       r.status=STAT.OPEN;

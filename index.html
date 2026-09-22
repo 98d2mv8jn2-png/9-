@@ -1,651 +1,5321 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>白教/白技教掉落統計系統 V3.1</title>
-  
-  <!-- 引入 Chart.js, Datalabels 與 html2canvas (用於截圖) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  
-  <style>
-    :root {
-      --bg: #1A1C23; --card: #252830; --card-inner: #1E2128; --border: #3A3F4A; 
-      --primary: #8598A7; --primary-hover: #9CB0BE; --accent: #C4B097; --success: #92A38D; --danger: #BE8C8C; 
-      --gold: #C4B097; --gold-bg: rgba(196, 176, 151, 0.15);
-      --text: #E8E4DF; --text-muted: #9E9B96; --radius: 8px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 0 0 80px 0; max-width: 1300px; margin: 0 auto; overflow-x: hidden; }
-    
-    /* 頂部 Header 與 Tabs */
-    .header-container { padding: 18px 12px 0 12px; position: sticky; top: 0; background: rgba(26, 28, 35, 0.9); backdrop-filter: blur(8px); z-index: 50; border-bottom: 1px solid var(--border); }
-    h1 { font-size: 1.3rem; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
-    .tabs { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 10px 4px; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; white-space: nowrap; }
-    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-    
-    .tab-content { display: none; padding: 16px 12px; animation: fadeIn 0.3s ease; }
-    .tab-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>白教/白技教掉落統計系統 V4.0</title>
 
-    /* RWD 排版邏輯 */
-    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-    .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 14px; }
-    @media (min-width: 500px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
-    @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
-    .card { background: var(--card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 0; }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-    .stat-card { text-align: center; padding: 10px; position: relative; }
-    .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
-    .stat-val { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-    .stat-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+<style>
+:root{
+  --bg:#1A1C23;
+  --card:#252830;
+  --card-inner:#1E2128;
+  --border:#3A3F4A;
+  --primary:#8598A7;
+  --primary-hover:#9CB0BE;
+  --accent:#C4B097;
+  --success:#92A38D;
+  --danger:#BE8C8C;
+  --gold:#C4B097;
+  --gold-bg:rgba(196,176,151,.15);
+  --text:#E8E4DF;
+  --text-muted:#9E9B96;
+  --radius:8px;
+}
 
-    /* 快捷打卡區 */
-    .quick-bar { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; margin-bottom: 14px; padding-bottom: 4px; scrollbar-width: none; }
-    .quick-bar::-webkit-scrollbar { display: none; }
-    .btn-quick { flex-shrink: 0; background: var(--card-inner); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s; }
-    .btn-league { background: rgba(146, 163, 141, 0.15); border-color: var(--success); color: var(--success); }
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
 
-    /* 表單與輸入框 */
-    .form-group { margin-bottom: 10px; }
-    label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
-    select, input, button { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-inner); color: var(--text); font-size: 0.85rem; transition: 0.15s; }
-    select:focus, input:focus { outline: none; border-color: var(--primary); background: var(--card); }
-    
-    button.btn-primary { background: var(--primary); color: #1A1C23; font-weight: 600; border: none; cursor: pointer; }
-    button.btn-success { background: var(--success); color: #1A1C23; font-weight: 600; border: none; cursor: pointer; }
-    button.btn-subtle { background: transparent; color: var(--text-muted); border: 1px solid var(--border); cursor: pointer; padding: 4px 8px; font-size: 0.75rem; width: auto; }
-    .sub-box { background: var(--card-inner); border: 1px dashed var(--border); padding: 12px; border-radius: 6px; margin-bottom: 10px; }
+body{
+  background:var(--bg);
+  color:var(--text);
+  padding:0 0 80px 0;
+  max-width:1300px;
+  margin:0 auto;
+  overflow-x:hidden;
+}
 
-    /* 表格設計 */
-    .table-container { max-height: calc(100vh - 250px); overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    th { background: #1E2128; position: sticky; top: 0; color: var(--text-muted); z-index: 10; font-weight: 600; }
-    tr.target-highlight { background-color: var(--gold-bg); border-left: 3px solid var(--gold); }
-    tr.target-highlight td:first-child { padding-left: 12px; }
+button,input,select{
+  font:inherit;
+}
 
-    /* 表格按鈕 */
-    .action-btn { background: rgba(133, 152, 167, 0.15); color: var(--primary); border: 1px solid var(--primary); border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 0.7rem; margin-right: 4px; }
-    .del-btn { background: rgba(190, 140, 140, 0.15); color: var(--danger); border: 1px solid var(--danger); border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 0.7rem; }
-    .action-btn:hover { background: var(--primary); color: #1A1C23; }
-    .del-btn:hover { background: var(--danger); color: #fff; }
+.header-container{
+  padding:18px 12px 0 12px;
+  position:sticky;
+  top:0;
+  background:rgba(26,28,35,.94);
+  backdrop-filter:blur(8px);
+  z-index:50;
+  border-bottom:1px solid var(--border);
+}
 
-    /* 徽章與心願標籤 */
-    .badge { display: inline-block; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-    .badge-coach { background: rgba(196, 176, 151, 0.2); color: #C4B097; border: 1px solid rgba(196, 176, 151, 0.4); }
-    .badge-skill { background: rgba(133, 152, 167, 0.2); color: #8598A7; border: 1px solid rgba(133, 152, 167, 0.4); }
-    .badge-pending { background: rgba(190, 140, 140, 0.2); color: #BE8C8C; border: 1px solid rgba(190, 140, 140, 0.4); }
-    .badge-opened { background: rgba(146, 163, 141, 0.2); color: #92A38D; border: 1px solid rgba(146, 163, 141, 0.4); }
-    .badge-tier-3 { background: rgba(190, 140, 140, 0.3); color: #E8E4DF; border: 1px solid #BE8C8C; }
-    .badge-target { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold); }
-    .badge-league { background: rgba(146, 163, 141, 0.1); color: #92A38D; border: 1px dotted #92A38D; }
-    
-    .target-chip { background: var(--card-inner); border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 14px; font-size: 0.75rem; cursor: pointer; display: inline-block; margin: 0 4px 6px 0; }
-    .target-chip.active { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); font-weight: 600; }
+h1{
+  font-size:1.3rem;
+  color:var(--primary);
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
 
-    /* 懸浮按鈕 (FAB) */
-    .fab { position: fixed; bottom: 30px; right: 20px; width: 56px; height: 56px; background: var(--primary); color: #1A1C23; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; box-shadow: 0 6px 16px rgba(0,0,0,0.5); cursor: pointer; z-index: 100; transition: transform 0.2s; border: none; }
-    .fab:hover { transform: scale(1.08); background: var(--primary-hover); }
+.version{
+  font-size:.65rem;
+  color:var(--text-muted);
+  font-weight:400;
+}
 
-    /* Modal 與 Toast */
-    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; align-items: center; justify-content: center; padding: 12px; backdrop-filter: blur(3px); }
-    .modal-content { background: var(--card); width: 100%; max-width: 400px; border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
-    
-    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-    .toast { background: var(--card); color: var(--text); border-left: 4px solid var(--primary); padding: 12px 20px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.6); animation: slideIn 0.3s forwards, fadeOut 0.3s forwards 2.7s; font-size: 0.85rem; font-weight: 600; }
-    .toast.success { border-color: var(--success); } .toast.error { border-color: var(--danger); }
-    @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
-    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-    
-    /* 工具列與小元件 */
-    .luck-tag { position: absolute; top: 10px; right: 10px; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
-    .luck-ou { background: rgba(196, 176, 151, 0.2); color: var(--gold); border: 1px solid var(--gold); }
-    .luck-normal { background: rgba(133, 152, 167, 0.2); color: var(--primary); border: 1px solid var(--primary); }
-    .luck-fei { background: rgba(190, 140, 140, 0.2); color: var(--danger); border: 1px solid var(--danger); }
-  </style>
+.tabs{
+  display:flex;
+  gap:20px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+
+.tabs::-webkit-scrollbar{
+  display:none;
+}
+
+.tab-btn{
+  background:transparent;
+  border:none;
+  color:var(--text-muted);
+  font-size:1rem;
+  font-weight:600;
+  padding:10px 4px;
+  cursor:pointer;
+  border-bottom:3px solid transparent;
+  transition:.2s;
+  white-space:nowrap;
+}
+
+.tab-btn.active{
+  color:var(--primary);
+  border-bottom-color:var(--primary);
+}
+
+.tab-content{
+  display:none;
+  padding:16px 12px;
+  animation:fadeIn .3s ease;
+}
+
+.tab-content.active{
+  display:block;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+}
+
+.grid-2{
+  grid-template-columns:1fr;
+}
+
+.grid-3{
+  grid-template-columns:1fr;
+}
+
+.grid-kpi{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:14px;
+  margin-bottom:14px;
+}
+
+@media(min-width:500px){
+  .grid-2{grid-template-columns:1fr 1fr}
+}
+
+@media(min-width:768px){
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+}
+
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:16px;
+  border:1px solid var(--border);
+  box-shadow:0 4px 12px rgba(0,0,0,.1);
+  min-width:0;
+}
+
+.card-title{
+  font-size:1rem;
+  font-weight:600;
+  margin-bottom:12px;
+  color:var(--primary);
+  border-bottom:1px solid var(--border);
+  padding-bottom:6px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.stat-card{
+  text-align:center;
+  padding:12px;
+  position:relative;
+}
+
+.stat-label{
+  font-size:.75rem;
+  color:var(--text-muted);
+  margin-bottom:4px;
+}
+
+.stat-val{
+  font-size:1.4rem;
+  font-weight:700;
+  color:var(--primary);
+}
+
+.stat-sub{
+  font-size:.7rem;
+  color:var(--text-muted);
+  margin-top:4px;
+}
+
+.quick-bar{
+  display:flex;
+  gap:8px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  margin-bottom:14px;
+  padding-bottom:4px;
+  scrollbar-width:none;
+}
+
+.quick-bar::-webkit-scrollbar{
+  display:none;
+}
+
+.btn-quick{
+  flex-shrink:0;
+  background:var(--card-inner);
+  color:var(--text);
+  border:1px solid var(--border);
+  padding:8px 12px;
+  border-radius:6px;
+  font-size:.8rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.btn-quick:hover{
+  border-color:var(--primary);
+}
+
+.btn-league{
+  background:rgba(146,163,141,.15);
+  border-color:var(--success);
+  color:var(--success);
+}
+
+.form-group{
+  margin-bottom:10px;
+}
+
+label{
+  display:block;
+  font-size:.75rem;
+  font-weight:600;
+  margin-bottom:4px;
+  color:var(--text-muted);
+}
+
+select,
+input,
+button{
+  width:100%;
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  background:var(--card-inner);
+  color:var(--text);
+  font-size:.85rem;
+  transition:.15s;
+}
+
+select:focus,
+input:focus{
+  outline:none;
+  border-color:var(--primary);
+  background:var(--card);
+}
+
+button.btn-primary{
+  background:var(--primary);
+  color:#1A1C23;
+  font-weight:600;
+  border:none;
+  cursor:pointer;
+}
+
+button.btn-success{
+  background:var(--success);
+  color:#1A1C23;
+  font-weight:600;
+  border:none;
+  cursor:pointer;
+}
+
+button.btn-subtle{
+  background:transparent;
+  color:var(--text-muted);
+  border:1px solid var(--border);
+  cursor:pointer;
+  padding:4px 8px;
+  font-size:.75rem;
+  width:auto;
+}
+
+button.btn-danger{
+  background:rgba(190,140,140,.15);
+  color:var(--danger);
+  border:1px solid var(--danger);
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.sub-box{
+  background:var(--card-inner);
+  border:1px dashed var(--border);
+  padding:12px;
+  border-radius:6px;
+  margin-bottom:10px;
+}
+
+.table-container{
+  max-height:calc(100vh - 250px);
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:6px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.8rem;
+  min-width:900px;
+}
+
+th,td{
+  padding:10px 8px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+
+th{
+  background:#1E2128;
+  position:sticky;
+  top:0;
+  color:var(--text-muted);
+  z-index:10;
+  font-weight:600;
+}
+
+tr.target-highlight{
+  background-color:var(--gold-bg);
+  border-left:3px solid var(--gold);
+}
+
+tr.target-highlight td:first-child{
+  padding-left:12px;
+}
+
+.action-btn{
+  background:rgba(133,152,167,.15);
+  color:var(--primary);
+  border:1px solid var(--primary);
+  border-radius:4px;
+  cursor:pointer;
+  padding:4px 8px;
+  font-size:.7rem;
+  margin-right:4px;
+  width:auto;
+}
+
+.del-btn{
+  background:rgba(190,140,140,.15);
+  color:var(--danger);
+  border:1px solid var(--danger);
+  border-radius:4px;
+  cursor:pointer;
+  padding:4px 8px;
+  font-size:.7rem;
+  width:auto;
+}
+
+.action-btn:hover{
+  background:var(--primary);
+  color:#1A1C23;
+}
+
+.del-btn:hover{
+  background:var(--danger);
+  color:#fff;
+}
+
+.badge{
+  display:inline-block;
+  padding:3px 6px;
+  border-radius:4px;
+  font-size:.7rem;
+  font-weight:600;
+}
+
+.badge-coach{
+  background:rgba(196,176,151,.2);
+  color:#C4B097;
+  border:1px solid rgba(196,176,151,.4);
+}
+
+.badge-skill{
+  background:rgba(133,152,167,.2);
+  color:#8598A7;
+  border:1px solid rgba(133,152,167,.4);
+}
+
+.badge-pending{
+  background:rgba(190,140,140,.2);
+  color:#BE8C8C;
+  border:1px solid rgba(190,140,140,.4);
+}
+
+.badge-opened{
+  background:rgba(146,163,141,.2);
+  color:#92A38D;
+  border:1px solid rgba(146,163,141,.4);
+}
+
+.badge-tier-3{
+  background:rgba(190,140,140,.3);
+  color:#E8E4DF;
+  border:1px solid #BE8C8C;
+}
+
+.badge-grade-good{
+  background:rgba(146,163,141,.2);
+  color:#92A38D;
+  border:1px solid rgba(146,163,141,.4);
+}
+
+.badge-grade-normal{
+  background:rgba(133,152,167,.2);
+  color:#8598A7;
+  border:1px solid rgba(133,152,167,.4);
+}
+
+.badge-grade-bad{
+  background:rgba(190,140,140,.2);
+  color:#BE8C8C;
+  border:1px solid rgba(190,140,140,.4);
+}
+
+.badge-target{
+  background:var(--gold-bg);
+  color:var(--gold);
+  border:1px solid var(--gold);
+}
+
+.badge-league{
+  background:rgba(146,163,141,.1);
+  color:#92A38D;
+  border:1px dotted #92A38D;
+}
+
+.badge-source{
+  background:rgba(133,152,167,.1);
+  color:var(--primary);
+  border:1px solid rgba(133,152,167,.3);
+}
+
+.target-chip{
+  background:var(--card-inner);
+  border:1px solid var(--border);
+  color:var(--text-muted);
+  padding:4px 10px;
+  border-radius:14px;
+  font-size:.75rem;
+  cursor:pointer;
+  display:inline-block;
+  margin:0 4px 6px 0;
+}
+
+.target-chip.active{
+  background:var(--gold-bg);
+  border-color:var(--gold);
+  color:var(--gold);
+  font-weight:600;
+}
+
+.target-section{
+  margin-bottom:12px;
+}
+
+.target-section-title{
+  font-size:.75rem;
+  color:var(--primary);
+  font-weight:600;
+  margin-bottom:5px;
+}
+
+.fab{
+  position:fixed;
+  bottom:30px;
+  right:20px;
+  width:56px;
+  height:56px;
+  background:var(--primary);
+  color:#1A1C23;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.8rem;
+  font-weight:bold;
+  box-shadow:0 6px 16px rgba(0,0,0,.5);
+  cursor:pointer;
+  z-index:100;
+  transition:transform .2s;
+  border:none;
+}
+
+.fab:hover{
+  transform:scale(1.08);
+  background:var(--primary-hover);
+}
+
+.modal-backdrop{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  z-index:1000;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  backdrop-filter:blur(3px);
+}
+
+.modal-content{
+  background:var(--card);
+  width:100%;
+  max-width:500px;
+  border-radius:var(--radius);
+  padding:16px;
+  border:1px solid var(--border);
+  max-height:90vh;
+  overflow-y:auto;
+}
+
+.modal-wide{
+  max-width:850px;
+}
+
+#toast-container{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  pointer-events:none;
+}
+
+.toast{
+  background:var(--card);
+  color:var(--text);
+  border-left:4px solid var(--primary);
+  padding:12px 20px;
+  border-radius:4px;
+  box-shadow:0 4px 12px rgba(0,0,0,.6);
+  animation:slideIn .3s forwards;
+  font-size:.85rem;
+  font-weight:600;
+}
+
+.toast.success{border-color:var(--success)}
+.toast.error{border-color:var(--danger)}
+.toast.info{border-color:var(--primary)}
+
+@keyframes slideIn{
+  from{transform:translateX(120%);opacity:0}
+  to{transform:translateX(0);opacity:1}
+}
+
+.luck-tag{
+  position:absolute;
+  top:10px;
+  right:10px;
+  font-size:.7rem;
+  padding:2px 6px;
+  border-radius:10px;
+  font-weight:bold;
+}
+
+.luck-ou{
+  background:rgba(196,176,151,.2);
+  color:var(--gold);
+  border:1px solid var(--gold);
+}
+
+.luck-normal{
+  background:rgba(133,152,167,.2);
+  color:var(--primary);
+  border:1px solid var(--primary);
+}
+
+.luck-fei{
+  background:rgba(190,140,140,.2);
+  color:var(--danger);
+  border:1px solid var(--danger);
+}
+
+.mini-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:8px;
+}
+
+.mini-stat{
+  background:var(--card-inner);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:10px;
+}
+
+.mini-stat-label{
+  color:var(--text-muted);
+  font-size:.7rem;
+}
+
+.mini-stat-value{
+  font-size:1.1rem;
+  font-weight:700;
+  margin-top:3px;
+}
+
+.source-table{
+  width:100%;
+  min-width:650px;
+}
+
+.source-table th,
+.source-table td{
+  text-align:center;
+}
+
+.section-note{
+  font-size:.7rem;
+  color:var(--text-muted);
+  line-height:1.5;
+}
+
+.pagination{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
+}
+
+.page-info{
+  color:var(--text-muted);
+  font-size:.75rem;
+}
+
+.empty{
+  text-align:center;
+  color:var(--text-muted);
+  padding:24px;
+}
+
+@media(max-width:600px){
+  .header-container{
+    padding-top:12px;
+  }
+
+  h1{
+    font-size:1.05rem;
+  }
+
+  .card{
+    padding:12px;
+  }
+
+  .stat-val{
+    font-size:1.2rem;
+  }
+
+  #toast-container{
+    left:12px;
+    right:12px;
+    top:12px;
+  }
+
+  .toast{
+    width:100%;
+  }
+}
+</style>
 </head>
+
 <body>
 
-  <div id="toast-container"></div>
+<div id="toast-container"></div>
 
-  <!-- 頂部 Header & 導覽列 -->
-  <div class="header-container">
-    <h1>⚾ 掉落統計系統 V3.1</h1>
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('dashboard')">📊 總覽數據</button>
-      <button class="tab-btn" onclick="switchTab('records')">📝 歷史明細</button>
-      <button class="tab-btn" onclick="switchTab('settings')">⚙️ 設定與工具</button>
-    </div>
+<div class="header-container">
+  <h1>
+    ⚾ 掉落統計系統
+    <span class="version">V4.0</span>
+  </h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="dashboard">📊 總覽數據</button>
+    <button class="tab-btn" data-tab="records">📝 歷史明細</button>
+    <button class="tab-btn" data-tab="settings">⚙️ 設定與工具</button>
+  </div>
+</div>
+
+<!-- ==================== DASHBOARD ==================== -->
+
+<div id="tab-dashboard" class="tab-content active">
+
+  <div class="quick-bar">
+    <button class="btn-quick btn-league" onclick="openLeagueModal()">🏁 登記聯賽結算</button>
+    <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL,'刷聯賽')">⚡ +1 聯賽技能券</button>
+    <button class="btn-quick" onclick="quickCheckIn(ITEM.COACH,'刷聯賽拿到')">⚡ +1 聯賽教練券</button>
+    <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL,'聯賽60000分保底')">📦 +1 6萬保底</button>
   </div>
 
-  <!-- Tab 1: 總覽 Dashboard -->
-  <div id="tab-dashboard" class="tab-content active">
-    <div class="quick-bar">
-      <button class="btn-quick btn-league" onclick="openLeagueModal()">🏁 登記聯賽結算</button>
-      <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL, '刷聯賽')">⚡ +1 聯賽技能券</button>
-      <button class="btn-quick" onclick="quickCheckIn(ITEM.COACH, '刷聯賽拿到')">⚡ +1 聯賽教練券</button>
-      <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL, '聯賽60000分保底')">📦 +1 6萬保底</button>
+  <div id="export-area" style="background:var(--bg);padding:10px 0;">
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;">
+      <span style="font-size:.85rem;color:var(--text-muted)">核心數據指標</span>
+      <button class="btn-subtle"
+              style="color:var(--gold);border-color:var(--gold)"
+              onclick="exportScreenshot()">📸 儲存戰報圖</button>
     </div>
 
-    <div id="export-area" style="background: var(--bg); padding: 10px 0;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
-        <span style="font-size: 0.85rem; color: var(--text-muted);">核心數據指標</span>
-        <button class="btn-subtle" style="color: var(--gold); border-color: var(--gold);" onclick="exportScreenshot()">📸 儲存戰報圖</button>
-      </div>
-      
-      <div class="grid-kpi">
-        <div class="card stat-card">
-          <div id="luck-badge" class="luck-tag luck-normal">計算中</div>
-          <div class="stat-label">白技 III 階出貨率</div>
-          <div class="stat-val" id="kpi-tier3-rate" style="color: var(--gold);">0%</div>
-          <div class="stat-sub" id="kpi-tier3-count">0 / 0 張</div>
-        </div>
-        <div class="card stat-card">
-          <div class="stat-label">未開庫存 (技 / 教)</div>
-          <div class="stat-val" style="color: var(--danger);"><span id="kpi-unopened-skill">0</span> <span style="font-size: 0.9rem; color: var(--border);">/</span> <span id="kpi-unopened-coach">0</span></div>
-          <div class="stat-sub">等待一鍵批量開箱</div>
-        </div>
-        <div class="card stat-card">
-          <div class="stat-label">連黑墊刀指數 (自上次大獎)</div>
-          <div class="stat-val" style="font-size: 1.15rem; display: flex; justify-content: center; gap: 8px;">
-            <span style="color:var(--primary);">技 <span id="kpi-streak-skill">0</span></span>
-            <span style="color:var(--border);">|</span>
-            <span style="color:var(--accent);">教 <span id="kpi-streak-coach">0</span></span>
-          </div>
-          <div class="stat-sub">未出大獎張數累計</div>
-        </div>
-        <div class="card stat-card">
-          <div class="stat-label">聯賽平均掉落 (張/季)</div>
-          <div class="stat-val" id="kpi-seasons-exp" style="font-size: 1.15rem; display: flex; justify-content: center; gap: 8px;">--</div>
-          <div class="stat-sub" id="kpi-seasons-sub">尚未登記完賽季數</div>
-        </div>
-        <div class="card stat-card" id="pity-card">
-          <div class="stat-label">6萬保底預測</div>
-          <div class="stat-val" id="kpi-pity-cycle" style="font-size: 1.15rem;">--</div>
-          <div class="stat-sub" id="kpi-pity-sub">需至少 2 次保底推算</div>
-        </div>
+    <div class="grid-kpi">
+
+      <div class="card stat-card">
+        <div id="luck-badge" class="luck-tag luck-normal">計算中</div>
+        <div class="stat-label">白技 III 階出貨率</div>
+        <div class="stat-val" id="kpi-tier3-rate" style="color:var(--gold)">0%</div>
+        <div class="stat-sub" id="kpi-tier3-count">0 / 0 張</div>
       </div>
 
-      <!-- 圖表區 -->
-      <div class="grid" style="margin-top: 14px;">
-        <div class="card">
-          <div class="card-title" style="font-size:0.85rem;">每月份獲取總數趨勢</div>
-          <canvas id="monthlyChart" height="90"></canvas>
+      <div class="card stat-card">
+        <div class="stat-label">未開庫存（技 / 教）</div>
+        <div class="stat-val" style="color:var(--danger)">
+          <span id="kpi-unopened-skill">0</span>
+          <span style="font-size:.9rem;color:var(--border)">/</span>
+          <span id="kpi-unopened-coach">0</span>
         </div>
-        <div class="grid grid-2">
-          <div class="card"><div class="card-title" style="font-size:0.85rem;">白技階級分佈</div><canvas id="tierChart" height="130"></canvas></div>
-          <div class="card"><div class="card-title" style="font-size:0.85rem;">教練品質評級</div><canvas id="coachGradeChart" height="130"></canvas></div>
-        </div>
+        <div class="stat-sub">目前可開箱庫存</div>
       </div>
+
+      <div class="card stat-card">
+        <div class="stat-label">目前連黑</div>
+        <div class="stat-val" style="font-size:1.15rem;display:flex;justify-content:center;gap:8px">
+          <span style="color:var(--primary)">技 <span id="kpi-streak-skill">0</span></span>
+          <span style="color:var(--border)">|</span>
+          <span style="color:var(--accent)">教 <span id="kpi-streak-coach">0</span></span>
+        </div>
+        <div class="stat-sub">自上次大獎後未出張數</div>
+      </div>
+
+      <div class="card stat-card">
+        <div class="stat-label">歷史最長連黑</div>
+        <div class="stat-val" style="font-size:1.15rem">
+          <span id="kpi-max-streak-skill">0</span>
+          /
+          <span id="kpi-max-streak-coach">0</span>
+        </div>
+        <div class="stat-sub">技 / 教</div>
+      </div>
+
+      <div class="card stat-card">
+        <div class="stat-label">聯賽平均掉落</div>
+        <div class="stat-val" id="kpi-seasons-exp" style="font-size:1.15rem">--</div>
+        <div class="stat-sub" id="kpi-seasons-sub">尚未登記完賽季數</div>
+      </div>
+
+      <div class="card stat-card" id="pity-card">
+        <div class="stat-label">6萬保底歷史週期</div>
+        <div class="stat-val" id="kpi-pity-cycle" style="font-size:1.05rem">--</div>
+        <div class="stat-sub" id="kpi-pity-sub">需至少 2 次保底</div>
+      </div>
+
     </div>
-  </div>
 
-  <!-- Tab 2: 歷史明細 Records -->
-  <div id="tab-records" class="tab-content">
-    <div class="card">
-      <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
-        <input type="text" id="filter-text" placeholder="搜尋名稱/備註..." style="flex:1; min-width:120px;" oninput="renderTable()">
-        <select id="filter-month" style="width: 100px;" onchange="renderTable()"><option value="all">所有月份</option></select>
-        <select id="filter-type" style="width: 110px;" onchange="renderTable()">
-          <option value="all">所有類別</option><option value="白金教練券">教練券</option><option value="白金技能教練券">技能券</option><option value="聯賽進度">聯賽進度</option>
+    <!-- 進階統計 -->
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">
+        <span>📈 個人統計</span>
+        <select id="period-filter" style="width:auto" onchange="renderAll()">
+          <option value="all">全部</option>
+          <option value="day">今天</option>
+          <option value="week">本週</option>
+          <option value="month">本月</option>
         </select>
-        <select id="filter-result" style="width: 110px;" onchange="renderTable()">
-          <option value="all">所有結果</option><option value="target">🎯 心願</option><option value="jackpot">⭐ 大獎</option><option value="unopened">📦 未開啟</option>
-        </select>
       </div>
-      <div class="table-container">
-        <table>
-          <thead><tr><th>日期</th><th>種類/來源</th><th>備註/數量</th><th>狀態內容</th><th style="min-width: 70px;">操作</th></tr></thead>
-          <tbody id="records-tbody"></tbody>
-        </table>
-      </div>
-      <div style="margin-top:8px; text-align:right; font-size:0.75rem; color:var(--text-muted);">共 <span id="record-count">0</span> 筆符合紀錄</div>
-    </div>
-  </div>
 
-  <!-- Tab 3: 設定 Settings -->
-  <div id="tab-settings" class="tab-content">
-    <div class="card" style="margin-bottom: 14px;">
-      <div class="card-title">🎯 心願目標設定 (<span id="target-count">0</span>)</div>
-      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">點擊標籤切換選取狀態，選中的目標會在明細中高亮顯示。</div>
-      <div style="max-height: 250px; overflow-y: auto; padding-right:4px;">
-        <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 5px;">⚾ 打者白技</div><div id="chips-batter-skills" style="margin-bottom:10px;"></div>
-        <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 5px;">⚾ 投手白技</div><div id="chips-pitcher-skills" style="margin-bottom:10px;"></div>
-        <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 5px;">👔 打擊教練</div><div id="chips-batter-coaches" style="margin-bottom:10px;"></div>
-        <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 5px;">👔 投手教練</div><div id="chips-pitcher-coaches"></div>
+      <div class="mini-grid">
+
+        <div class="mini-stat">
+          <div class="mini-stat-label">技能開箱</div>
+          <div class="mini-stat-value" id="stat-skill-open">0</div>
+        </div>
+
+        <div class="mini-stat">
+          <div class="mini-stat-label">教練開箱</div>
+          <div class="mini-stat-value" id="stat-coach-open">0</div>
+        </div>
+
+        <div class="mini-stat">
+          <div class="mini-stat-label">技能 III</div>
+          <div class="mini-stat-value" id="stat-skill-iii">0</div>
+        </div>
+
+        <div class="mini-stat">
+          <div class="mini-stat-label">優良教練</div>
+          <div class="mini-stat-value" id="stat-coach-good">0</div>
+        </div>
+
+        <div class="mini-stat">
+          <div class="mini-stat-label">目標命中</div>
+          <div class="mini-stat-value" id="stat-target-hit">0</div>
+        </div>
+
+        <div class="mini-stat">
+          <div class="mini-stat-label">總獲取</div>
+          <div class="mini-stat-value" id="stat-obtain-total">0</div>
+        </div>
+
       </div>
     </div>
 
-    <div class="card" style="margin-bottom: 14px;">
-      <div class="card-title">📦 庫存管理與開箱</div>
+    <!-- 圖表 -->
+
+    <div class="grid" style="margin-top:14px">
+
+      <div class="card">
+        <div class="card-title">
+          <span>📦 獲取 / 開箱趨勢</span>
+
+          <select id="chart-period" style="width:auto" onchange="renderCharts()">
+            <option value="month">月份</option>
+            <option value="week">週</option>
+            <option value="day">日期</option>
+          </select>
+        </div>
+
+        <canvas id="monthlyChart" height="100"></canvas>
+      </div>
+
       <div class="grid grid-2">
-        <button class="btn-primary" onclick="openBatchModal()">⚡ 批量開箱模式</button>
-        <button class="btn-subtle" onclick="document.getElementById('good-coach-modal').style.display='flex'">⭐ 檢視現役優良教練</button>
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="card-title">⚙️ 資料管理與備份</div>
-      <div class="grid grid-2" style="margin-bottom: 10px;">
-        <button class="btn-subtle" onclick="exportData('json')">⬇️ 備份下載 JSON</button>
-        <button class="btn-subtle" onclick="document.getElementById('import-file').click()">⬆️ 匯入還原 JSON</button>
-        <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(event)">
-      </div>
-      <div class="grid grid-2" style="margin-bottom: 10px;">
-        <button class="btn-subtle" onclick="exportData('csv')">📄 匯出 CSV</button>
-        <button class="btn-subtle" onclick="document.getElementById('cloud-modal').style.display='flex'">☁️ 雲端同步 (GAS)</button>
-      </div>
-      <button class="btn-subtle" style="color: var(--danger); border-color: var(--danger); width: 100%;" onclick="clearAllData()">⚠️ 清空所有資料庫</button>
-    </div>
-  </div>
-
-  <button class="fab" onclick="openAddModal()">+</button>
-
-  <!-- 彈出視窗 Modals -->
-  <div id="add-modal" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="card-title"><span>📝 新增獲取紀錄</span><button class="btn-subtle" style="border:none;" onclick="closeModal('add-modal')">✕</button></div>
-      <form id="add-form">
-        <div class="grid grid-2">
-          <div class="form-group"><label>種類</label><select id="item-type"><option value="白金技能教練券">技能教練券</option><option value="白金教練券">教練券</option></select></div>
-          <div class="form-group"><label>方式</label><select id="obtain-method"></select></div>
-          <div class="form-group"><label>日期</label><input type="date" id="obtain-date" required></div>
-          <div class="form-group"><label>數量</label><input type="number" id="quantity" min="1" value="1" required></div>
+        <div class="card">
+          <div class="card-title" style="font-size:.85rem">白技階級分佈</div>
+          <canvas id="tierChart" height="130"></canvas>
         </div>
-        <div class="form-group" id="memo-group" style="display:none;"><input type="text" id="memo" placeholder="其他方式備註 (必填)"></div>
-        
-        <div class="sub-box" style="margin-top: 4px;">
-          <div class="form-group" style="margin-bottom: 8px;"><label>狀態</label><select id="open-status"><option value="未開啟">暫存不開 (累計庫存)</option><option value="已開啟">立即開啟 (填寫明細)</option></select></div>
-          <div id="detail-fields" style="display:none;" class="grid grid-2"></div>
+
+        <div class="card">
+          <div class="card-title" style="font-size:.85rem">教練品質評級</div>
+          <canvas id="coachGradeChart" height="130"></canvas>
         </div>
-        <button type="submit" class="btn-primary" style="margin-top: 8px; padding: 12px;">確認新增</button>
-      </form>
-    </div>
-  </div>
 
-  <div id="league-modal" class="modal-backdrop">
-    <div class="modal-content" style="max-width: 300px;">
-      <div class="card-title"><span>🏁 登記聯賽</span><button class="btn-subtle" style="border:none;" onclick="closeModal('league-modal')">✕</button></div>
-      <div class="form-group"><label>日期</label><input type="date" id="league-date"></div>
-      <div class="form-group"><label>完成季數</label><input type="number" id="league-seasons" min="0.1" step="0.1" value="1"></div>
-      <button class="btn-primary" style="margin-top: 10px;" onclick="submitLeague()">確認完賽</button>
-    </div>
-  </div>
-
-  <div id="good-coach-modal" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="card-title"><span>⭐ 現役優良教練</span><button class="btn-subtle" style="border:none;" onclick="closeModal('good-coach-modal')">✕</button></div>
-      <div id="good-coach-list" style="max-height: 60vh; overflow-y: auto;"></div>
-    </div>
-  </div>
-
-  <div id="confirm-modal" class="modal-backdrop" style="z-index: 10000;">
-    <div class="modal-content" style="max-width: 320px; text-align: center;">
-      <div style="font-size: 1.1rem; margin-bottom: 16px; font-weight: 600;" id="confirm-msg"></div>
-      <div style="display: flex; gap: 10px; justify-content: center;">
-        <button class="btn-subtle" id="confirm-no" style="flex:1;">取消</button>
-        <button class="btn-primary" id="confirm-yes" style="flex:1; background: var(--danger); color: white;">確定</button>
       </div>
-    </div>
-  </div>
 
-  <div id="cloud-modal" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="card-title"><span>☁️ GAS 雲端同步</span><button class="btn-subtle" style="border:none;" onclick="closeModal('cloud-modal')">✕</button></div>
-      <div class="form-group"><label>Web App URL</label><input type="url" id="gas-url"></div>
-      <button class="btn-primary" style="margin-top:8px;" onclick="syncToCloud()">同步</button>
-      <button class="btn-subtle" style="margin-top:8px; width:100%;" onclick="saveCloudUrl()">儲存網址</button>
-    </div>
-  </div>
-
-  <div id="edit-modal" class="modal-backdrop">
-    <div class="modal-content">
-      <div class="card-title"><span>✏️ 編輯紀錄</span><button class="btn-subtle" style="border:none;" onclick="closeModal('edit-modal')">✕</button></div>
-      <input type="hidden" id="edit-id">
-      <div class="form-group"><label>日期</label><input type="date" id="edit-date"></div>
-      <div class="form-group"><label>備註/數值</label><input type="text" id="edit-memo"></div>
-      <button class="btn-primary" onclick="saveEdit()">儲存</button>
-    </div>
-  </div>
-
-  <div id="batch-modal" class="modal-backdrop">
-    <div class="modal-content" style="max-width: 500px;">
-      <div class="card-title"><span>⚡ 批量開箱</span><button class="btn-subtle" style="border:none;" onclick="closeModal('batch-modal')">✕</button></div>
-      <div class="grid grid-2" style="margin-bottom:10px;">
-        <select id="batch-type" onchange="buildBatch()"><option value="白金技能教練券">技能券</option><option value="白金教練券">教練券</option></select>
-        <select id="batch-count" onchange="buildBatch()"><option value="1">1 張</option><option value="3">3 張</option><option value="5">5 張</option></select>
+      <div class="card">
+        <div class="card-title">🎯 心願命中統計</div>
+        <div id="target-stats"></div>
       </div>
-      <div id="batch-rows" style="max-height: 40vh; overflow-y:auto; margin-bottom:10px;"></div>
-      <button class="btn-success" onclick="submitBatch()">確認開出</button>
+
+      <div class="card">
+        <div class="card-title">📊 來源交叉分析</div>
+
+        <div class="table-container" style="max-height:300px">
+          <table class="source-table">
+            <thead>
+              <tr>
+                <th>來源</th>
+                <th>技能獲取</th>
+                <th>技能 III</th>
+                <th>教練獲取</th>
+                <th>優良</th>
+                <th>III率</th>
+                <th>優良率</th>
+              </tr>
+            </thead>
+
+            <tbody id="source-analysis-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏆 個人紀錄</div>
+
+        <div class="mini-grid">
+
+          <div class="mini-stat">
+            <div class="mini-stat-label">最多單日開箱</div>
+            <div class="mini-stat-value" id="record-day-open">0</div>
+          </div>
+
+          <div class="mini-stat">
+            <div class="mini-stat-label">單月最多獲取</div>
+            <div class="mini-stat-value" id="record-month-obtain">0</div>
+          </div>
+
+          <div class="mini-stat">
+            <div class="mini-stat-label">最長技能黑手</div>
+            <div class="mini-stat-value" id="record-skill-black">0</div>
+          </div>
+
+          <div class="mini-stat">
+            <div class="mini-stat-label">最長教練黑手</div>
+            <div class="mini-stat-value" id="record-coach-black">0</div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
+
+  </div>
+</div>
+
+<!-- ==================== RECORDS ==================== -->
+
+<div id="tab-records" class="tab-content">
+
+  <div class="card">
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+
+      <input
+        type="text"
+        id="filter-text"
+        placeholder="搜尋名稱/備註/來源..."
+        style="flex:1;min-width:150px"
+      >
+
+      <input
+        type="date"
+        id="filter-date-from"
+        style="width:145px"
+      >
+
+      <input
+        type="date"
+        id="filter-date-to"
+        style="width:145px"
+      >
+
+      <select id="filter-month" style="width:110px">
+        <option value="all">所有月份</option>
+      </select>
+
+      <select id="filter-type" style="width:110px">
+        <option value="all">所有類別</option>
+        <option value="白金教練券">教練券</option>
+        <option value="白金技能教練券">技能券</option>
+        <option value="聯賽進度">聯賽進度</option>
+      </select>
+
+      <select id="filter-source" style="width:130px">
+        <option value="all">所有來源</option>
+        <option value="刷聯賽">刷聯賽</option>
+        <option value="刷聯賽拿到">刷聯賽拿到</option>
+        <option value="聯賽60000分保底">6萬保底</option>
+        <option value="其他">其他</option>
+        <option value="賽季結算">賽季結算</option>
+      </select>
+
+      <select id="filter-result" style="width:120px">
+        <option value="all">所有結果</option>
+        <option value="target">🎯 心願</option>
+        <option value="jackpot">⭐ 大獎</option>
+        <option value="unopened">📦 未開啟</option>
+      </select>
+
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>獲取日期</th>
+            <th>開箱日期</th>
+            <th>種類/來源</th>
+            <th>數量</th>
+            <th>狀態內容</th>
+            <th>備註</th>
+            <th style="min-width:130px">操作</th>
+          </tr>
+        </thead>
+
+        <tbody id="records-tbody"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:8px;text-align:right;font-size:.75rem;color:var(--text-muted)">
+      共 <span id="record-count">0</span> 筆
+    </div>
+
+    <div class="pagination">
+      <button class="btn-subtle" id="prev-page">上一頁</button>
+      <span class="page-info" id="page-info">第 1 頁</span>
+      <button class="btn-subtle" id="next-page">下一頁</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== SETTINGS ==================== -->
+
+<div id="tab-settings" class="tab-content">
+
+  <div class="card" style="margin-bottom:14px">
+
+    <div class="card-title">
+      🎯 心願目標設定
+      <span>(<span id="target-count">0</span>)</span>
+    </div>
+
+    <div class="section-note" style="margin-bottom:10px">
+      目標現在會記錄「類型＋分類＋名稱」，避免不同種類同名造成誤判。
+    </div>
+
+    <div style="max-height:350px;overflow-y:auto">
+
+      <div class="target-section">
+        <div class="target-section-title">⚾ 打者白技</div>
+        <div id="chips-batter-skills"></div>
+      </div>
+
+      <div class="target-section">
+        <div class="target-section-title">⚾ 投手白技</div>
+        <div id="chips-pitcher-skills"></div>
+      </div>
+
+      <div class="target-section">
+        <div class="target-section-title">👔 打擊教練</div>
+        <div id="chips-batter-coaches"></div>
+      </div>
+
+      <div class="target-section">
+        <div class="target-section-title">👔 投手教練</div>
+        <div id="chips-pitcher-coaches"></div>
+      </div>
+
+    </div>
+
   </div>
 
-  <script>
-    Chart.register(ChartDataLabels); Chart.defaults.set('plugins.datalabels', { display: false });
-    const ITEM = { SKILL: '白金技能教練券', COACH: '白金教練券', LEAGUE: '聯賽進度' };
-    const STAT = { UNOPEN: '未開啟', OPEN: '已開啟' };
-    const skillList = { '打者': ['精準打擊','先鋒','最強打者','天生巨星','機會製造者','打者洞察力','壞球打者','老手','打者默契','執著纏鬥'], '投手': ['精準控球','速球型投手','先守後攻','牛棚日','工作馬','投手洞察力','完美先生','合力投球','投手默契','變色龍'] };
-    const coachList = { '打擊': ['開路先鋒專家','強打者','選球眼','打擊王','全壘打打者','打擊達人','平飛球機器','猜球打者','鐵壁防守','古典打擊論者'], '投手': ['K博士','騙術專家','上升快速球','球棒破壞者','亂球','壓迫感','邊角球大師','牽制達人','範圍控制器','操控擊球仰角'] };
-    const methodOpts = { [ITEM.SKILL]: ['刷聯賽','聯賽60000分保底','其他'], [ITEM.COACH]: ['刷聯賽拿到','其他'] };
-    
-    let records = JSON.parse(localStorage.getItem('coach_v3_rec') || '[]');
-    let targets = JSON.parse(localStorage.getItem('coach_v3_tar') || '["先鋒", "打者洞察力"]');
-    
-    // 修正時區 Bug，取得正確的本地時間
-    const today = new Date();
-    const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+  <div class="card" style="margin-bottom:14px">
 
-    // 初始化讀取 GAS URL
-    document.addEventListener("DOMContentLoaded", () => {
-      const savedUrl = localStorage.getItem('coach_v3_gas_url');
-      if(savedUrl) document.getElementById('gas-url').value = savedUrl;
-    });
+    <div class="card-title">📦 庫存管理與開箱</div>
 
-    // UI 切換
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`tab-${tabId}`).classList.add('active');
-      event.currentTarget.classList.add('active');
-    }
-    function showToast(msg, type='success') {
-      const t = document.createElement('div'); t.className = `toast ${type}`; t.innerText = msg;
-      document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(), 3000);
-    }
-    function customConfirm(msg) {
-      return new Promise(res => {
-        const m = document.getElementById('confirm-modal'); document.getElementById('confirm-msg').innerText = msg; m.style.display = 'flex';
-        document.getElementById('confirm-yes').onclick = () => { m.style.display='none'; res(true); };
-        document.getElementById('confirm-no').onclick = () => { m.style.display='none'; res(false); };
-      });
-    }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    <div class="grid grid-2">
 
-    // 新增表單
-    function openAddModal() {
-      document.getElementById('obtain-date').value = todayStr;
-      document.getElementById('obtain-date').max = todayStr;
-      updateFormFields(); document.getElementById('add-modal').style.display = 'flex';
-    }
-    function updateFormFields() {
-      const type = document.getElementById('item-type').value;
-      const mSel = document.getElementById('obtain-method');
-      mSel.innerHTML = methodOpts[type].map(m=>`<option value="${m}">${m}</option>`).join('');
-      renderDetailFields();
-    }
-    function renderDetailFields() {
-      const type = document.getElementById('item-type').value;
-      const isOpen = document.getElementById('open-status').value === STAT.OPEN;
-      const df = document.getElementById('detail-fields');
-      if(!isOpen) { df.style.display = 'none'; return; }
-      df.style.display = 'grid'; 
-      if (type === ITEM.SKILL) {
-        df.innerHTML = `
-          <div class="form-group" style="grid-column: span 2;"><select id="detail-cat" onchange="updName(skillList)"><option value="打者">打者</option><option value="投手">投手</option></select></div>
-          <div class="form-group"><select id="detail-name"></select></div>
-          <div class="form-group"><select id="detail-tier"><option value="III">III階</option><option value="II">II階</option><option value="I">I階</option></select></div>`;
-        updName(skillList);
-      } else {
-        df.innerHTML = `
-          <div class="form-group" style="grid-column: span 2;"><select id="detail-cat" onchange="updName(coachList)"><option value="打擊">打擊</option><option value="投手">投手</option></select></div>
-          <div class="form-group"><select id="detail-name"></select></div>
-          <div class="form-group"><select id="detail-grade"><option value="優良">優良</option><option value="普通">普通</option><option value="劣等">劣等</option></select></div>
-          <div class="form-group" style="grid-column: span 2;"><input type="text" id="detail-val" placeholder="數值(選填)"></div>`;
-        updName(coachList);
+      <button class="btn-primary" onclick="openBatchModal()">
+        ⚡ 批量開箱模式
+      </button>
+
+      <button class="btn-subtle"
+              onclick="openModal('good-coach-modal')">
+        ⭐ 檢視優良教練
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+
+    <div class="card-title">⚙️ 資料管理與備份</div>
+
+    <div class="grid grid-2" style="margin-bottom:10px">
+
+      <button class="btn-subtle" onclick="exportData('json')">
+        ⬇️ 備份 JSON
+      </button>
+
+      <button class="btn-subtle" onclick="document.getElementById('import-file').click()">
+        ⬆️ 匯入 JSON
+      </button>
+
+      <input
+        type="file"
+        id="import-file"
+        style="display:none"
+        accept=".json"
+      >
+
+    </div>
+
+    <div class="grid grid-2">
+
+      <button class="btn-subtle" onclick="exportData('csv')">
+        📄 匯出 CSV
+      </button>
+
+      <button class="btn-subtle" onclick="openModal('cloud-modal')">
+        ☁️ GAS 雲端同步
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="card-title">🧹 清理資料</div>
+
+    <div class="grid grid-2">
+
+      <button
+        class="btn-subtle"
+        style="color:var(--danger);border-color:var(--danger)"
+        onclick="clearRecordsOnly()">
+        清除掉落紀錄
+      </button>
+
+      <button
+        class="btn-subtle"
+        style="color:var(--gold);border-color:var(--gold)"
+        onclick="clearTargetsOnly()">
+        清除心願
+      </button>
+
+    </div>
+
+    <button
+      class="btn-subtle"
+      style="color:var(--danger);border-color:var(--danger);width:100%;margin-top:10px"
+      onclick="clearAllData()">
+      ⚠️ 清空所有本機資料
+    </button>
+
+  </div>
+
+</div>
+
+<button class="fab" onclick="openAddModal()" aria-label="新增紀錄">+</button>
+
+<!-- ==================== ADD MODAL ==================== -->
+
+<div id="add-modal" class="modal-backdrop">
+
+  <div class="modal-content">
+
+    <div class="card-title">
+      <span>📝 新增紀錄</span>
+      <button class="btn-subtle modal-close" data-modal="add-modal">✕</button>
+    </div>
+
+    <form id="add-form">
+
+      <div class="grid grid-2">
+
+        <div class="form-group">
+          <label>種類</label>
+          <select id="item-type">
+            <option value="白金技能教練券">技能教練券</option>
+            <option value="白金教練券">教練券</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>獲取方式</label>
+          <select id="obtain-method"></select>
+        </div>
+
+        <div class="form-group">
+          <label>獲取日期</label>
+          <input type="date" id="obtain-date" required>
+        </div>
+
+        <div class="form-group">
+          <label>數量</label>
+          <input type="number" id="quantity" min="1" step="1" value="1" required>
+        </div>
+
+      </div>
+
+      <div class="form-group" id="memo-group" style="display:none">
+        <label>其他方式備註</label>
+        <input type="text" id="memo" placeholder="請輸入來源">
+      </div>
+
+      <div class="sub-box">
+
+        <div class="form-group">
+          <label>狀態</label>
+
+          <select id="open-status">
+            <option value="未開啟">暫存不開（累計庫存）</option>
+            <option value="已開啟">立即開啟（填寫結果）</option>
+          </select>
+
+        </div>
+
+        <div id="detail-fields" style="display:none"></div>
+
+      </div>
+
+      <button type="submit"
+              class="btn-primary"
+              style="margin-top:8px;padding:12px">
+        確認新增
+      </button>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- ==================== LEAGUE ==================== -->
+
+<div id="league-modal" class="modal-backdrop">
+
+  <div class="modal-content" style="max-width:320px">
+
+    <div class="card-title">
+      <span>🏁 登記聯賽</span>
+      <button class="btn-subtle modal-close" data-modal="league-modal">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label>日期</label>
+      <input type="date" id="league-date">
+    </div>
+
+    <div class="form-group">
+      <label>完成季數</label>
+      <input type="number" id="league-seasons" min="0.1" step="0.1" value="1">
+    </div>
+
+    <button class="btn-primary" onclick="submitLeague()">
+      確認完賽
+    </button>
+
+  </div>
+</div>
+
+<!-- ==================== GOOD COACH ==================== -->
+
+<div id="good-coach-modal" class="modal-backdrop">
+
+  <div class="modal-content">
+
+    <div class="card-title">
+      <span>⭐ 優良教練</span>
+      <button class="btn-subtle modal-close" data-modal="good-coach-modal">✕</button>
+    </div>
+
+    <div id="good-coach-list"></div>
+
+  </div>
+</div>
+
+<!-- ==================== CONFIRM ==================== -->
+
+<div id="confirm-modal"
+     class="modal-backdrop"
+     style="z-index:10000">
+
+  <div class="modal-content"
+       style="max-width:340px;text-align:center">
+
+    <div style="font-size:1.1rem;margin-bottom:16px;font-weight:600"
+         id="confirm-msg">
+    </div>
+
+    <div style="display:flex;gap:10px">
+
+      <button class="btn-subtle" id="confirm-no">
+        取消
+      </button>
+
+      <button class="btn-primary"
+              id="confirm-yes"
+              style="background:var(--danger);color:#fff">
+        確定
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== CLOUD ==================== -->
+
+<div id="cloud-modal" class="modal-backdrop">
+
+  <div class="modal-content">
+
+    <div class="card-title">
+      <span>☁️ GAS 雲端同步</span>
+      <button class="btn-subtle modal-close" data-modal="cloud-modal">✕</button>
+    </div>
+
+    <div class="section-note" style="margin-bottom:10px">
+      請輸入 Google Apps Script Web App URL。
+      V4 會以 JSON POST 傳送完整資料。
+    </div>
+
+    <div class="form-group">
+      <label>Web App URL</label>
+      <input type="url" id="gas-url" placeholder="https://script.google.com/...">
+    </div>
+
+    <button class="btn-primary" onclick="syncToCloud()">
+      ☁️ 上傳同步
+    </button>
+
+    <button class="btn-subtle"
+            style="margin-top:8px;width:100%"
+            onclick="downloadFromCloud()">
+      ⬇️ 從雲端下載
+    </button>
+
+    <button class="btn-subtle"
+            style="margin-top:8px;width:100%"
+            onclick="saveCloudUrl()">
+      儲存網址
+    </button>
+
+  </div>
+</div>
+
+<!-- ==================== EDIT ==================== -->
+
+<div id="edit-modal" class="modal-backdrop">
+
+  <div class="modal-content modal-wide">
+
+    <div class="card-title">
+      <span>✏️ 完整編輯紀錄</span>
+      <button class="btn-subtle modal-close" data-modal="edit-modal">✕</button>
+    </div>
+
+    <input type="hidden" id="edit-id">
+
+    <div id="edit-fields"></div>
+
+    <button class="btn-primary"
+            onclick="saveEdit()"
+            style="margin-top:10px">
+      儲存修改
+    </button>
+
+  </div>
+</div>
+
+<!-- ==================== BATCH ==================== -->
+
+<div id="batch-modal" class="modal-backdrop">
+
+  <div class="modal-content modal-wide">
+
+    <div class="card-title">
+      <span>⚡ 批量開箱</span>
+      <button class="btn-subtle modal-close" data-modal="batch-modal">✕</button>
+    </div>
+
+    <div id="batch-inventory-info"
+         style="margin-bottom:10px">
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:10px">
+
+      <select id="batch-type">
+        <option value="白金技能教練券">技能券</option>
+        <option value="白金教練券">教練券</option>
+      </select>
+
+      <select id="batch-count">
+        <option value="1">1 張</option>
+        <option value="3">3 張</option>
+        <option value="5">5 張</option>
+        <option value="10">10 張</option>
+      </select>
+
+    </div>
+
+    <div id="batch-rows"
+         style="max-height:40vh;overflow-y:auto;margin-bottom:10px">
+    </div>
+
+    <button class="btn-success" onclick="submitBatch()">
+      確認開出
+    </button>
+
+  </div>
+</div>
+
+<script>
+
+/* ============================================================
+   V4.0 核心設定
+============================================================ */
+
+const APP_VERSION = '4.0.0';
+const SCHEMA_VERSION = 4;
+
+const STORAGE = {
+  DATA: 'coach_v4_data',
+  OLD_RECORDS: 'coach_v3_rec',
+  OLD_TARGETS: 'coach_v3_tar',
+  GAS_URL: 'coach_v3_gas_url'
+};
+
+const ITEM = {
+  SKILL:'白金技能教練券',
+  COACH:'白金教練券',
+  LEAGUE:'聯賽進度'
+};
+
+const STAT = {
+  UNOPEN:'未開啟',
+  OPEN:'已開啟'
+};
+
+const skillList = {
+  '打者':[
+    '精準打擊',
+    '先鋒',
+    '最強打者',
+    '天生巨星',
+    '機會製造者',
+    '打者洞察力',
+    '壞球打者',
+    '老手',
+    '打者默契',
+    '執著纏鬥'
+  ],
+  '投手':[
+    '精準控球',
+    '速球型投手',
+    '先守後攻',
+    '牛棚日',
+    '工作馬',
+    '投手洞察力',
+    '完美先生',
+    '合力投球',
+    '投手默契',
+    '變色龍'
+  ]
+};
+
+const coachList = {
+  '打擊':[
+    '開路先鋒專家',
+    '強打者',
+    '選球眼',
+    '打擊王',
+    '全壘打打者',
+    '打擊達人',
+    '平飛球機器',
+    '猜球打者',
+    '鐵壁防守',
+    '古典打擊論者'
+  ],
+  '投手':[
+    'K博士',
+    '騙術專家',
+    '上升快速球',
+    '球棒破壞者',
+    '亂球',
+    '壓迫感',
+    '邊角球大師',
+    '牽制達人',
+    '範圍控制器',
+    '操控擊球仰角'
+  ]
+};
+
+const methodOpts = {
+  [ITEM.SKILL]:[
+    '刷聯賽',
+    '聯賽60000分保底',
+    '其他'
+  ],
+  [ITEM.COACH]:[
+    '刷聯賽拿到',
+    '其他'
+  ]
+};
+
+let records = [];
+let targets = [];
+let charts = {};
+let currentPage = 1;
+const PAGE_SIZE = 50;
+let undoData = null;
+let undoTimer = null;
+
+/* ============================================================
+   日期
+============================================================ */
+
+function pad(n){
+  return String(n).padStart(2,'0');
+}
+
+function localDateString(date=new Date()){
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+}
+
+const todayStr = localDateString();
+
+function parseDateOnly(s){
+  if(!s) return null;
+  const p = String(s).split('-').map(Number);
+  if(p.length !== 3 || p.some(isNaN)) return null;
+  return new Date(p[0],p[1]-1,p[2]);
+}
+
+function formatDate(s){
+  if(!s) return '-';
+  return String(s);
+}
+
+function daysBetween(a,b){
+  const da = parseDateOnly(a);
+  const db = parseDateOnly(b);
+  if(!da || !db) return 0;
+  return Math.round((db-da)/86400000);
+}
+
+function startOfWeek(date){
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1-day;
+  d.setDate(d.getDate()+diff);
+  return localDateString(d);
+}
+
+/* ============================================================
+   ID
+============================================================ */
+
+function uid(){
+  if(window.crypto && crypto.randomUUID){
+    return crypto.randomUUID();
+  }
+  return 'id-' + Date.now() + '-' +
+    Math.random().toString(36).slice(2) +
+    Math.random().toString(36).slice(2);
+}
+
+/* ============================================================
+   HTML 安全
+============================================================ */
+
+function esc(value){
+  return String(value ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+/* ============================================================
+   Storage
+============================================================ */
+
+function loadData(){
+
+  const v4 = localStorage.getItem(STORAGE.DATA);
+
+  if(v4){
+
+    try{
+
+      const parsed = JSON.parse(v4);
+
+      if(validateDatabase(parsed)){
+        records = parsed.records;
+        targets = parsed.targets;
+        return;
       }
-    }
-    function updName(listObj) { document.getElementById('detail-name').innerHTML = listObj[document.getElementById('detail-cat').value].map(s=>`<option value="${s}">${s}</option>`).join(''); }
-    
-    document.getElementById('item-type').addEventListener('change', updateFormFields);
-    document.getElementById('open-status').addEventListener('change', renderDetailFields);
-    document.getElementById('obtain-method').addEventListener('change', e => document.getElementById('memo-group').style.display = e.target.value==='其他'?'block':'none');
 
-    document.getElementById('add-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const type = document.getElementById('item-type').value; const qty = parseInt(document.getElementById('quantity').value); const isOpen = document.getElementById('open-status').value === STAT.OPEN;
-      const mtd = document.getElementById('obtain-method').value; const memo = mtd==='其他'?document.getElementById('memo').value:'';
-      let content = null;
-      if (isOpen) {
-        content = type === ITEM.SKILL 
-          ? { category: document.getElementById('detail-cat').value, name: document.getElementById('detail-name').value, tier: document.getElementById('detail-tier').value }
-          : { category: document.getElementById('detail-cat').value, name: document.getElementById('detail-name').value, grade: document.getElementById('detail-grade').value, detail: document.getElementById('detail-val').value };
-      }
-      for(let i=0; i<(isOpen?qty:1); i++) {
-        records.unshift({ id: Date.now()+i, date: document.getElementById('obtain-date').value, type, method: mtd, seasons:0, memo, quantity: isOpen?1:qty, status: isOpen?STAT.OPEN:STAT.UNOPEN, content });
-      }
-      closeModal('add-modal'); saveAndRender(); showToast('紀錄已新增'); document.getElementById('quantity').value = 1;
-    });
+    }catch(e){
 
-    // 快捷功能
-    function openLeagueModal() { document.getElementById('league-date').value=todayStr; document.getElementById('league-date').max=todayStr; document.getElementById('league-modal').style.display='flex'; }
-    function submitLeague() {
-      const s = parseFloat(document.getElementById('league-seasons').value)||1;
-      records.unshift({ id:Date.now(), date:document.getElementById('league-date').value, type:ITEM.LEAGUE, method:'賽季結算', seasons:s, memo:`完賽 ${s} 季`, quantity:0, status:'-', content:null });
-      closeModal('league-modal'); saveAndRender(); showToast(`已登記 ${s} 季聯賽`);
-    }
-    function quickCheckIn(type, method) { records.unshift({ id:Date.now(), date:todayStr, type, method, seasons:0, memo:'快捷', quantity:1, status:STAT.UNOPEN, content:null }); saveAndRender(); showToast(`+1 ${type}`); }
+      console.warn('V4 資料讀取失敗',e);
 
-    // 算繪與邏輯
-    function saveAndRender() {
-      // 確保陣列依日期與ID降冪排序，解決批量開箱或補登錄時的順序錯亂
-      records.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
-      localStorage.setItem('coach_v3_rec', JSON.stringify(records));
-      updateMonthFilter(); renderKPIs(); renderCharts(); renderTable(); renderTargets(); renderGoodCoaches();
     }
 
-    function renderKPIs() {
-      let uS=0, uC=0, tS=0, t3=0, tSeas=0, lS=0, lC=0, sSk=0, sCo=0, fSk=false, fCo=false;
-      let pDates = [];
-      for (let r of records) {
-        if (r.status === STAT.UNOPEN) { if(r.type===ITEM.SKILL) uS+=r.quantity; else uC+=r.quantity; }
-        else if (r.status === STAT.OPEN && r.content) {
-          if (r.type===ITEM.SKILL) { tS+=r.quantity; if(r.content.tier==='III') t3+=r.quantity; if(!fSk){ if(r.content.tier==='III') fSk=true; else sSk+=r.quantity; } }
-          else if(r.type===ITEM.COACH && !fCo) { if(r.content.grade==='優良') fCo=true; else sCo+=r.quantity; }
-        }
-        if (r.type===ITEM.LEAGUE) tSeas+=(r.seasons||0);
-        else if (r.method.includes('聯賽')) { if(r.type===ITEM.SKILL) lS+=r.quantity; if(r.type===ITEM.COACH) lC+=r.quantity; }
-        if (r.method.includes('60000分保底')) pDates.push(new Date(r.date));
-      }
-      
-      document.getElementById('kpi-unopened-skill').innerText=uS; document.getElementById('kpi-unopened-coach').innerText=uC;
-      document.getElementById('kpi-streak-skill').innerText=sSk; document.getElementById('kpi-streak-coach').innerText=sCo;
-      
-      const rate = tS > 0 ? (t3/tS)*100 : 0;
-      document.getElementById('kpi-tier3-rate').innerText = tS > 0 ? `${rate.toFixed(1)}%` : `0%`;
-      document.getElementById('kpi-tier3-count').innerText = tS > 0 ? `${t3} / ${tS} 張` : `無紀錄`;
-      const badge = document.getElementById('luck-badge');
-      if (tS < 10) { badge.innerText = '樣本不足'; badge.className = 'luck-tag luck-normal'; }
-      else if (rate >= 15) { badge.innerText = '👑 歐皇降臨'; badge.className = 'luck-tag luck-ou'; }
-      else if (rate >= 10) { badge.innerText = '🍀 偏歐'; badge.className = 'luck-tag luck-ou'; }
-      else if (rate >= 6) { badge.innerText = '😐 亞洲正常'; badge.className = 'luck-tag luck-normal'; }
-      else { badge.innerText = '🌧️ 非洲酋長'; badge.className = 'luck-tag luck-fei'; }
+  }
 
-      if(tSeas>0) { document.getElementById('kpi-seasons-exp').innerHTML=`<span style="color:var(--accent);">${(lC/tSeas).toFixed(2)}</span> <span style="font-size:0.8rem;color:var(--border);">|</span> <span style="color:var(--primary);">${(lS/tSeas).toFixed(2)}</span>`; document.getElementById('kpi-seasons-sub').innerText=`累計 ${tSeas} 季`; }
-      
-      const pCard = document.getElementById('pity-card');
-      if(pDates.length>=2) {
-        const sorted = pDates.sort((a,b)=>a-b); const avg = (sorted[sorted.length-1]-sorted[0])/86400000/(pDates.length-1);
-        document.getElementById('kpi-pity-cycle').innerText = `約 ${avg.toFixed(0)} 天/次`;
-        const next = new Date(sorted[sorted.length-1].getTime() + avg*86400000);
-        const daysLeft = Math.ceil((next - new Date()) / 86400000);
-        document.getElementById('kpi-pity-sub').innerText = `預計下次: ${next.toISOString().split('T')[0]}`;
-        if(daysLeft <= 3) { pCard.style.border = '1px solid var(--danger)'; pCard.style.boxShadow = '0 0 10px rgba(190, 140, 140, 0.3)'; } else { pCard.style.border = ''; pCard.style.boxShadow = ''; }
-      }
-    }
+  migrateV3();
 
-    let charts = {};
-    function renderCharts() {
-      const mD={}, tC={'III':0,'II':0,'I':0}, gC={'優良':0,'普通':0,'劣等':0};
-      records.forEach(r=>{
-        if(r.type!==ITEM.LEAGUE){ const m=r.date.substring(0,7); if(!mD[m])mD[m]={s:0,c:0}; r.type===ITEM.SKILL?mD[m].s+=r.quantity:mD[m].c+=r.quantity; }
-        if(r.status===STAT.OPEN&&r.content){ r.type===ITEM.SKILL?tC[r.content.tier]+=r.quantity:gC[r.content.grade||'普通']+=r.quantity; }
-      });
-      const ms = Object.keys(mD).sort();
-      updChart('monthlyChart','bar',ms.length?ms:['無'], [{label:'技',data:ms.map(m=>mD[m].s),backgroundColor:'#8598A7'},{label:'教',data:ms.map(m=>mD[m].c),backgroundColor:'#C4B097'}], {scales:{x:{display:false},y:{display:false}}, plugins:{legend:{display:false}}});
-      
-      // 修正圓餅圖重疊問題，低於5%不顯示標籤
-      const pieOpt = { 
-        plugins:{ 
-          datalabels:{ 
-            display: true, color:'#1A1C23', font:{weight:'bold'}, 
-            formatter: (v, c) => {
-              let s = c.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); 
-              if (s === 0 || v === 0) return null;
-              let p = (v * 100 / s);
-              return p > 5 ? p.toFixed(0) + "%" : null;
-            }
-          }, 
-          legend:{position:'right',labels:{color:'#E8E4DF', boxWidth:10}} 
-        }
-      };
-      
-      updChart('tierChart','pie',Object.keys(tC),[{data:Object.values(tC),backgroundColor:['#BE8C8C','#92A38D','#9E9B96']}], pieOpt);
-      updChart('coachGradeChart','pie',Object.keys(gC),[{data:Object.values(gC),backgroundColor:['#BE8C8C','#92A38D','#9E9B96']}], pieOpt);
-    }
-    function updChart(id,t,l,d,o) { if(charts[id]){charts[id].data.labels=l;charts[id].data.datasets=d;charts[id].update();}else{Chart.defaults.color='#9E9B96';charts[id]=new Chart(document.getElementById(id),{type:t,data:{labels:l,datasets:d},options:o});} }
+}
 
-    function renderTable() {
-      const txt=document.getElementById('filter-text').value.toLowerCase(), mo=document.getElementById('filter-month').value, ty=document.getElementById('filter-type').value, res=document.getElementById('filter-result').value;
-      const f = records.filter(r=>{
-        if(txt && !`${r.type} ${r.memo||''} ${r.content?.name||''} ${r.content?.category||''} ${r.content?.tier||''} ${r.content?.grade||''}`.toLowerCase().includes(txt)) return false;
-        if(mo!=='all' && !r.date.startsWith(mo)) return false; if(ty!=='all' && r.type!==ty) return false;
-        if(res==='target' && !(r.content && targets.includes(r.content.name))) return false;
-        if(res==='jackpot' && !(r.content && (r.content.tier==='III'||r.content.grade==='優良'))) return false;
-        if(res==='unopened' && r.status!==STAT.UNOPEN) return false; return true;
-      });
-      document.getElementById('record-count').innerText = f.length;
-      document.getElementById('records-tbody').innerHTML = f.slice(0,100).map(r=>{
-        let st='-'; let cls='';
-        if(r.type===ITEM.LEAGUE) return `<tr><td><span style="font-size:0.75rem">${r.date}</span></td><td><span class="badge badge-league">🏁聯賽</span></td><td>+${r.seasons}季</td><td>自動累計</td><td><button class="del-btn" onclick="deleteRec(${r.id})">刪除</button></td></tr>`;
-        if(r.status===STAT.UNOPEN) st=`<span class="badge badge-pending">未開</span>`;
-        else if(r.content) {
-          const isT=targets.includes(r.content.name); if(isT) cls='target-highlight';
-          st=`<span class="badge ${r.type===ITEM.SKILL?(r.content.tier==='III'?'badge-tier-3':'badge-coach'):(r.content.grade==='優良'?'badge-grade-good':'badge-grade-normal')}">${r.content.tier?r.content.tier+'階':r.content.grade}</span> <b>${r.content.name}</b> ${isT?'🎯':''}`;
-        }
-        return `<tr class="${cls}"><td><span style="font-size:0.75rem">${r.date.substring(5)}</span></td><td><span class="badge ${r.type===ITEM.COACH?'badge-coach':'badge-skill'}">${r.type.replace('白金','').replace('教練券','券')}</span></td><td>${r.quantity}張</td><td>${st}</td><td><button class="action-btn" onclick="openEdit(${r.id})">編</button><button class="del-btn" onclick="deleteRec(${r.id})">刪</button></td></tr>`;
-      }).join('');
-    }
+function validateDatabase(data){
 
-    function renderTargets() {
-      document.getElementById('target-count').innerText = targets.length;
-      const mk=(id,ls)=>document.getElementById(id).innerHTML=ls.map(n=>`<div class="target-chip ${targets.includes(n)?'active':''}" onclick="togChip('${n}')">${n}</div>`).join('');
-      mk('chips-batter-skills',skillList['打者']); mk('chips-pitcher-skills',skillList['投手']); mk('chips-batter-coaches',coachList['打擊']); mk('chips-pitcher-coaches',coachList['投手']);
-    }
-    function togChip(n) { const i=targets.indexOf(n); i>-1?targets.splice(i,1):targets.push(n); localStorage.setItem('coach_v3_tar', JSON.stringify(targets)); renderTargets(); renderTable(); }
-    
-    function updateMonthFilter() {
-      const s=document.getElementById('filter-month'), v=s.value, ms=Array.from(new Set(records.filter(r=>r.type!==ITEM.LEAGUE).map(r=>r.date.substring(0,7)))).sort().reverse();
-      s.innerHTML = '<option value="all">所有月份</option>' + ms.map(m=>`<option value="${m}">${m}</option>`).join(''); if(ms.includes(v)) s.value=v;
-    }
-    function renderGoodCoaches() {
-      const g=records.filter(r=>r.type===ITEM.COACH&&r.status===STAT.OPEN&&r.content?.grade==='優良');
-      document.getElementById('good-coach-list').innerHTML = g.length ? g.map(x=>`<div style="font-size:0.85rem; padding:8px 0; border-bottom:1px dashed var(--border); display:flex; justify-content:space-between;"><span><b>${x.content.name}</b> (${x.content.category})</span><span style="color:var(--primary);">${x.content.detail||'-'}</span></div>`).join('') : '<div style="color:var(--text-muted);text-align:center;padding:20px;">尚無優良教練</div>';
-    }
+  if(!data || typeof data !== 'object') return false;
+  if(!Array.isArray(data.records)) return false;
+  if(!Array.isArray(data.targets)) return false;
 
-    async function deleteRec(id) { if(await customConfirm('確定刪除？')) { records=records.filter(r=>r.id!==id); saveAndRender(); showToast('已刪除'); } }
-    async function clearAllData() { if(await customConfirm('將清空所有資料且無法復原，確定？')) { records=[]; saveAndRender(); showToast('已清空'); } }
+  return true;
+}
 
-    function exportScreenshot() {
-      showToast('正在生成戰報圖，請稍候...');
-      const target = document.getElementById('export-area');
-      html2canvas(target, { backgroundColor: '#1A1C23', scale: 2 }).then(canvas => {
-        const link = document.createElement('a'); link.download = `戰報_${todayStr}.png`;
-        link.href = canvas.toDataURL('image/png'); link.click();
-        showToast('戰報圖片已下載！');
-      }).catch(err => showToast('截圖失敗', 'error'));
-    }
+/* ============================================================
+   V3 → V4 Migration
+============================================================ */
 
-    function openEdit(id) {
-      const r = records.find(x=>x.id===id); if(!r) return;
-      document.getElementById('edit-id').value=id; document.getElementById('edit-date').value=r.date; document.getElementById('edit-memo').value = r.type===ITEM.LEAGUE?'':(r.content?r.content.detail||'':r.memo||'');
-      document.getElementById('edit-modal').style.display='flex';
-    }
-    function saveEdit() {
-      const r = records.find(x=>x.id==parseInt(document.getElementById('edit-id').value)); if(!r) return;
-      r.date = document.getElementById('edit-date').value; const v = document.getElementById('edit-memo').value;
-      if(r.content) r.content.detail = v; else r.memo = v;
-      closeModal('edit-modal'); saveAndRender(); showToast('更新成功');
-    }
+function migrateV3(){
 
-    // 修正匯出 CSV 功能
-    function exportData(fmt) {
-      if (fmt === 'json') {
-        const link = document.createElement('a'); 
-        link.download = `backup_${todayStr}.json`; 
-        link.href = URL.createObjectURL(new Blob([JSON.stringify({records,targets})], {type:'application/json'})); 
-        link.click();
-      } else if (fmt === 'csv') {
-        let csvContent = "日期,種類,獲得方式,數量,狀態,分類,名稱,階級/評價,備註\n";
-        records.forEach(r => {
-          let row = [
-            r.date, r.type, r.method, r.quantity, r.status,
-            r.content ? r.content.category : '',
-            r.content ? r.content.name : '',
-            r.content ? (r.content.tier || r.content.grade) : '',
-            (r.type === ITEM.LEAGUE ? `完賽${r.seasons}季` : r.memo) || ''
-          ].map(str => `"${String(str).replace(/"/g, '""')}"`).join(",");
-          csvContent += row + "\n";
+  let oldRecords = [];
+  let oldTargets = null;
+
+  try{
+    oldRecords = JSON.parse(
+      localStorage.getItem(STORAGE.OLD_RECORDS) || '[]'
+    );
+  }catch(e){
+    oldRecords = [];
+  }
+
+  try{
+    oldTargets = JSON.parse(
+      localStorage.getItem(STORAGE.OLD_TARGETS) || 'null'
+    );
+  }catch(e){
+    oldTargets = null;
+  }
+
+  records = [];
+
+  if(Array.isArray(oldRecords)){
+
+    oldRecords.forEach(old => {
+
+      if(!old || !old.type || !old.date) return;
+
+      if(old.type === ITEM.LEAGUE){
+
+        records.push({
+          id:uid(),
+          eventType:'league',
+          itemType:ITEM.LEAGUE,
+          obtainDate:old.date,
+          openDate:null,
+          quantity:Number(old.seasons)||0,
+          method:'賽季結算',
+          source:{
+            type:'league',
+            label:'賽季結算'
+          },
+          status:'-',
+          content:null,
+          memo:old.memo || ''
         });
-        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.download = `records_${todayStr}.csv`;
-        link.href = URL.createObjectURL(blob);
-        link.click();
-      }
-    }
-    
-    function importData(e) {
-      const fr=new FileReader(); fr.onload=function(evt){ try{ const d=JSON.parse(evt.target.result); records=d.records||d; targets=d.targets||targets; saveAndRender(); showToast('還原成功'); }catch{showToast('格式錯誤','error');} }; if(e.target.files[0]) fr.readAsText(e.target.files[0]); e.target.value='';
-    }
 
-    // 新增 GAS 雲端同步功能
-    function saveCloudUrl() {
-      const url = document.getElementById('gas-url').value;
-      if(!url) return showToast('請填寫網址', 'error');
-      localStorage.setItem('coach_v3_gas_url', url);
-      showToast('網址已儲存');
-    }
-
-    function syncToCloud() {
-      const url = document.getElementById('gas-url').value || localStorage.getItem('coach_v3_gas_url');
-      if(!url) {
-        document.getElementById('cloud-modal').style.display = 'flex';
-        return showToast('請先設定 Web App URL', 'error');
+        return;
       }
-      showToast('開始同步資料至雲端...');
-      // 這裡可以透過 fetch 呼叫 GAS API
-      closeModal('cloud-modal');
-    }
 
-    function openBatchModal() { document.getElementById('batch-modal').style.display='flex'; buildBatch(); }
-    function buildBatch() { 
-      const t=document.getElementById('batch-type').value, c=parseInt(document.getElementById('batch-count').value); 
-      let html=''; for(let i=0;i<c;i++){
-        html+= t===ITEM.SKILL ? `<div style="display:flex;gap:4px;margin-bottom:4px;"><select class="b-cat" onchange="this.nextElementSibling.innerHTML=skillList[this.value].map(x=>'<option>'+x+'</option>').join('')"><option value="打者">打者</option><option value="投手">投手</option></select><select class="b-nam">${skillList['打者'].map(x=>`<option>${x}</option>`).join('')}</select><select class="b-tr"><option value="III">III</option><option value="II">II</option><option value="I">I</option></select></div>` 
-        : `<div style="display:flex;gap:4px;margin-bottom:4px;"><select class="b-cat" onchange="this.nextElementSibling.innerHTML=coachList[this.value].map(x=>'<option>'+x+'</option>').join('')"><option value="打擊">打擊</option><option value="投手">投手</option></select><select class="b-nam">${coachList['打擊'].map(x=>`<option>${x}</option>`).join('')}</select><select class="b-tr"><option value="優良">優良</option><option value="普通">普通</option></select></div>`;
+      const quantity = Math.max(1,Number(old.quantity)||1);
+
+      if(old.status === STAT.UNOPEN){
+
+        records.push({
+          id:uid(),
+          eventType:'obtain',
+          itemType:old.type,
+          obtainDate:old.date,
+          openDate:null,
+          quantity,
+          method:old.method || '其他',
+          source:{
+            type:sourceType(old.method),
+            label:old.method || '其他'
+          },
+          status:STAT.UNOPEN,
+          content:null,
+          memo:old.memo || ''
+        });
+
+      }else{
+
+        for(let i=0;i<quantity;i++){
+
+          records.push({
+            id:uid(),
+            eventType:'open',
+            itemType:old.type,
+            obtainDate:old.date,
+            openDate:old.date,
+            quantity:1,
+            method:old.method || '其他',
+            source:{
+              type:sourceType(old.method),
+              label:old.method || '其他'
+            },
+            status:STAT.OPEN,
+            content:old.content
+              ? JSON.parse(JSON.stringify(old.content))
+              : null,
+            memo:old.memo || ''
+          });
+
+        }
+
       }
-      document.getElementById('batch-rows').innerHTML=html; 
-    }
-    
-    function submitBatch() {
-      const type = document.getElementById('batch-type').value, rows = document.getElementById('batch-rows').children;
-      Array.from(rows).forEach((row,i) => {
-        const u = records.slice().reverse().find(r=>r.type===type && r.status===STAT.UNOPEN); if(!u) return;
-        if(u.quantity>1) u.quantity--; else records = records.filter(r=>r.id!==u.id);
-        const c = type===ITEM.SKILL ? {category:row.children[0].value, name:row.children[1].value, tier:row.children[2].value} : {category:row.children[0].value, name:row.children[1].value, grade:row.children[2].value, detail:''};
-        // 修正：批量開箱時日期改為「今日 (todayStr)」，讓時間軸更直覺
-        records.unshift({id:Date.now()+i, date:todayStr, type, method:u.method, seasons:0, memo:'批量開箱', quantity:1, status:STAT.OPEN, content:c});
+
+    });
+
+  }
+
+  targets = [];
+
+  if(Array.isArray(oldTargets)){
+
+    oldTargets.forEach(name => {
+
+      const skillCategories = Object.keys(skillList);
+
+      skillCategories.forEach(cat => {
+
+        if(skillList[cat].includes(name)){
+
+          targets.push({
+            type:'skill',
+            category:cat,
+            name
+          });
+
+        }
+
       });
-      closeModal('batch-modal'); saveAndRender(); showToast('批量開箱完成');
+
+      Object.keys(coachList).forEach(cat => {
+
+        if(coachList[cat].includes(name)){
+
+          targets.push({
+            type:'coach',
+            category:cat,
+            name
+          });
+
+        }
+
+      });
+
+    });
+
+  }
+
+  if(!targets.length){
+
+    targets = [
+      {
+        type:'skill',
+        category:'打者',
+        name:'先鋒'
+      },
+      {
+        type:'skill',
+        category:'打者',
+        name:'打者洞察力'
+      }
+    ];
+
+  }
+
+  saveData();
+
+  if(oldRecords.length){
+
+    showToast(
+      `已自動升級 V3.1 → V4，共轉換 ${records.length} 筆資料`,
+      'success'
+    );
+
+  }
+
+}
+
+function sourceType(method){
+
+  if(method === '聯賽60000分保底') return 'pity';
+  if(method === '刷聯賽' || method === '刷聯賽拿到') return 'league';
+  return 'other';
+}
+
+function saveData(){
+
+  const db = {
+    schemaVersion:SCHEMA_VERSION,
+    appVersion:APP_VERSION,
+    updatedAt:new Date().toISOString(),
+    records,
+    targets
+  };
+
+  localStorage.setItem(
+    STORAGE.DATA,
+    JSON.stringify(db)
+  );
+
+  /* 同時保留舊 key，方便 V3 還原 */
+  localStorage.setItem(
+    STORAGE.OLD_RECORDS,
+    JSON.stringify(records)
+  );
+
+  localStorage.setItem(
+    STORAGE.OLD_TARGETS,
+    JSON.stringify(targets)
+  );
+
+}
+
+/* ============================================================
+   UI
+============================================================ */
+
+function switchTab(tabId,button){
+
+  document.querySelectorAll('.tab-content')
+    .forEach(x=>x.classList.remove('active'));
+
+  document.querySelectorAll('.tab-btn')
+    .forEach(x=>x.classList.remove('active'));
+
+  document.getElementById('tab-'+tabId)
+    .classList.add('active');
+
+  if(button){
+    button.classList.add('active');
+  }
+
+}
+
+function openModal(id){
+  const el=document.getElementById(id);
+  if(el) el.style.display='flex';
+}
+
+function closeModal(id){
+  const el=document.getElementById(id);
+  if(el) el.style.display='none';
+}
+
+function showToast(msg,type='success'){
+
+  const t=document.createElement('div');
+
+  t.className=`toast ${type}`;
+  t.innerText=msg;
+
+  document.getElementById('toast-container')
+    .appendChild(t);
+
+  setTimeout(()=>{
+    t.remove();
+  },3200);
+
+}
+
+function customConfirm(msg){
+
+  return new Promise(resolve=>{
+
+    const modal=document.getElementById('confirm-modal');
+
+    document.getElementById('confirm-msg')
+      .innerText=msg;
+
+    modal.style.display='flex';
+
+    const yes=document.getElementById('confirm-yes');
+    const no=document.getElementById('confirm-no');
+
+    yes.onclick=()=>{
+      modal.style.display='none';
+      resolve(true);
+    };
+
+    no.onclick=()=>{
+      modal.style.display='none';
+      resolve(false);
+    };
+
+  });
+
+}
+
+/* ============================================================
+   新增
+============================================================ */
+
+function resetAddForm(){
+
+  document.getElementById('item-type').value=ITEM.SKILL;
+  document.getElementById('quantity').value=1;
+  document.getElementById('memo').value='';
+  document.getElementById('open-status').value=STAT.UNOPEN;
+
+  document.getElementById('obtain-date').value=todayStr;
+  document.getElementById('obtain-date').max=todayStr;
+
+  updateFormFields();
+
+  document.getElementById('memo-group').style.display='none';
+
+}
+
+function openAddModal(){
+
+  resetAddForm();
+
+  openModal('add-modal');
+
+}
+
+function updateFormFields(){
+
+  const type=document.getElementById('item-type').value;
+  const method=document.getElementById('obtain-method');
+
+  method.innerHTML='';
+
+  methodOpts[type].forEach(x=>{
+
+    const op=document.createElement('option');
+    op.value=x;
+    op.textContent=x;
+    method.appendChild(op);
+
+  });
+
+  document.getElementById('memo-group').style.display=
+    method.value==='其他'?'block':'none';
+
+  renderDetailFields();
+
+}
+
+function renderDetailFields(){
+
+  const type=document.getElementById('item-type').value;
+  const isOpen=
+    document.getElementById('open-status').value===STAT.OPEN;
+
+  const box=document.getElementById('detail-fields');
+
+  if(!isOpen){
+
+    box.style.display='none';
+    box.innerHTML='';
+    return;
+
+  }
+
+  box.style.display='grid';
+
+  if(type===ITEM.SKILL){
+
+    box.innerHTML=`
+
+      <div class="form-group">
+        <label>分類</label>
+        <select id="detail-cat">
+          <option value="打者">打者</option>
+          <option value="投手">投手</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>技能</label>
+        <select id="detail-name"></select>
+      </div>
+
+      <div class="form-group">
+        <label>階級</label>
+        <select id="detail-tier">
+          <option value="III">III階</option>
+          <option value="II">II階</option>
+          <option value="I">I階</option>
+        </select>
+      </div>
+
+    `;
+
+    const cat=document.getElementById('detail-cat');
+
+    cat.addEventListener('change',()=>{
+      populateDetailName(skillList);
+    });
+
+    populateDetailName(skillList);
+
+  }else{
+
+    box.innerHTML=`
+
+      <div class="form-group">
+        <label>分類</label>
+        <select id="detail-cat">
+          <option value="打擊">打擊</option>
+          <option value="投手">投手</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>教練</label>
+        <select id="detail-name"></select>
+      </div>
+
+      <div class="form-group">
+        <label>評價</label>
+        <select id="detail-grade">
+          <option value="優良">優良</option>
+          <option value="普通">普通</option>
+          <option value="劣等">劣等</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>數值 / 詳細資料</label>
+        <input id="detail-val" type="text" placeholder="選填">
+      </div>
+
+    `;
+
+    const cat=document.getElementById('detail-cat');
+
+    cat.addEventListener('change',()=>{
+      populateDetailName(coachList);
+    });
+
+    populateDetailName(coachList);
+
+  }
+
+}
+
+function populateDetailName(list){
+
+  const cat=document.getElementById('detail-cat');
+  const name=document.getElementById('detail-name');
+
+  name.innerHTML='';
+
+  list[cat.value].forEach(x=>{
+
+    const op=document.createElement('option');
+    op.value=x;
+    op.textContent=x;
+    name.appendChild(op);
+
+  });
+
+}
+
+function getAddContent(){
+
+  const type=document.getElementById('item-type').value;
+
+  if(type===ITEM.SKILL){
+
+    return {
+      category:document.getElementById('detail-cat').value,
+      name:document.getElementById('detail-name').value,
+      tier:document.getElementById('detail-tier').value
+    };
+
+  }
+
+  return {
+
+    category:document.getElementById('detail-cat').value,
+    name:document.getElementById('detail-name').value,
+    grade:document.getElementById('detail-grade').value,
+    detail:document.getElementById('detail-val').value.trim()
+
+  };
+
+}
+
+document.getElementById('item-type')
+  .addEventListener('change',updateFormFields);
+
+document.getElementById('open-status')
+  .addEventListener('change',renderDetailFields);
+
+document.getElementById('obtain-method')
+  .addEventListener('change',e=>{
+
+    document.getElementById('memo-group').style.display=
+      e.target.value==='其他'?'block':'none';
+
+  });
+
+document.getElementById('add-form')
+  .addEventListener('submit',e=>{
+
+    e.preventDefault();
+
+    const type=
+      document.getElementById('item-type').value;
+
+    const method=
+      document.getElementById('obtain-method').value;
+
+    const date=
+      document.getElementById('obtain-date').value;
+
+    const qty=
+      Number(document.getElementById('quantity').value);
+
+    const isOpen=
+      document.getElementById('open-status').value===STAT.OPEN;
+
+    const memo=
+      document.getElementById('memo').value.trim();
+
+    if(!date){
+
+      showToast('請選擇日期','error');
+      return;
+
+    }
+
+    if(!Number.isInteger(qty)||qty<1){
+
+      showToast('數量必須是大於 0 的整數','error');
+      return;
+
+    }
+
+    if(method==='其他'&&!memo){
+
+      showToast('「其他方式」必須填寫備註','error');
+      return;
+
+    }
+
+    if(isOpen){
+
+      const content=getAddContent();
+
+      for(let i=0;i<qty;i++){
+
+        records.push({
+
+          id:uid(),
+
+          eventType:'open',
+
+          itemType:type,
+
+          obtainDate:date,
+
+          openDate:date,
+
+          quantity:1,
+
+          method,
+
+          source:{
+            type:sourceType(method),
+            label:method
+          },
+
+          status:STAT.OPEN,
+
+          content:JSON.parse(JSON.stringify(content)),
+
+          memo
+
+        });
+
+      }
+
+    }else{
+
+      records.push({
+
+        id:uid(),
+
+        eventType:'obtain',
+
+        itemType:type,
+
+        obtainDate:date,
+
+        openDate:null,
+
+        quantity:qty,
+
+        method,
+
+        source:{
+          type:sourceType(method),
+          label:method
+        },
+
+        status:STAT.UNOPEN,
+
+        content:null,
+
+        memo
+
+      });
+
     }
 
     saveAndRender();
-  </script>
+
+    closeModal('add-modal');
+
+    showToast(
+      isOpen
+        ? `已新增 ${qty} 張開箱結果`
+        : `已新增 ${qty} 張庫存`
+    );
+
+  });
+
+/* ============================================================
+   聯賽
+============================================================ */
+
+function openLeagueModal(){
+
+  document.getElementById('league-date').value=todayStr;
+  document.getElementById('league-date').max=todayStr;
+  document.getElementById('league-seasons').value=1;
+
+  openModal('league-modal');
+
+}
+
+function submitLeague(){
+
+  const date=
+    document.getElementById('league-date').value;
+
+  const seasons=
+    Number(document.getElementById('league-seasons').value);
+
+  if(!date){
+
+    showToast('請選日期','error');
+    return;
+
+  }
+
+  if(!seasons || seasons<=0){
+
+    showToast('季數必須大於 0','error');
+    return;
+
+  }
+
+  records.push({
+
+    id:uid(),
+
+    eventType:'league',
+
+    itemType:ITEM.LEAGUE,
+
+    obtainDate:date,
+
+    openDate:null,
+
+    quantity:seasons,
+
+    method:'賽季結算',
+
+    source:{
+      type:'league',
+      label:'賽季結算'
+    },
+
+    status:'-',
+
+    content:null,
+
+    memo:`完賽 ${seasons} 季`
+
+  });
+
+  saveAndRender();
+
+  closeModal('league-modal');
+
+  showToast(`已登記 ${seasons} 季聯賽`);
+
+}
+
+function quickCheckIn(type,method){
+
+  records.push({
+
+    id:uid(),
+
+    eventType:'obtain',
+
+    itemType:type,
+
+    obtainDate:todayStr,
+
+    openDate:null,
+
+    quantity:1,
+
+    method,
+
+    source:{
+      type:sourceType(method),
+      label:method
+    },
+
+    status:STAT.UNOPEN,
+
+    content:null,
+
+    memo:'快捷'
+
+  });
+
+  saveAndRender();
+
+  showToast(`+1 ${type}`);
+
+}
+
+/* ============================================================
+   庫存計算
+============================================================ */
+
+function getInventory(type){
+
+  let total=0;
+
+  records.forEach(r=>{
+
+    if(r.itemType!==type) return;
+
+    if(r.eventType==='obtain' &&
+       r.status===STAT.UNOPEN){
+
+      total+=Number(r.quantity)||0;
+
+    }
+
+  });
+
+  return total;
+
+}
+
+function getInventorySources(type){
+
+  return records
+    .filter(r=>
+      r.itemType===type &&
+      r.eventType==='obtain' &&
+      r.status===STAT.UNOPEN &&
+      Number(r.quantity)>0
+    )
+    .sort((a,b)=>{
+
+      const d=(parseDateOnly(a.obtainDate)||0)-
+              (parseDateOnly(b.obtainDate)||0);
+
+      return d;
+
+    });
+
+}
+
+/* ============================================================
+   統計工具
+============================================================ */
+
+function isOpened(r){
+  return r.eventType==='open' &&
+         r.status===STAT.OPEN &&
+         r.content;
+}
+
+function isObtained(r){
+  return r.eventType==='obtain';
+}
+
+function isTarget(r){
+
+  if(!isOpened(r)) return false;
+
+  const type=
+    r.itemType===ITEM.SKILL?'skill':'coach';
+
+  return targets.some(t=>
+    t.type===type &&
+    t.category===r.content.category &&
+    t.name===r.content.name
+  );
+
+}
+
+function isJackpot(r){
+
+  if(!isOpened(r)) return false;
+
+  if(r.itemType===ITEM.SKILL){
+    return r.content.tier==='III';
+  }
+
+  if(r.itemType===ITEM.COACH){
+    return r.content.grade==='優良';
+  }
+
+  return false;
+
+}
+
+function filterPeriod(list){
+
+  const period=
+    document.getElementById('period-filter')?.value||'all';
+
+  if(period==='all') return list;
+
+  const now=new Date();
+
+  const today=localDateString(now);
+
+  if(period==='day'){
+
+    return list.filter(r=>
+      (r.openDate||r.obtainDate)===today
+    );
+
+  }
+
+  if(period==='week'){
+
+    const start=startOfWeek(now);
+
+    return list.filter(r=>{
+      const d=r.openDate||r.obtainDate;
+      return d>=start && d<=today;
+    });
+
+  }
+
+  if(period==='month'){
+
+    const prefix=today.slice(0,7);
+
+    return list.filter(r=>
+      (r.openDate||r.obtainDate)?.startsWith(prefix)
+    );
+
+  }
+
+  return list;
+
+}
+
+/* ============================================================
+   KPI
+============================================================ */
+
+function renderKPIs(){
+
+  let unopenedSkill=getInventory(ITEM.SKILL);
+  let unopenedCoach=getInventory(ITEM.COACH);
+
+  const openedSkills=
+    records.filter(r=>
+      r.itemType===ITEM.SKILL &&
+      isOpened(r)
+    );
+
+  const openedCoaches=
+    records.filter(r=>
+      r.itemType===ITEM.COACH &&
+      isOpened(r)
+    );
+
+  const skillIII=
+    openedSkills.filter(r=>
+      r.content.tier==='III'
+    );
+
+  const goodCoach=
+    openedCoaches.filter(r=>
+      r.content.grade==='優良'
+    );
+
+  document.getElementById('kpi-unopened-skill')
+    .innerText=unopenedSkill;
+
+  document.getElementById('kpi-unopened-coach')
+    .innerText=unopenedCoach;
+
+  const rate=openedSkills.length
+    ? skillIII.length/openedSkills.length*100
+    : 0;
+
+  document.getElementById('kpi-tier3-rate')
+    .innerText=rate.toFixed(1)+'%';
+
+  document.getElementById('kpi-tier3-count')
+    .innerText=
+      `${skillIII.length} / ${openedSkills.length} 張`;
+
+  /* 個人統計 */
+
+  const periodRecords=filterPeriod(records);
+
+  const ps=periodRecords.filter(r=>
+    r.itemType===ITEM.SKILL &&
+    isOpened(r)
+  );
+
+  const pc=periodRecords.filter(r=>
+    r.itemType===ITEM.COACH &&
+    isOpened(r)
+  );
+
+  document.getElementById('stat-skill-open')
+    .innerText=ps.length;
+
+  document.getElementById('stat-coach-open')
+    .innerText=pc.length;
+
+  document.getElementById('stat-skill-iii')
+    .innerText=
+      ps.filter(r=>r.content.tier==='III').length;
+
+  document.getElementById('stat-coach-good')
+    .innerText=
+      pc.filter(r=>r.content.grade==='優良').length;
+
+  document.getElementById('stat-target-hit')
+    .innerText=
+      periodRecords.filter(isTarget).length;
+
+  document.getElementById('stat-obtain-total')
+    .innerText=
+      periodRecords
+        .filter(isObtained)
+        .reduce((s,r)=>s+Number(r.quantity||0),0);
+
+  /* 黑手 */
+
+  const skillStreak=getCurrentStreak(ITEM.SKILL);
+  const coachStreak=getCurrentStreak(ITEM.COACH);
+
+  document.getElementById('kpi-streak-skill')
+    .innerText=skillStreak.current;
+
+  document.getElementById('kpi-streak-coach')
+    .innerText=coachStreak.current;
+
+  document.getElementById('kpi-max-streak-skill')
+    .innerText=getMaxStreak(ITEM.SKILL);
+
+  document.getElementById('kpi-max-streak-coach')
+    .innerText=getMaxStreak(ITEM.COACH);
+
+  document.getElementById('record-skill-black')
+    .innerText=getMaxStreak(ITEM.SKILL);
+
+  document.getElementById('record-coach-black')
+    .innerText=getMaxStreak(ITEM.COACH);
+
+  /* 歷史個人紀錄 */
+
+  document.getElementById('record-day-open')
+    .innerText=getMaxOpenPerDay();
+
+  document.getElementById('record-month-obtain')
+    .innerText=getMaxObtainPerMonth();
+
+  /* 聯賽 */
+
+  const seasons=
+    records
+      .filter(r=>r.itemType===ITEM.LEAGUE)
+      .reduce((s,r)=>s+Number(r.quantity||0),0);
+
+  const leagueSkill=
+    records
+      .filter(r=>
+        r.eventType==='obtain' &&
+        r.itemType===ITEM.SKILL &&
+        r.method==='刷聯賽'
+      )
+      .reduce((s,r)=>s+Number(r.quantity||0),0);
+
+  const leagueCoach=
+    records
+      .filter(r=>
+        r.eventType==='obtain' &&
+        r.itemType===ITEM.COACH &&
+        r.method==='刷聯賽拿到'
+      )
+      .reduce((s,r)=>s+Number(r.quantity||0),0);
+
+  if(seasons>0){
+
+    document.getElementById('kpi-seasons-exp')
+      .innerHTML=
+      `<span style="color:var(--accent)">
+        ${ (leagueCoach/seasons).toFixed(2) }
+      </span>
+      <span style="color:var(--border)">|</span>
+      <span style="color:var(--primary)">
+        ${ (leagueSkill/seasons).toFixed(2) }
+      </span>`;
+
+    document.getElementById('kpi-seasons-sub')
+      .innerText=`累計 ${seasons} 季`;
+
+  }else{
+
+    document.getElementById('kpi-seasons-exp')
+      .innerText='--';
+
+    document.getElementById('kpi-seasons-sub')
+      .innerText='尚未登記完賽季數';
+
+  }
+
+  /* 歷史平均比較 */
+
+  const badge=document.getElementById('luck-badge');
+
+  if(openedSkills.length<30){
+
+    badge.innerText='樣本仍少';
+    badge.className='luck-tag luck-normal';
+
+  }else{
+
+    const historicalRate=rate;
+
+    if(historicalRate>=10){
+
+      badge.innerText='高於個人平均區間';
+      badge.className='luck-tag luck-ou';
+
+    }else if(historicalRate>=6){
+
+      badge.innerText='接近個人平均';
+      badge.className='luck-tag luck-normal';
+
+    }else{
+
+      badge.innerText='低於個人平均區間';
+      badge.className='luck-tag luck-fei';
+
+    }
+
+  }
+
+  renderPityStats();
+
+}
+
+function getCurrentStreak(type){
+
+  const arr=records
+    .filter(r=>
+      r.itemType===type &&
+      isOpened(r)
+    )
+    .sort((a,b)=>
+      (a.openDate||'').localeCompare(b.openDate||'')
+    );
+
+  let count=0;
+
+  for(let i=arr.length-1;i>=0;i--){
+
+    if(isJackpot(arr[i])) break;
+
+    count+=Number(arr[i].quantity||1);
+
+  }
+
+  return {
+    current:count
+  };
+
+}
+
+function getMaxStreak(type){
+
+  const arr=records
+    .filter(r=>
+      r.itemType===type &&
+      isOpened(r)
+    )
+    .sort((a,b)=>
+      (a.openDate||'').localeCompare(b.openDate||'')
+    );
+
+  let current=0;
+  let max=0;
+
+  arr.forEach(r=>{
+
+    if(isJackpot(r)){
+
+      max=Math.max(max,current);
+      current=0;
+
+    }else{
+
+      current+=Number(r.quantity||1);
+
+    }
+
+  });
+
+  max=Math.max(max,current);
+
+  return max;
+
+}
+
+/* ============================================================
+   保底統計
+============================================================ */
+
+function median(arr){
+
+  if(!arr.length) return 0;
+
+  const a=[...arr].sort((x,y)=>x-y);
+
+  const mid=Math.floor(a.length/2);
+
+  return a.length%2
+    ? a[mid]
+    : (a[mid-1]+a[mid])/2;
+
+}
+
+function renderPityStats(){
+
+  const dates=records
+    .filter(r=>
+      r.eventType==='obtain' &&
+      r.itemType===ITEM.SKILL &&
+      r.method==='聯賽60000分保底'
+    )
+    .map(r=>r.obtainDate)
+    .filter(Boolean)
+    .sort();
+
+  const card=document.getElementById('pity-card');
+
+  if(dates.length<2){
+
+    document.getElementById('kpi-pity-cycle')
+      .innerText=dates.length===1?'已有 1 次':'--';
+
+    document.getElementById('kpi-pity-sub')
+      .innerText='至少需要 2 次保底才能計算間隔';
+
+    card.style.border='';
+    card.style.boxShadow='';
+
+    return;
+
+  }
+
+  const intervals=[];
+
+  for(let i=1;i<dates.length;i++){
+
+    intervals.push(
+      daysBetween(dates[i-1],dates[i])
+    );
+
+  }
+
+  const avg=
+    intervals.reduce((a,b)=>a+b,0)/intervals.length;
+
+  const med=median(intervals);
+
+  const last=dates[dates.length-1];
+
+  const estimated=new Date(
+    parseDateOnly(last).getTime()+
+    med*86400000
+  );
+
+  const next=localDateString(estimated);
+
+  document.getElementById('kpi-pity-cycle')
+    .innerText=`平均 ${avg.toFixed(0)} 天`;
+
+  document.getElementById('kpi-pity-sub')
+    .innerText=
+      `中位 ${med.toFixed(0)} 天｜區間 ${Math.min(...intervals)}-${Math.max(...intervals)} 天｜估 ${next}`;
+
+  const daysLeft=
+    daysBetween(todayStr,next);
+
+  if(daysLeft<=3){
+
+    card.style.border='1px solid var(--danger)';
+    card.style.boxShadow='0 0 10px rgba(190,140,140,.3)';
+
+  }else{
+
+    card.style.border='';
+    card.style.boxShadow='';
+
+  }
+
+}
+
+/* ============================================================
+   圖表
+============================================================ */
+
+function destroyChart(id){
+
+  if(charts[id]){
+
+    charts[id].destroy();
+    charts[id]=null;
+
+  }
+
+}
+
+function renderCharts(){
+
+  const mode=
+    document.getElementById('chart-period').value;
+
+  const map={};
+
+  records.forEach(r=>{
+
+    if(r.itemType===ITEM.LEAGUE) return;
+
+    const date=r.eventType==='open'
+      ? r.openDate
+      : r.obtainDate;
+
+    if(!date) return;
+
+    let key;
+
+    if(mode==='month'){
+
+      key=date.slice(0,7);
+
+    }else if(mode==='week'){
+
+      key=startOfWeek(parseDateOnly(date));
+
+    }else{
+
+      key=date;
+
+    }
+
+    if(!map[key]){
+
+      map[key]={
+        obtainSkill:0,
+        obtainCoach:0,
+        openSkill:0,
+        openCoach:0
+      };
+
+    }
+
+    if(r.eventType==='obtain'){
+
+      if(r.itemType===ITEM.SKILL)
+        map[key].obtainSkill+=Number(r.quantity||0);
+
+      if(r.itemType===ITEM.COACH)
+        map[key].obtainCoach+=Number(r.quantity||0);
+
+    }
+
+    if(r.eventType==='open'){
+
+      if(r.itemType===ITEM.SKILL)
+        map[key].openSkill+=Number(r.quantity||0);
+
+      if(r.itemType===ITEM.COACH)
+        map[key].openCoach+=Number(r.quantity||0);
+
+    }
+
+  });
+
+  const labels=Object.keys(map).sort();
+
+  updChart(
+    'monthlyChart',
+    'bar',
+    labels.length?labels:['無'],
+    [
+      {
+        label:'獲取技能',
+        data:labels.map(x=>map[x].obtainSkill),
+        backgroundColor:'#8598A7'
+      },
+      {
+        label:'獲取教練',
+        data:labels.map(x=>map[x].obtainCoach),
+        backgroundColor:'#C4B097'
+      },
+      {
+        label:'開箱技能',
+        data:labels.map(x=>map[x].openSkill),
+        backgroundColor:'#92A38D'
+      },
+      {
+        label:'開箱教練',
+        data:labels.map(x=>map[x].openCoach),
+        backgroundColor:'#BE8C8C'
+      }
+    ],
+    {
+      responsive:true,
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{
+            color:'#E8E4DF'
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:'#9E9B96'}
+        },
+        y:{
+          ticks:{color:'#9E9B96'},
+          beginAtZero:true
+        }
+      }
+    }
+  );
+
+  const tier={
+    III:0,
+    II:0,
+    I:0
+  };
+
+  const grade={
+    優良:0,
+    普通:0,
+    劣等:0
+  };
+
+  records.forEach(r=>{
+
+    if(!isOpened(r)) return;
+
+    if(r.itemType===ITEM.SKILL){
+
+      if(tier[r.content.tier]!==undefined)
+        tier[r.content.tier]++;
+
+    }
+
+    if(r.itemType===ITEM.COACH){
+
+      if(grade[r.content.grade]!==undefined)
+        grade[r.content.grade]++;
+
+    }
+
+  });
+
+  const pieOpt={
+    plugins:{
+      legend:{
+        position:'right',
+        labels:{
+          color:'#E8E4DF',
+          boxWidth:10
+        }
+      },
+      datalabels:{
+        color:'#1A1C23',
+        font:{weight:'bold'},
+        formatter:(value,ctx)=>{
+
+          const total=
+            ctx.chart.data.datasets[0].data
+              .reduce((a,b)=>a+b,0);
+
+          if(!total || !value) return '';
+
+          const p=value/total*100;
+
+          return p>=5
+            ? p.toFixed(0)+'%'
+            : '';
+
+        }
+      }
+    }
+  };
+
+  updChart(
+    'tierChart',
+    'pie',
+    Object.keys(tier),
+    [{
+      data:Object.values(tier),
+      backgroundColor:[
+        '#BE8C8C',
+        '#92A38D',
+        '#9E9B96'
+      ]
+    }],
+    pieOpt
+  );
+
+  updChart(
+    'coachGradeChart',
+    'pie',
+    Object.keys(grade),
+    [{
+      data:Object.values(grade),
+      backgroundColor:[
+        '#92A38D',
+        '#8598A7',
+        '#BE8C8C'
+      ]
+    }],
+    pieOpt
+  );
+
+}
+
+function updChart(id,type,labels,datasets,options){
+
+  if(charts[id]){
+
+    charts[id].data.labels=labels;
+    charts[id].data.datasets=datasets;
+    charts[id].options=options;
+    charts[id].update();
+
+  }else{
+
+    charts[id]=new Chart(
+      document.getElementById(id),
+      {
+        type,
+        data:{
+          labels,
+          datasets
+        },
+        options
+      }
+    );
+
+  }
+
+}
+
+/* ============================================================
+   來源分析
+============================================================ */
+
+function renderSourceAnalysis(){
+
+  const sources={
+
+    '刷聯賽':{
+      skill:0,
+      skillIII:0,
+      coach:0,
+      good:0
+    },
+
+    '刷聯賽拿到':{
+      skill:0,
+      skillIII:0,
+      coach:0,
+      good:0
+    },
+
+    '聯賽60000分保底':{
+      skill:0,
+      skillIII:0,
+      coach:0,
+      good:0
+    },
+
+    '其他':{
+      skill:0,
+      skillIII:0,
+      coach:0,
+      good:0
+    }
+
+  };
+
+  records.forEach(r=>{
+
+    const source=
+      sources[r.method]||sources['其他'];
+
+    if(r.eventType==='obtain'){
+
+      if(r.itemType===ITEM.SKILL)
+        source.skill+=Number(r.quantity||0);
+
+      if(r.itemType===ITEM.COACH)
+        source.coach+=Number(r.quantity||0);
+
+    }
+
+    if(r.eventType==='open'){
+
+      if(r.itemType===ITEM.SKILL){
+
+        source.skill+=Number(r.quantity||0);
+
+        if(r.content.tier==='III')
+          source.skillIII+=Number(r.quantity||0);
+
+      }
+
+      if(r.itemType===ITEM.COACH){
+
+        source.coach+=Number(r.quantity||0);
+
+        if(r.content.grade==='優良')
+          source.good+=Number(r.quantity||0);
+
+      }
+
+    }
+
+  });
+
+  const tbody=
+    document.getElementById('source-analysis-body');
+
+  tbody.innerHTML=Object.entries(sources)
+    .map(([name,x])=>{
+
+      const skillRate=
+        x.skill
+          ? (x.skillIII/x.skill*100).toFixed(1)+'%'
+          : '-';
+
+      const coachRate=
+        x.coach
+          ? (x.good/x.coach*100).toFixed(1)+'%'
+          : '-';
+
+      return `
+        <tr>
+          <td>${esc(name)}</td>
+          <td>${x.skill}</td>
+          <td>${x.skillIII}</td>
+          <td>${x.coach}</td>
+          <td>${x.good}</td>
+          <td>${skillRate}</td>
+          <td>${coachRate}</td>
+        </tr>
+      `;
+
+    })
+    .join('');
+
+}
+
+/* ============================================================
+   目標統計
+============================================================ */
+
+function renderTargetStats(){
+
+  const opened=
+    records.filter(isOpened);
+
+  const total=opened.length;
+
+  const html=targets.length
+    ? targets.map(t=>{
+
+        const type=t.type==='skill'
+          ? ITEM.SKILL
+          : ITEM.COACH;
+
+        const hits=
+          opened.filter(r=>
+            r.itemType===type &&
+            r.content.category===t.category &&
+            r.content.name===t.name
+          ).length;
+
+        const relevant=
+          opened.filter(r=>
+            r.itemType===type
+          ).length;
+
+        const rate=
+          relevant
+            ? (hits/relevant*100).toFixed(2)
+            : '0.00';
+
+        return `
+          <div style="
+            padding:8px 0;
+            border-bottom:1px dashed var(--border);
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+          ">
+            <span>
+              <span class="badge badge-target">🎯</span>
+              ${esc(t.category)}｜${esc(t.name)}
+            </span>
+
+            <span style="color:var(--primary)">
+              ${hits} 次
+              <small style="color:var(--text-muted)">
+                (${rate}%)
+              </small>
+            </span>
+          </div>
+        `;
+
+      }).join('')
+    : `<div class="empty">尚未設定心願</div>`;
+
+  document.getElementById('target-stats').innerHTML=html;
+
+}
+
+/* ============================================================
+   個人紀錄
+============================================================ */
+
+function getMaxOpenPerDay(){
+
+  const map={};
+
+  records.forEach(r=>{
+
+    if(!isOpened(r)) return;
+
+    const d=r.openDate;
+
+    map[d]=(map[d]||0)+Number(r.quantity||1);
+
+  });
+
+  return Object.values(map).length
+    ? Math.max(...Object.values(map))
+    : 0;
+
+}
+
+function getMaxObtainPerMonth(){
+
+  const map={};
+
+  records.forEach(r=>{
+
+    if(r.eventType!=='obtain') return;
+
+    const d=r.obtainDate?.slice(0,7);
+
+    if(!d) return;
+
+    map[d]=(map[d]||0)+Number(r.quantity||0);
+
+  });
+
+  return Object.values(map).length
+    ? Math.max(...Object.values(map))
+    : 0;
+
+}
+
+/* ============================================================
+   歷史表格
+============================================================ */
+
+function getFilteredRecords(){
+
+  const text=
+    document.getElementById('filter-text').value
+      .trim()
+      .toLowerCase();
+
+  const from=
+    document.getElementById('filter-date-from').value;
+
+  const to=
+    document.getElementById('filter-date-to').value;
+
+  const month=
+    document.getElementById('filter-month').value;
+
+  const type=
+    document.getElementById('filter-type').value;
+
+  const source=
+    document.getElementById('filter-source').value;
+
+  const result=
+    document.getElementById('filter-result').value;
+
+  return records
+    .filter(r=>{
+
+      const searchText=[
+        r.itemType,
+        r.method,
+        r.memo,
+        r.content?.name,
+        r.content?.category,
+        r.content?.tier,
+        r.content?.grade
+      ]
+      .join(' ')
+      .toLowerCase();
+
+      if(text&&!searchText.includes(text))
+        return false;
+
+      const date=
+        r.eventType==='open'
+          ? r.openDate
+          : r.obtainDate;
+
+      if(from&&date<from) return false;
+      if(to&&date>to) return false;
+
+      if(month!=='all'&&!date.startsWith(month))
+        return false;
+
+      if(type!=='all'&&r.itemType!==type)
+        return false;
+
+      if(source!=='all'&&r.method!==source)
+        return false;
+
+      if(result==='target'&&!isTarget(r))
+        return false;
+
+      if(result==='jackpot'&&!isJackpot(r))
+        return false;
+
+      if(result==='unopened'&&
+         !(r.eventType==='obtain'&&
+           r.status===STAT.UNOPEN))
+        return false;
+
+      return true;
+
+    })
+    .sort((a,b)=>{
+
+      const da=
+        a.eventType==='open'
+          ? a.openDate
+          : a.obtainDate;
+
+      const db=
+        b.eventType==='open'
+          ? b.openDate
+          : b.obtainDate;
+
+      return String(db||'').localeCompare(String(da||''));
+
+    });
+
+}
+
+function renderTable(){
+
+  const all=getFilteredRecords();
+
+  document.getElementById('record-count')
+    .innerText=all.length;
+
+  const totalPages=
+    Math.max(1,Math.ceil(all.length/PAGE_SIZE));
+
+  if(currentPage>totalPages)
+    currentPage=totalPages;
+
+  const start=(currentPage-1)*PAGE_SIZE;
+  const rows=all.slice(start,start+PAGE_SIZE);
+
+  const tbody=
+    document.getElementById('records-tbody');
+
+  if(!rows.length){
+
+    tbody.innerHTML=`
+      <tr>
+        <td colspan="7" class="empty">
+          沒有符合條件的紀錄
+        </td>
+      </tr>
+    `;
+
+  }else{
+
+    tbody.innerHTML=rows.map(r=>{
+
+      if(r.itemType===ITEM.LEAGUE){
+
+        return `
+          <tr>
+            <td>${esc(r.obtainDate)}</td>
+            <td>-</td>
+            <td>
+              <span class="badge badge-league">
+                🏁 聯賽
+              </span>
+            </td>
+            <td>${Number(r.quantity||0)} 季</td>
+            <td>賽季結算</td>
+            <td>${esc(r.memo)}</td>
+            <td>
+              <button
+                class="action-btn"
+                onclick="openEdit('${r.id}')">
+                編
+              </button>
+
+              <button
+                class="del-btn"
+                onclick="deleteRec('${r.id}')">
+                刪
+              </button>
+            </td>
+          </tr>
+        `;
+
+      }
+
+      let status='';
+
+      if(r.eventType==='obtain'){
+
+        status=`
+          <span class="badge badge-pending">
+            📦 未開
+          </span>
+        `;
+
+      }else if(r.content){
+
+        const target=isTarget(r);
+
+        let badgeClass='badge-opened';
+
+        let value='';
+
+        if(r.itemType===ITEM.SKILL){
+
+          badgeClass=
+            r.content.tier==='III'
+              ? 'badge-tier-3'
+              : 'badge-opened';
+
+          value=
+            `${esc(r.content.tier)}階`;
+
+        }else{
+
+          if(r.content.grade==='優良')
+            badgeClass='badge-grade-good';
+          else if(r.content.grade==='普通')
+            badgeClass='badge-grade-normal';
+          else
+            badgeClass='badge-grade-bad';
+
+          value=esc(r.content.grade);
+
+        }
+
+        status=`
+          <span class="badge ${badgeClass}">
+            ${value}
+          </span>
+
+          <b>${esc(r.content.name)}</b>
+
+          ${target
+            ? '<span class="badge badge-target">🎯</span>'
+            : ''}
+        `;
+
+      }
+
+      const target=isTarget(r);
+
+      return `
+        <tr class="${target?'target-highlight':''}">
+
+          <td>
+            ${esc(r.obtainDate)}
+          </td>
+
+          <td>
+            ${r.openDate
+              ? esc(r.openDate)
+              : '-'}
+          </td>
+
+          <td>
+
+            <span class="badge ${
+              r.itemType===ITEM.COACH
+                ? 'badge-coach'
+                : 'badge-skill'
+            }">
+              ${
+                r.itemType===ITEM.COACH
+                  ? '教練券'
+                  : '技能券'
+              }
+            </span>
+
+            <br>
+
+            <span class="badge badge-source">
+              ${esc(r.method)}
+            </span>
+
+          </td>
+
+          <td>
+            ${Number(r.quantity||0)} 張
+          </td>
+
+          <td>
+            ${status}
+          </td>
+
+          <td>
+            ${esc(r.memo||'')}
+          </td>
+
+          <td>
+
+            <button
+              class="action-btn"
+              onclick="openEdit('${r.id}')">
+              編
+            </button>
+
+            <button
+              class="del-btn"
+              onclick="deleteRec('${r.id}')">
+              刪
+            </button>
+
+          </td>
+
+        </tr>
+      `;
+
+    }).join('');
+
+  }
+
+  document.getElementById('page-info')
+    .innerText=`第 ${currentPage} / ${totalPages} 頁`;
+
+  document.getElementById('prev-page')
+    .disabled=currentPage<=1;
+
+  document.getElementById('next-page')
+    .disabled=currentPage>=totalPages;
+
+}
+
+/* ============================================================
+   月份 Filter
+============================================================ */
+
+function updateMonthFilter(){
+
+  const select=
+    document.getElementById('filter-month');
+
+  const current=select.value;
+
+  const months=[
+    ...new Set(
+      records
+        .map(r=>r.obtainDate)
+        .filter(Boolean)
+        .map(x=>x.slice(0,7))
+    )
+  ].sort().reverse();
+
+  select.innerHTML=
+    '<option value="all">所有月份</option>'+
+    months
+      .map(x=>`<option value="${x}">${x}</option>`)
+      .join('');
+
+  if(months.includes(current))
+    select.value=current;
+
+}
+
+/* ============================================================
+   Targets
+============================================================ */
+
+function targetKey(t){
+  return `${t.type}|${t.category}|${t.name}`;
+}
+
+function toggleTarget(type,category,name){
+
+  const obj={
+    type,
+    category,
+    name
+  };
+
+  const key=targetKey(obj);
+
+  const index=
+    targets.findIndex(x=>targetKey(x)===key);
+
+  if(index>=0){
+
+    targets.splice(index,1);
+
+  }else{
+
+    targets.push(obj);
+
+  }
+
+  saveData();
+  renderTargets();
+  renderTable();
+  renderTargetStats();
+
+}
+
+function renderTargets(){
+
+  document.getElementById('target-count')
+    .innerText=targets.length;
+
+  renderTargetChips(
+    'chips-batter-skills',
+    'skill',
+    '打者',
+    skillList['打者']
+  );
+
+  renderTargetChips(
+    'chips-pitcher-skills',
+    'skill',
+    '投手',
+    skillList['投手']
+  );
+
+  renderTargetChips(
+    'chips-batter-coaches',
+    'coach',
+    '打擊',
+    coachList['打擊']
+  );
+
+  renderTargetChips(
+    'chips-pitcher-coaches',
+    'coach',
+    '投手',
+    coachList['投手']
+  );
+
+}
+
+function renderTargetChips(id,type,category,list){
+
+  document.getElementById(id).innerHTML=
+    list.map(name=>{
+
+      const active=
+        targets.some(t=>
+          t.type===type &&
+          t.category===category &&
+          t.name===name
+        );
+
+      return `
+        <span
+          class="target-chip ${active?'active':''}"
+          onclick="toggleTarget(
+            '${type}',
+            '${category}',
+            '${name.replace(/'/g,"\\'")}'
+          )">
+          ${esc(name)}
+        </span>
+      `;
+
+    }).join('');
+
+}
+
+/* ============================================================
+   優良教練
+============================================================ */
+
+function renderGoodCoaches(){
+
+  const list=
+    records
+      .filter(r=>
+        r.itemType===ITEM.COACH &&
+        isOpened(r) &&
+        r.content.grade==='優良'
+      )
+      .sort((a,b)=>
+        String(b.openDate).localeCompare(String(a.openDate))
+      );
+
+  document.getElementById('good-coach-list').innerHTML=
+    list.length
+      ? list.map(r=>`
+
+        <div style="
+          padding:9px 0;
+          border-bottom:1px dashed var(--border);
+          display:flex;
+          justify-content:space-between;
+          gap:10px;
+        ">
+
+          <div>
+            <b>${esc(r.content.name)}</b>
+            <br>
+            <small style="color:var(--text-muted)">
+              ${esc(r.content.category)}
+              ｜${esc(r.openDate)}
+            </small>
+          </div>
+
+          <div style="color:var(--primary)">
+            ${esc(r.content.detail||'-')}
+          </div>
+
+        </div>
+
+      `).join('')
+      :
+      `<div class="empty">尚無優良教練</div>`;
+
+}
+
+/* ============================================================
+   完整 Edit
+============================================================ */
+
+function openEdit(id){
+
+  const r=records.find(x=>x.id===id);
+
+  if(!r) return;
+
+  document.getElementById('edit-id').value=id;
+
+  const box=document.getElementById('edit-fields');
+
+  if(r.itemType===ITEM.LEAGUE){
+
+    box.innerHTML=`
+
+      <div class="grid grid-2">
+
+        <div class="form-group">
+          <label>完賽日期</label>
+          <input
+            type="date"
+            id="edit-obtain-date"
+            value="${esc(r.obtainDate)}">
+        </div>
+
+        <div class="form-group">
+          <label>完成季數</label>
+          <input
+            type="number"
+            id="edit-quantity"
+            min="0.1"
+            step="0.1"
+            value="${Number(r.quantity||0)}">
+        </div>
+
+      </div>
+
+      <div class="form-group">
+        <label>備註</label>
+        <input
+          id="edit-memo"
+          value="${esc(r.memo||'')}">
+      </div>
+
+    `;
+
+  }else{
+
+    const isOpen=
+      r.eventType==='open';
+
+    const category=
+      r.content?.category ||
+      (r.itemType===ITEM.SKILL?'打者':'打擊');
+
+    const names=
+      r.itemType===ITEM.SKILL
+        ? skillList
+        : coachList;
+
+    box.innerHTML=`
+
+      <div class="grid grid-2">
+
+        <div class="form-group">
+          <label>獲取日期</label>
+          <input
+            type="date"
+            id="edit-obtain-date"
+            value="${esc(r.obtainDate)}">
+        </div>
+
+        <div class="form-group">
+          <label>開箱日期</label>
+          <input
+            type="date"
+            id="edit-open-date"
+            value="${esc(r.openDate||'')}">
+        </div>
+
+        <div class="form-group">
+          <label>獲取方式</label>
+          <select id="edit-method">
+            ${methodOpts[r.itemType]
+              .map(m=>`
+                <option
+                  value="${esc(m)}"
+                  ${r.method===m?'selected':''}>
+                  ${esc(m)}
+                </option>
+              `)
+              .join('')}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>狀態</label>
+          <select id="edit-status">
+            <option
+              value="未開啟"
+              ${!isOpen?'selected':''}>
+              未開啟
+            </option>
+            <option
+              value="已開啟"
+              ${isOpen?'selected':''}>
+              已開啟
+            </option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="form-group">
+        <label>備註</label>
+        <input
+          id="edit-memo"
+          value="${esc(r.memo||'')}">
+      </div>
+
+      <div class="sub-box">
+
+        <div class="form-group">
+          <label>分類</label>
+          <select id="edit-category">
+            ${Object.keys(names)
+              .map(c=>`
+                <option
+                  value="${esc(c)}"
+                  ${category===c?'selected':''}>
+                  ${esc(c)}
+                </option>
+              `)
+              .join('')}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>${r.itemType===ITEM.SKILL?'技能':'教練'}</label>
+          <select id="edit-name"></select>
+        </div>
+
+        ${
+          r.itemType===ITEM.SKILL
+          ? `
+            <div class="form-group">
+              <label>階級</label>
+              <select id="edit-tier">
+                ${['III','II','I']
+                  .map(x=>`
+                    <option
+                      value="${x}"
+                      ${r.content?.tier===x?'selected':''}>
+                      ${x}階
+                    </option>
+                  `)
+                  .join('')}
+              </select>
+            </div>
+          `
+          : `
+            <div class="form-group">
+              <label>評價</label>
+              <select id="edit-grade">
+                ${['優良','普通','劣等']
+                  .map(x=>`
+                    <option
+                      value="${x}"
+                      ${r.content?.grade===x?'selected':''}>
+                      ${x}
+                    </option>
+                  `)
+                  .join('')}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>詳細數值</label>
+              <input
+                id="edit-detail"
+                value="${esc(r.content?.detail||'')}">
+            </div>
+          `
+        }
+
+      </div>
+
+    `;
+
+    populateEditNames(
+      names,
+      category,
+      r.content?.name||''
+    );
+
+    document.getElementById('edit-category')
+      .addEventListener('change',()=>{
+
+        populateEditNames(
+          names,
+          document.getElementById('edit-category').value,
+          ''
+        );
+
+      });
+
+  }
+
+  openModal('edit-modal');
+
+}
+
+function populateEditNames(list,category,current){
+
+  const select=document.getElementById('edit-name');
+
+  if(!select) return;
+
+  select.innerHTML='';
+
+  list[category].forEach(name=>{
+
+    const op=document.createElement('option');
+
+    op.value=name;
+    op.textContent=name;
+
+    if(name===current)
+      op.selected=true;
+
+    select.appendChild(op);
+
+  });
+
+}
+
+function saveEdit(){
+
+  const id=document.getElementById('edit-id').value;
+
+  const r=records.find(x=>x.id===id);
+
+  if(!r) return;
+
+  if(r.itemType===ITEM.LEAGUE){
+
+    const date=
+      document.getElementById('edit-obtain-date').value;
+
+    const quantity=
+      Number(document.getElementById('edit-quantity').value);
+
+    if(!date||quantity<=0){
+
+      showToast('資料不正確','error');
+      return;
+
+    }
+
+    r.obtainDate=date;
+    r.quantity=quantity;
+    r.memo=
+      document.getElementById('edit-memo').value.trim();
+
+  }else{
+
+    const obtainDate=
+      document.getElementById('edit-obtain-date').value;
+
+    const openDate=
+      document.getElementById('edit-open-date').value;
+
+    const status=
+      document.getElementById('edit-status').value;
+
+    r.obtainDate=obtainDate;
+
+    r.method=
+      document.getElementById('edit-method').value;
+
+    r.source={
+      type:sourceType(r.method),
+      label:r.method
+    };
+
+    r.memo=
+      document.getElementById('edit-memo').value.trim();
+
+    if(status===STAT.UNOPEN){
+
+      r.eventType='obtain';
+      r.status=STAT.UNOPEN;
+      r.openDate=null;
+      r.content=null;
+
+    }else{
+
+      if(!openDate){
+
+        showToast('已開啟紀錄必須有開箱日期','error');
+        return;
+
+      }
+
+      r.eventType='open';
+      r.status=STAT.OPEN;
+      r.openDate=openDate;
+
+      const category=
+        document.getElementById('edit-category').value;
+
+      const name=
+        document.getElementById('edit-name').value;
+
+      if(r.itemType===ITEM.SKILL){
+
+        r.content={
+          category,
+          name,
+          tier:document.getElementById('edit-tier').value
+        };
+
+      }else{
+
+        r.content={
+          category,
+          name,
+          grade:document.getElementById('edit-grade').value,
+          detail:document.getElementById('edit-detail').value.trim()
+        };
+
+      }
+
+    }
+
+  }
+
+  saveAndRender();
+
+  closeModal('edit-modal');
+
+  showToast('紀錄已更新');
+
+}
+
+/* ============================================================
+   Delete / Undo
+============================================================ */
+
+async function deleteRec(id){
+
+  const index=
+    records.findIndex(r=>r.id===id);
+
+  if(index<0) return;
+
+  if(!await customConfirm('確定刪除這筆紀錄？'))
+    return;
+
+  const removed=records[index];
+
+  records.splice(index,1);
+
+  undoData={
+    index,
+    record:removed
+  };
+
+  saveAndRender();
+
+  showUndoToast('已刪除，可在 5 秒內復原');
+
+}
+
+function showUndoToast(msg){
+
+  clearTimeout(undoTimer);
+
+  const container=
+    document.getElementById('toast-container');
+
+  const t=document.createElement('div');
+
+  t.className='toast success';
+
+  t.innerHTML=`
+    ${esc(msg)}
+    <button
+      style="
+        width:auto;
+        margin-left:10px;
+        padding:3px 8px;
+        background:transparent;
+        color:var(--gold);
+        border:1px solid var(--gold);
+        cursor:pointer;
+      "
+      id="undo-button">
+      復原
+    </button>
+  `;
+
+  container.appendChild(t);
+
+  document.getElementById('undo-button')
+    .onclick=()=>{
+
+      if(!undoData) return;
+
+      records.splice(
+        undoData.index,
+        0,
+        undoData.record
+      );
+
+      undoData=null;
+
+      saveAndRender();
+
+      t.remove();
+
+      showToast('已復原');
+
+    };
+
+  undoTimer=setTimeout(()=>{
+
+    undoData=null;
+    t.remove();
+
+  },5000);
+
+}
+
+/* ============================================================
+   Clear
+============================================================ */
+
+async function clearRecordsOnly(){
+
+  if(!await customConfirm(
+    '確定清除所有掉落與聯賽紀錄？'
+  )) return;
+
+  records=[];
+
+  saveAndRender();
+
+  showToast('已清除所有紀錄');
+
+}
+
+async function clearTargetsOnly(){
+
+  if(!await customConfirm(
+    '確定清除所有心願設定？'
+  )) return;
+
+  targets=[];
+
+  saveAndRender();
+
+  showToast('已清除心願');
+
+}
+
+async function clearAllData(){
+
+  if(!await customConfirm(
+    '這會清除紀錄、心願與本機資料。確定？'
+  )) return;
+
+  records=[];
+  targets=[];
+
+  localStorage.removeItem(STORAGE.DATA);
+  localStorage.removeItem(STORAGE.OLD_RECORDS);
+  localStorage.removeItem(STORAGE.OLD_TARGETS);
+
+  targets=[
+    {
+      type:'skill',
+      category:'打者',
+      name:'先鋒'
+    },
+    {
+      type:'skill',
+      category:'打者',
+      name:'打者洞察力'
+    }
+  ];
+
+  saveAndRender();
+
+  showToast('已清空資料庫');
+
+}
+
+/* ============================================================
+   JSON / CSV Export
+============================================================ */
+
+function downloadBlob(blob,filename){
+
+  const url=URL.createObjectURL(blob);
+
+  const link=document.createElement('a');
+
+  link.href=url;
+  link.download=filename;
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  setTimeout(()=>{
+    URL.revokeObjectURL(url);
+  },1000);
+
+}
+
+function exportData(fmt){
+
+  if(fmt==='json'){
+
+    const data={
+      schemaVersion:SCHEMA_VERSION,
+      appVersion:APP_VERSION,
+      exportedAt:new Date().toISOString(),
+      records,
+      targets
+    };
+
+    downloadBlob(
+      new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:'application/json'}
+      ),
+      `白教白技_V4_backup_${todayStr}.json`
+    );
+
+    showToast('JSON 備份完成');
+
+    return;
+
+  }
+
+  let csv=
+    '獲取日期,開箱日期,事件,種類,獲得方式,數量,狀態,分類,名稱,階級/評價,備註\n';
+
+  records.forEach(r=>{
+
+    const values=[
+
+      r.obtainDate||'',
+      r.openDate||'',
+      r.eventType||'',
+      r.itemType||'',
+      r.method||'',
+      r.quantity||0,
+      r.status||'',
+      r.content?.category||'',
+      r.content?.name||'',
+      r.content?.tier||r.content?.grade||'',
+      r.itemType===ITEM.LEAGUE
+        ? `完賽${r.quantity}季`
+        : r.memo||''
+
+    ];
+
+    csv+=values
+      .map(v=>csvSafe(v))
+      .join(',')+'\n';
+
+  });
+
+  downloadBlob(
+    new Blob(
+      ['\uFEFF'+csv],
+      {type:'text/csv;charset=utf-8;'}
+    ),
+    `白教白技_V4_records_${todayStr}.csv`
+  );
+
+  showToast('CSV 匯出完成');
+
+}
+
+function csvSafe(value){
+
+  let s=String(value??'');
+
+  /* 防 Excel Formula Injection */
+
+  if(/^[=+\-@]/.test(s)){
+    s="'"+s;
+  }
+
+  return `"${s.replace(/"/g,'""')}"`;
+
+}
+
+/* ============================================================
+   Import
+============================================================ */
+
+document.getElementById('import-file')
+  .addEventListener('change',importData);
+
+async function importData(e){
+
+  const file=e.target.files?.[0];
+
+  if(!file) return;
+
+  try{
+
+    const text=await file.text();
+
+    const parsed=JSON.parse(text);
+
+    const normalized=
+      normalizeImportedData(parsed);
+
+    if(!normalized){
+
+      showToast(
+        'JSON 格式或資料結構錯誤',
+        'error'
+      );
+
+      return;
+
+    }
+
+    const ok=await customConfirm(
+      `即將匯入 ${normalized.records.length} 筆紀錄與 ${normalized.targets.length} 個心願。\n目前資料會被覆蓋，是否繼續？`
+    );
+
+    if(!ok) return;
+
+    records=normalized.records;
+    targets=normalized.targets;
+
+    saveAndRender();
+
+    showToast('JSON 還原成功');
+
+  }catch(err){
+
+    console.error(err);
+
+    showToast(
+      'JSON 讀取失敗',
+      'error'
+    );
+
+  }finally{
+
+    e.target.value='';
+
+  }
+
+}
+
+function normalizeImportedData(data){
+
+  let importedRecords;
+  let importedTargets;
+
+  if(Array.isArray(data)){
+
+    importedRecords=data;
+    importedTargets=targets;
+
+  }else{
+
+    importedRecords=data.records;
+    importedTargets=data.targets;
+
+  }
+
+  if(!Array.isArray(importedRecords))
+    return null;
+
+  if(!Array.isArray(importedTargets))
+    importedTargets=targets;
+
+  const cleanRecords=[];
+
+  for(const r of importedRecords){
+
+    if(!r || typeof r!=='object')
+      continue;
+
+    if(!r.itemType)
+      continue;
+
+    if(r.itemType===ITEM.LEAGUE){
+
+      if(!r.obtainDate)
+        continue;
+
+      cleanRecords.push({
+
+        id:r.id||uid(),
+
+        eventType:'league',
+
+        itemType:ITEM.LEAGUE,
+
+        obtainDate:r.obtainDate,
+
+        openDate:null,
+
+        quantity:Number(r.quantity||r.seasons||0),
+
+        method:'賽季結算',
+
+        source:{
+          type:'league',
+          label:'賽季結算'
+        },
+
+        status:'-',
+
+        content:null,
+
+        memo:String(r.memo||'')
+
+      });
+
+      continue;
+
+    }
+
+    if(![ITEM.SKILL,ITEM.COACH]
+      .includes(r.itemType))
+      continue;
+
+    const status=
+      r.status===STAT.OPEN
+        ? STAT.OPEN
+        : STAT.UNOPEN;
+
+    cleanRecords.push({
+
+      id:r.id||uid(),
+
+      eventType:
+        status===STAT.OPEN
+          ? 'open'
+          : 'obtain',
+
+      itemType:r.itemType,
+
+      obtainDate:r.obtainDate||r.date||todayStr,
+
+      openDate:
+        status===STAT.OPEN
+          ? (r.openDate||r.date||todayStr)
+          : null,
+
+      quantity:
+        status===STAT.OPEN
+          ? 1
+          : Math.max(1,Number(r.quantity)||1),
+
+      method:r.method||'其他',
+
+      source:{
+        type:sourceType(r.method||'其他'),
+        label:r.method||'其他'
+      },
+
+      status,
+
+      content:
+        status===STAT.OPEN
+          ? r.content||null
+          : null,
+
+      memo:String(r.memo||'')
+
+    });
+
+  }
+
+  const cleanTargets=
+    importedTargets
+      .filter(t=>
+        t &&
+        ['skill','coach'].includes(t.type) &&
+        t.category &&
+        t.name
+      )
+      .map(t=>({
+        type:t.type,
+        category:String(t.category),
+        name:String(t.name)
+      }));
+
+  return {
+    records:cleanRecords,
+    targets:cleanTargets
+  };
+
+}
+
+/* ============================================================
+   GAS
+============================================================ */
+
+function saveCloudUrl(){
+
+  const url=
+    document.getElementById('gas-url').value.trim();
+
+  if(!url){
+
+    showToast('請填寫 GAS URL','error');
+    return;
+
+  }
+
+  localStorage.setItem(
+    STORAGE.GAS_URL,
+    url
+  );
+
+  showToast('GAS 網址已儲存');
+
+}
+
+async function syncToCloud(){
+
+  const url=
+    document.getElementById('gas-url').value.trim() ||
+    localStorage.getItem(STORAGE.GAS_URL);
+
+  if(!url){
+
+    showToast(
+      '請先設定 Web App URL',
+      'error'
+    );
+
+    return;
+
+  }
+
+  saveCloudUrl();
+
+  const payload={
+    action:'save',
+    schemaVersion:SCHEMA_VERSION,
+    appVersion:APP_VERSION,
+    timestamp:new Date().toISOString(),
+    records,
+    targets
+  };
+
+  try{
+
+    showToast('正在同步至 GAS...','info');
+
+    const response=await fetch(url,{
+      method:'POST',
+      headers:{
+        'Content-Type':'text/plain;charset=utf-8'
+      },
+      body:JSON.stringify(payload)
+    });
+
+    const text=await response.text();
+
+    let result;
+
+    try{
+      result=JSON.parse(text);
+    }catch{
+      result={message:text};
+    }
+
+    if(!response.ok){
+
+      throw new Error(
+        result.message||`HTTP ${response.status}`
+      );
+
+    }
+
+    closeModal('cloud-modal');
+
+    showToast(
+      result.message||'雲端同步完成'
+    );
+
+  }catch(err){
+
+    console.error(err);
+
+    showToast(
+      '同步失敗：'+err.message,
+      'error'
+    );
+
+  }
+
+}
+
+async function downloadFromCloud(){
+
+  const url=
+    document.getElementById('gas-url').value.trim() ||
+    localStorage.getItem(STORAGE.GAS_URL);
+
+  if(!url){
+
+    showToast(
+      '請先設定 GAS URL',
+      'error'
+    );
+
+    return;
+
+  }
+
+  try{
+
+    showToast('正在從 GAS 下載...','info');
+
+    const response=await fetch(
+      url+'?action=load'
+    );
+
+    if(!response.ok)
+      throw new Error(`HTTP ${response.status}`);
+
+    const data=await response.json();
+
+    const normalized=
+      normalizeImportedData(data);
+
+    if(!normalized)
+      throw new Error('雲端資料格式錯誤');
+
+    const ok=await customConfirm(
+      `雲端有 ${normalized.records.length} 筆紀錄。\n下載後會覆蓋目前資料，確定？`
+    );
+
+    if(!ok) return;
+
+    records=normalized.records;
+    targets=normalized.targets;
+
+    saveAndRender();
+
+    closeModal('cloud-modal');
+
+    showToast('雲端資料已還原');
+
+  }catch(err){
+
+    console.error(err);
+
+    showToast(
+      '雲端下載失敗：'+err.message,
+      'error'
+    );
+
+  }
+
+}
+
+/* ============================================================
+   Batch Open
+============================================================ */
+
+function openBatchModal(){
+
+  document.getElementById('batch-type').value=ITEM.SKILL;
+  document.getElementById('batch-count').value='1';
+
+  buildBatch();
+
+  openModal('batch-modal');
+
+}
+
+function buildBatch(){
+
+  const type=
+    document.getElementById('batch-type').value;
+
+  const count=
+    Number(document.getElementById('batch-count').value);
+
+  const inventory=getInventory(type);
+
+  const info=
+    document.getElementById('batch-inventory-info');
+
+  info.innerHTML=`
+
+    <div class="sub-box">
+
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+      ">
+
+        <span>目前 ${type===ITEM.SKILL?'技能券':'教練券'}庫存</span>
+
+        <b style="
+          font-size:1.2rem;
+          color:${inventory>=count
+            ? 'var(--success)'
+            : 'var(--danger)'};
+        ">
+          ${inventory} 張
+        </b>
+
+      </div>
+
+      ${
+        inventory<count
+          ? `<div style="
+              margin-top:6px;
+              color:var(--danger);
+              font-size:.75rem;
+            ">
+              ⚠️ 庫存不足，無法開 ${count} 張。
+            </div>`
+          : ''
+      }
+
+    </div>
+  `;
+
+  const box=
+    document.getElementById('batch-rows');
+
+  box.innerHTML='';
+
+  for(let i=0;i<count;i++){
+
+    if(type===ITEM.SKILL){
+
+      const cats=Object.keys(skillList);
+
+      box.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div
+          class="batch-row"
+          style="
+            display:grid;
+            grid-template-columns:1fr 1.4fr .7fr;
+            gap:5px;
+            margin-bottom:5px;
+          "
+        >
+
+          <select class="b-cat">
+            ${cats
+              .map(c=>`
+                <option value="${c}">
+                  ${c}
+                </option>
+              `)
+              .join('')}
+          </select>
+
+          <select class="b-name"></select>
+
+          <select class="b-tier">
+            <option value="III">III</option>
+            <option value="II">II</option>
+            <option value="I">I</option>
+          </select>
+
+        </div>
+        `
+      );
+
+    }else{
+
+      const cats=Object.keys(coachList);
+
+      box.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div
+          class="batch-row"
+          style="
+            display:grid;
+            grid-template-columns:1fr 1.4fr .8fr;
+            gap:5px;
+            margin-bottom:5px;
+          "
+        >
+
+          <select class="b-cat">
+            ${cats
+              .map(c=>`
+                <option value="${c}">
+                  ${c}
+                </option>
+              `)
+              .join('')}
+          </select>
+
+          <select class="b-name"></select>
+
+          <select class="b-grade">
+            <option value="優良">優良</option>
+            <option value="普通">普通</option>
+            <option value="劣等">劣等</option>
+          </select>
+
+        </div>
+        `
+      );
+
+    }
+
+  }
+
+  document
+    .querySelectorAll('.batch-row')
+    .forEach(row=>{
+
+      const cat=row.querySelector('.b-cat');
+
+      cat.addEventListener('change',()=>{
+
+        const list=
+          type===ITEM.SKILL
+            ? skillList
+            : coachList;
+
+        const name=row.querySelector('.b-name');
+
+        name.innerHTML=
+          list[cat.value]
+            .map(x=>`<option>${esc(x)}</option>`)
+            .join('');
+
+      });
+
+      cat.dispatchEvent(new Event('change'));
+
+    });
+
+}
+
+async function submitBatch(){
+
+  const type=
+    document.getElementById('batch-type').value;
+
+  const rows=
+    [...document.querySelectorAll('.batch-row')];
+
+  const requested=rows.length;
+
+  const inventory=getInventory(type);
+
+  if(inventory<requested){
+
+    showToast(
+      `庫存不足：目前 ${inventory} 張，要求 ${requested} 張`,
+      'error'
+    );
+
+    return;
+
+  }
+
+  const sources=
+    getInventorySources(type);
+
+  if(sources.length<1){
+
+    showToast('找不到可用庫存來源','error');
+    return;
+
+  }
+
+  const ok=await customConfirm(
+    `確定開 ${requested} 張 ${type===ITEM.SKILL?'技能券':'教練券'}？`
+  );
+
+  if(!ok) return;
+
+  let sourceIndex=0;
+
+  rows.forEach(row=>{
+
+    while(
+      sourceIndex<sources.length &&
+      Number(sources[sourceIndex].quantity)<=0
+    ){
+      sourceIndex++;
+    }
+
+    if(sourceIndex>=sources.length)
+      return;
+
+    const source=sources[sourceIndex];
+
+    source.quantity--;
+
+    const content=
+      type===ITEM.SKILL
+        ? {
+            category:row.querySelector('.b-cat').value,
+            name:row.querySelector('.b-name').value,
+            tier:row.querySelector('.b-tier').value
+          }
+        : {
+            category:row.querySelector('.b-cat').value,
+            name:row.querySelector('.b-name').value,
+            grade:row.querySelector('.b-grade').value,
+            detail:''
+          };
+
+    records.push({
+
+      id:uid(),
+
+      eventType:'open',
+
+      itemType:type,
+
+      obtainDate:source.obtainDate,
+
+      openDate:todayStr,
+
+      quantity:1,
+
+      method:source.method,
+
+      source:{
+        type:sourceType(source.method),
+        label:source.method,
+        sourceRecordId:source.id
+      },
+
+      status:STAT.OPEN,
+
+      content,
+
+      memo:'批量開箱'
+
+    });
+
+  });
+
+  /* 清除已耗盡的來源 */
+
+  records=
+    records.filter(r=>
+      !(r.eventType==='obtain' &&
+        r.status===STAT.UNOPEN &&
+        Number(r.quantity)<=0)
+    );
+
+  closeModal('batch-modal');
+
+  saveAndRender();
+
+  showToast(
+    `批量開箱完成，共 ${requested} 張`
+  );
+
+}
+
+/* ============================================================
+   Screenshot
+============================================================ */
+
+function exportScreenshot(){
+
+  showToast(
+    '正在生成戰報圖...',
+    'info'
+  );
+
+  const target=
+    document.getElementById('export-area');
+
+  html2canvas(target,{
+    backgroundColor:'#1A1C23',
+    scale:2,
+    useCORS:true
+  })
+  .then(canvas=>{
+
+    const link=
+      document.createElement('a');
+
+    link.download=
+      `戰報_${todayStr}.png`;
+
+    link.href=
+      canvas.toDataURL('image/png');
+
+    link.click();
+
+    showToast('戰報圖片已下載');
+
+  })
+  .catch(err=>{
+
+    console.error(err);
+
+    showToast(
+      '截圖失敗',
+      'error'
+    );
+
+  });
+
+}
+
+/* ============================================================
+   Render All
+============================================================ */
+
+function renderAll(){
+
+  updateMonthFilter();
+  renderKPIs();
+  renderCharts();
+  renderTable();
+  renderTargets();
+  renderTargetStats();
+  renderSourceAnalysis();
+  renderGoodCoaches();
+
+}
+
+function saveAndRender(){
+
+  records.sort((a,b)=>{
+
+    const da=
+      a.eventType==='open'
+        ? a.openDate
+        : a.obtainDate;
+
+    const db=
+      b.eventType==='open'
+        ? b.openDate
+        : b.obtainDate;
+
+    return String(db||'')
+      .localeCompare(String(da||'')) ||
+      String(b.id).localeCompare(String(a.id));
+
+  });
+
+  saveData();
+
+  renderAll();
+
+}
+
+/* ============================================================
+   Events
+============================================================ */
+
+/* Tabs */
+
+document.querySelectorAll('.tab-btn')
+  .forEach(button=>{
+
+    button.addEventListener('click',()=>{
+
+      switchTab(
+        button.dataset.tab,
+        button
+      );
+
+    });
+
+  });
+
+/* Filter */
+
+[
+  'filter-text',
+  'filter-date-from',
+  'filter-date-to',
+  'filter-month',
+  'filter-type',
+  'filter-source',
+  'filter-result'
+].forEach(id=>{
+
+  const el=document.getElementById(id);
+
+  el.addEventListener(
+    el.tagName==='INPUT'
+      ? 'input'
+      : 'change',
+    ()=>{
+      currentPage=1;
+      renderTable();
+    }
+  );
+
+});
+
+/* Pagination */
+
+document.getElementById('prev-page')
+  .addEventListener('click',()=>{
+
+    if(currentPage>1){
+
+      currentPage--;
+      renderTable();
+
+    }
+
+  });
+
+document.getElementById('next-page')
+  .addEventListener('click',()=>{
+
+    const total=
+      getFilteredRecords().length;
+
+    const pages=
+      Math.max(1,Math.ceil(total/PAGE_SIZE));
+
+    if(currentPage<pages){
+
+      currentPage++;
+      renderTable();
+
+    }
+
+  });
+
+/* Modal close */
+
+document.querySelectorAll('.modal-close')
+  .forEach(btn=>{
+
+    btn.addEventListener('click',()=>{
+
+      closeModal(btn.dataset.modal);
+
+    });
+
+  });
+
+/* 點背景關閉 */
+
+document.querySelectorAll('.modal-backdrop')
+  .forEach(modal=>{
+
+    modal.addEventListener('click',e=>{
+
+      if(e.target===modal &&
+         modal.id!=='confirm-modal'){
+
+        modal.style.display='none';
+
+      }
+
+    });
+
+  });
+
+/* ESC */
+
+document.addEventListener('keydown',e=>{
+
+  if(e.key!=='Escape') return;
+
+  document.querySelectorAll('.modal-backdrop')
+    .forEach(m=>{
+
+      if(m.style.display==='flex' &&
+         m.id!=='confirm-modal'){
+
+        m.style.display='none';
+
+      }
+
+    });
+
+});
+
+/* GAS URL */
+
+document.addEventListener('DOMContentLoaded',()=>{
+
+  const saved=
+    localStorage.getItem(STORAGE.GAS_URL);
+
+  if(saved)
+    document.getElementById('gas-url').value=saved;
+
+});
+
+/* ============================================================
+   初始化
+============================================================ */
+
+try{
+
+  if(typeof ChartDataLabels!=='undefined'){
+
+    Chart.register(ChartDataLabels);
+
+    Chart.defaults.set(
+      'plugins.datalabels',
+      {display:false}
+    );
+
+  }
+
+}catch(e){
+
+  console.warn(e);
+
+}
+
+loadData();
+
+renderAll();
+
+</script>
+
 </body>
 </html>

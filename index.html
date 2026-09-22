@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>白教／白技掉落統計系統 V4.1.1</title>
+<title>白教／白技掉落統計系統 V4.1.2</title>
  
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -692,7 +692,7 @@ tr.target-highlight td:first-child{
 <div class="header-container">
   <h1>
     ⚾ 白教／白技掉落統計系統
-    <span class="version">V4.1.1</span>
+    <span class="version">V4.1.2</span>
   </h1>
  
   <div class="tabs">
@@ -780,7 +780,7 @@ tr.target-highlight td:first-child{
     <div class="card" style="margin-bottom:14px">
       <div class="card-title">
         <span>📈 個人統計</span>
-        <select id="period-filter" style="width:auto" onchange="renderAll()">
+        <select id="period-filter" style="width:auto" onchange="renderKPIs()">
           <option value="all">全部</option>
           <option value="day">今天</option>
           <option value="week">本週</option>
@@ -1345,7 +1345,10 @@ tr.target-highlight td:first-child{
  
     <div class="form-group">
       <label>Web App URL</label>
-      <input type="url" id="gas-url" placeholder="https://script.google.com/...">
+      <div style="display:flex;gap:8px">
+        <input type="password" id="gas-url" placeholder="https://script.google.com/..." autocomplete="off">
+        <button type="button" class="btn-subtle" id="toggle-gas-url" style="flex:0 0 auto" aria-label="顯示 GAS 網址">顯示</button>
+      </div>
     </div>
  
     <button class="btn-primary" onclick="syncToCloud()">
@@ -1426,7 +1429,7 @@ tr.target-highlight td:first-child{
           <option value="10">10 張</option>
           <option value="custom">自訂</option>
         </select>
-        <input type="number" id="batch-count-custom" style="display:none; width:80px;" min="1" max="100" step="1" value="1" onchange="buildBatch()">
+        <input type="number" id="batch-count-custom" style="display:none; width:80px;" min="1" max="30" step="1" value="1" onchange="buildBatch()">
       </div>
  
     </div>
@@ -1445,10 +1448,10 @@ tr.target-highlight td:first-child{
 <script>
  
 /* ============================================================
-   V4.1.1 核心設定 & Schema 5
+   V4.1.2 核心設定 & Schema 5
 ============================================================ */
  
-const APP_VERSION = '4.1.1';
+const APP_VERSION = '4.1.2';
 const SCHEMA_VERSION = 5;
  
 const STORAGE = {
@@ -1764,7 +1767,7 @@ function migrateV3(){
           id:uid(), eventType:'obtain', itemType:old.type,
           obtainDate:old.date, openDate:null, quantity,
           method:old.method||'其他', source:{type:sourceType(old.method),label:old.method||'其他'},
-          status:STAT.UNOPEN, content:null, memo:old.memo||'', createdAt:now, openedAt:null, updatedAt:now
+          status:STAT.UNOPEN, content:null, memo:old.memo||'', createdAt:now, openedAt:null, updatedAt:now, depleted:false
         });
       }else{
         for(let i=0;i<quantity;i++){
@@ -1880,6 +1883,14 @@ function customConfirm(msg){
   });
 }
  
+function debounce(fn,delay=300){
+  let timer=null;
+  return (...args)=>{
+    clearTimeout(timer);
+    timer=setTimeout(()=>fn(...args),delay);
+  };
+}
+ 
 function updateMonthFilter(){
   const select=document.getElementById('filter-month');
   if(!select) return;
@@ -1911,6 +1922,7 @@ function toggleTarget(type,category,name){
   else targets.push(candidate);
   if(saveData()){
     renderTargets();
+    renderKPIs();
     renderTargetStats();
     renderTable();
   }
@@ -1947,22 +1959,43 @@ function renderGoodCoaches(){
     .filter(r=>r.itemType===ITEM.COACH && isOpened(r) && r.content.grade==='優良')
     .sort((a,b)=>openedSortValue(b).localeCompare(openedSortValue(a)));
   if(!list.length){
-    container.innerHTML='<div class="empty">尚無優良教練</div>';
+    container.replaceChildren();
+    const empty=document.createElement('div');
+    empty.className='empty';
+    empty.textContent='尚無優良教練';
+    container.appendChild(empty);
     return;
   }
-  container.innerHTML=list.map(r=>`
-    <div style="padding:9px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;gap:10px;">
-      <div><b>${esc(r.content.name)}</b><br><small style="color:var(--text-muted)">${esc(r.content.category)}｜${esc(r.openDate)}</small></div>
-      <div style="color:var(--primary)">${esc(r.content.detail||'-')}</div>
-    </div>
-  `).join('');
+  const fragment=document.createDocumentFragment();
+  list.forEach(r=>{
+    const row=document.createElement('div');
+    row.style.cssText='padding:9px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;gap:10px;';
+    const summary=document.createElement('div');
+    const name=document.createElement('b');
+    name.textContent=r.content.name;
+    const meta=document.createElement('small');
+    meta.style.color='var(--text-muted)';
+    meta.textContent=`${r.content.category}｜${r.openDate}`;
+    summary.append(name,document.createElement('br'),meta);
+    const detail=document.createElement('div');
+    detail.style.color='var(--primary)';
+    detail.textContent=r.content.detail||'-';
+    row.append(summary,detail);
+    fragment.appendChild(row);
+  });
+  container.replaceChildren(fragment);
 }
  
 function updChart(id,type,labels,datasets,options={}){
   if(typeof Chart==='undefined') return;
-  if(charts[id]) charts[id].destroy();
   const canvas=document.getElementById(id);
   if(!canvas) return;
+  if(charts[id]){
+    charts[id].data={labels,datasets};
+    charts[id].options=options;
+    charts[id].update();
+    return;
+  }
   charts[id]=new Chart(canvas,{type,data:{labels,datasets},options});
 }
  
@@ -2069,12 +2102,12 @@ document.getElementById('add-form').addEventListener('submit',e=>{
     records.push({
       id:uid(), eventType:'obtain', itemType:type, obtainDate:date, openDate:null,
       quantity:qty, method, source:{type:sourceType(method),label:method}, status:STAT.UNOPEN,
-      content:null, memo, createdAt:now, openedAt:null, updatedAt:now
+      content:null, memo, createdAt:now, openedAt:null, updatedAt:now, depleted:false
     });
   }
   
   if(date===localDateString()) resetPityPointsIfSkillDrop(type, method);
-  if(!saveAndRender()) return;
+  if(!saveAndRender('data')) return;
   closeModal('add-modal');
   showToast(isOpen ? '已新增 1 張開箱結果' : `已新增 ${qty} 張庫存`);
 });
@@ -2099,7 +2132,7 @@ function submitLeague(){
     quantity:seasons, method:'賽季結算', source:{type:'league',label:'賽季結算'}, status:'-',
     content:null, memo:`完賽 ${seasons} 季`, createdAt:now, openedAt:null, updatedAt:now
   });
-  if(!saveAndRender()) return;
+  if(!saveAndRender('data')) return;
   closeModal('league-modal');
   showToast(`已登記 ${seasons} 季聯賽`);
 }
@@ -2110,10 +2143,10 @@ function quickCheckIn(type,method){
   records.push({
     id:uid(), eventType:'obtain', itemType:type, obtainDate:today, openDate:null,
     quantity:1, method, source:{type:sourceType(method),label:method}, status:STAT.UNOPEN,
-    content:null, memo:'快捷', createdAt:now, openedAt:null, updatedAt:now
+    content:null, memo:'快捷', createdAt:now, openedAt:null, updatedAt:now, depleted:false
   });
   resetPityPointsIfSkillDrop(type, method);
-  if(!saveAndRender()) return;
+  if(!saveAndRender('data')) return;
   showToast(`+1 ${type}`);
 }
  
@@ -2124,7 +2157,7 @@ function quickCheckIn(type,method){
 function getInventory(type){
   let total=0;
   records.forEach(r=>{
-    if(r.itemType===type && r.eventType==='obtain' && r.status===STAT.UNOPEN){
+    if(r.itemType===type && r.eventType==='obtain' && r.status===STAT.UNOPEN && !r.depleted){
       const q = Number(r.quantity);
       if(Number.isFinite(q) && q > 0) total+=q;
     }
@@ -2133,7 +2166,7 @@ function getInventory(type){
 }
  
 function getInventorySources(type){
-  return records.filter(r=>r.itemType===type && r.eventType==='obtain' && r.status===STAT.UNOPEN && Number(r.quantity)>0)
+  return records.filter(r=>r.itemType===type && r.eventType==='obtain' && r.status===STAT.UNOPEN && !r.depleted && Number(r.quantity)>0)
     .sort((a,b)=> (parseDateOnly(a.obtainDate)||0)-(parseDateOnly(b.obtainDate)||0) || (a.createdAt||'').localeCompare(b.createdAt||''));
 }
  
@@ -2148,6 +2181,20 @@ function isJackpot(r){
   return r.itemType===ITEM.SKILL ? r.content.tier==='III' : r.content.grade==='優良';
 }
  
+function recordStatsSignature(r){
+  return JSON.stringify({
+    eventType:r.eventType,
+    itemType:r.itemType,
+    obtainDate:r.obtainDate,
+    openDate:r.openDate,
+    quantity:r.quantity,
+    method:r.method,
+    status:r.status,
+    content:r.content,
+    depleted:Boolean(r.depleted)
+  });
+}
+ 
 /* ============================================================
    KPI 與圖表統計
 ============================================================ */
@@ -2158,11 +2205,11 @@ function updatePityPoints() {
   if (v === '' || !Number.isInteger(points) || points < 0 || points > 59999) { showToast('積分必須是 0～59999 的整數', 'error'); return; }
   pityState.points = points;
   pityState.updatedAt = getNowISO();
-  if(saveAndRender()) showToast('積分已更新');
+  if(saveAndRender('pity')) showToast('積分已更新');
 }
 function resetPityPoints() {
   pityState.points = 0; pityState.updatedAt = getNowISO();
-  if(saveAndRender()) showToast('積分已歸零');
+  if(saveAndRender('pity')) showToast('積分已歸零');
 }
  
 function renderPityStats(){
@@ -2377,26 +2424,56 @@ function renderSourceAnalysis(){
     }
   });
  
-  document.getElementById('source-analysis-body').innerHTML=Object.entries(sources).map(([name,x])=>{
+  const tbody=document.getElementById('source-analysis-body');
+  const fragment=document.createDocumentFragment();
+  Object.entries(sources).forEach(([name,x])=>{
     const skillRate=x.skillOpened ? (x.skillIII/x.skillOpened*100).toFixed(1)+'%' : '-';
     const coachRate=x.coachOpened ? (x.coachGood/x.coachOpened*100).toFixed(1)+'%' : '-';
-    return `<tr><td>${esc(name)}</td><td>${x.skillObtained}</td><td>${x.skillOpened}</td><td>${x.skillIII}</td><td>${x.coachObtained}</td><td>${x.coachOpened}</td><td>${x.coachGood}</td><td>${skillRate}</td><td>${coachRate}</td></tr>`;
-  }).join('');
+    const row=document.createElement('tr');
+    [name,x.skillObtained,x.skillOpened,x.skillIII,x.coachObtained,x.coachOpened,x.coachGood,skillRate,coachRate].forEach(value=>{
+      const cell=document.createElement('td');
+      cell.textContent=String(value);
+      row.appendChild(cell);
+    });
+    fragment.appendChild(row);
+  });
+  tbody.replaceChildren(fragment);
 }
  
 function renderTargetStats(){
   const opened = records.filter(isOpened);
-  const html=targets.length ? targets.map(t=>{
-    const type = t.type==='skill'?ITEM.SKILL:ITEM.COACH;
-    const hits = opened.filter(r=>r.itemType===type && r.content.category===t.category && r.content.name===t.name).length;
-    const relevant = opened.filter(r=>r.itemType===type).length;
-    const rate = relevant ? (hits/relevant*100).toFixed(2) : '0.00';
-    return `<div style="padding:8px 0; border-bottom:1px dashed var(--border); display:flex; justify-content:space-between; gap:10px;">
-              <span><span class="badge badge-target">🎯</span> ${esc(t.category)}｜${esc(t.name)}</span>
-              <span style="color:var(--primary)">${hits} 次 <small style="color:var(--text-muted)">(${rate}%)</small></span>
-            </div>`;
-  }).join('') : `<div class="empty">尚未設定心願</div>`;
-  document.getElementById('target-stats').innerHTML=html;
+  const container=document.getElementById('target-stats');
+  if(!targets.length){
+    const empty=document.createElement('div');
+    empty.className='empty';
+    empty.textContent='尚未設定心願';
+    container.replaceChildren(empty);
+    return;
+  }
+  const fragment=document.createDocumentFragment();
+  targets.forEach(t=>{
+    const type=t.type==='skill'?ITEM.SKILL:ITEM.COACH;
+    const hits=opened.filter(r=>r.itemType===type && r.content.category===t.category && r.content.name===t.name).length;
+    const relevant=opened.filter(r=>r.itemType===type).length;
+    const rate=relevant?(hits/relevant*100).toFixed(2):'0.00';
+    const row=document.createElement('div');
+    row.style.cssText='padding:8px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;gap:10px;';
+    const label=document.createElement('span');
+    const badge=document.createElement('span');
+    badge.className='badge badge-target';
+    badge.textContent='🎯';
+    label.append(badge,document.createTextNode(` ${t.category}｜${t.name}`));
+    const value=document.createElement('span');
+    value.style.color='var(--primary)';
+    value.append(document.createTextNode(`${hits} 次 `));
+    const percent=document.createElement('small');
+    percent.style.color='var(--text-muted)';
+    percent.textContent=`(${rate}%)`;
+    value.appendChild(percent);
+    row.append(label,value);
+    fragment.appendChild(row);
+  });
+  container.replaceChildren(fragment);
 }
  
  
@@ -2413,6 +2490,7 @@ function getFilteredRecords(){
   const result=document.getElementById('filter-result').value;
  
   return records.filter(r=>{
+    if(r.eventType==='obtain' && r.depleted) return false;
     const searchText=[r.itemType,r.method,r.memo,r.content?.name,r.content?.category,r.content?.tier,r.content?.grade].join(' ').toLowerCase();
     if(text&&!searchText.includes(text)) return false;
     const date = r.eventType==='open' ? r.openDate : r.obtainDate;
@@ -2432,46 +2510,108 @@ function getFilteredRecords(){
   });
 }
  
+function appendCell(row,value=''){
+  const cell=document.createElement('td');
+  cell.textContent=String(value??'');
+  row.appendChild(cell);
+  return cell;
+}
+ 
+function createBadge(text,className){
+  const badge=document.createElement('span');
+  badge.className=`badge ${className}`;
+  badge.textContent=text;
+  return badge;
+}
+ 
+function createRowButton(label,className,handler){
+  const button=document.createElement('button');
+  button.type='button';
+  button.className=className;
+  button.textContent=label;
+  button.addEventListener('click',handler);
+  return button;
+}
+ 
 function renderTable(){
   const all=getFilteredRecords();
   document.getElementById('record-count').innerText=all.length;
   const totalPages=Math.max(1,Math.ceil(all.length/PAGE_SIZE));
   if(currentPage>totalPages) currentPage=totalPages;
-  const rows=all.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+  const rows=all.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
   const tbody=document.getElementById('records-tbody');
+  const fragment=document.createDocumentFragment();
  
   if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="7" class="empty">沒有符合條件的紀錄</td></tr>`;
+    const row=document.createElement('tr');
+    const cell=appendCell(row,'沒有符合條件的紀錄');
+    cell.colSpan=7;
+    cell.className='empty';
+    fragment.appendChild(row);
   }else{
-    tbody.innerHTML=rows.map(r=>{
+    rows.forEach(r=>{
+      const row=document.createElement('tr');
+ 
       if(r.itemType===ITEM.LEAGUE){
-        return `<tr><td>${esc(r.obtainDate)}</td><td>-</td><td><span class="badge badge-league">🏁 聯賽</span></td><td>${Number(r.quantity||0)} 季</td><td>賽季結算</td><td>${esc(r.memo)}</td><td><button class="action-btn" onclick="openEdit('${r.id}')">編</button><button class="del-btn" onclick="deleteRec('${r.id}')">刪</button></td></tr>`;
+        appendCell(row,r.obtainDate);
+        appendCell(row,'-');
+        const typeCell=appendCell(row);
+        typeCell.appendChild(createBadge('🏁 聯賽','badge-league'));
+        appendCell(row,`${Number(r.quantity||0)} 季`);
+        appendCell(row,'賽季結算');
+        appendCell(row,r.memo||'');
+        const actions=appendCell(row);
+        actions.append(
+          createRowButton('編','action-btn',()=>openEdit(r.id)),
+          createRowButton('刪','del-btn',()=>deleteRec(r.id))
+        );
+        fragment.appendChild(row);
+        return;
       }
-      let status='';
+ 
+      const target=isTarget(r);
+      if(target) row.className='target-highlight';
+      appendCell(row,r.obtainDate);
+      appendCell(row,r.openDate||'-');
+ 
+      const typeCell=appendCell(row);
+      typeCell.append(
+        createBadge(r.itemType===ITEM.COACH?'教練券':'技能券',r.itemType===ITEM.COACH?'badge-coach':'badge-skill'),
+        document.createElement('br'),
+        createBadge(r.method,'badge-source')
+      );
+ 
+      appendCell(row,`${Number(r.quantity||0)} 張`);
+      const statusCell=appendCell(row);
       if(r.eventType==='obtain'){
-        status=`<span class="badge badge-pending">📦 未開</span>`;
+        statusCell.appendChild(createBadge('📦 未開','badge-pending'));
       }else if(r.content){
-        const target=isTarget(r);
-        let badgeClass='badge-opened', value='';
+        let badgeClass='badge-opened';
+        let value='';
         if(r.itemType===ITEM.SKILL){
-          badgeClass = r.content.tier==='III' ? 'badge-tier-3' : 'badge-opened';
-          value = `${esc(r.content.tier)}階`;
+          badgeClass=r.content.tier==='III'?'badge-tier-3':'badge-opened';
+          value=`${r.content.tier}階`;
         }else{
-          if(r.content.grade==='優良') badgeClass='badge-grade-good';
-          else if(r.content.grade==='普通') badgeClass='badge-grade-normal';
-          else badgeClass='badge-grade-bad';
-          value=esc(r.content.grade);
+          badgeClass=r.content.grade==='優良'?'badge-grade-good':r.content.grade==='普通'?'badge-grade-normal':'badge-grade-bad';
+          value=r.content.grade;
         }
-        status=`<span class="badge ${badgeClass}">${value}</span> <b>${esc(r.content.name)}</b> ${target?'<span class="badge badge-target">🎯</span>':''}`;
+        const name=document.createElement('b');
+        name.textContent=r.content.name;
+        statusCell.append(createBadge(value,badgeClass),document.createTextNode(' '),name);
+        if(target) statusCell.append(document.createTextNode(' '),createBadge('🎯','badge-target'));
       }
-      return `<tr class="${isTarget(r)?'target-highlight':''}">
-        <td>${esc(r.obtainDate)}</td><td>${r.openDate?esc(r.openDate):'-'}</td>
-        <td><span class="badge ${r.itemType===ITEM.COACH?'badge-coach':'badge-skill'}">${r.itemType===ITEM.COACH?'教練券':'技能券'}</span><br><span class="badge badge-source">${esc(r.method)}</span></td>
-        <td>${Number(r.quantity||0)} 張</td><td>${status}</td><td>${esc(r.memo||'')}</td>
-        <td><button class="action-btn" onclick="openEdit('${r.id}')">編</button><button class="del-btn" onclick="promptDelete('${r.id}')">刪</button></td>
-      </tr>`;
-    }).join('');
+ 
+      appendCell(row,r.memo||'');
+      const actions=appendCell(row);
+      actions.append(
+        createRowButton('編','action-btn',()=>openEdit(r.id)),
+        createRowButton('刪','del-btn',()=>promptDelete(r.id))
+      );
+      fragment.appendChild(row);
+    });
   }
+ 
+  tbody.replaceChildren(fragment);
   document.getElementById('page-info').innerText=`第 ${currentPage} / ${totalPages} 頁`;
   document.getElementById('prev-page').disabled=currentPage<=1;
   document.getElementById('next-page').disabled=currentPage>=totalPages;
@@ -2521,17 +2661,22 @@ async function deleteRec(id, returnToInventory = false){
   
   let returnedInventory = null;
   if (returnToInventory && removed.eventType === 'open') {
-    // 尋找可合併的庫存，或者建立新的
-    const existInv = records.find(x => x.eventType==='obtain' && x.status===STAT.UNOPEN && x.itemType===removed.itemType && x.obtainDate===removed.obtainDate && x.method===removed.method);
+    // 優先依原始來源 UUID 退回；舊資料才使用欄位特徵比對
+    const sourceRecordId=removed.source?.sourceRecordId;
+    const linkedInv=sourceRecordId
+      ? records.find(x=>x.id===sourceRecordId && x.eventType==='obtain' && x.itemType===removed.itemType)
+      : null;
+    const existInv=linkedInv || records.find(x => x.eventType==='obtain' && x.status===STAT.UNOPEN && x.itemType===removed.itemType && x.obtainDate===removed.obtainDate && x.method===removed.method);
     if(existInv) {
-      returnedInventory={id:existInv.id,wasNew:false,previousQuantity:Number(existInv.quantity)};
+      returnedInventory={id:existInv.id,wasNew:false,previousQuantity:Number(existInv.quantity),previousDepleted:Boolean(existInv.depleted)};
       existInv.quantity = Number(existInv.quantity) + 1;
+      existInv.depleted=false;
       existInv.updatedAt = getNowISO();
     } else {
       const newInv = {
         id:uid(), eventType:'obtain', itemType:removed.itemType, obtainDate:removed.obtainDate, openDate:null,
         quantity:1, method:removed.method, source:{...removed.source}, status:STAT.UNOPEN, content:null,
-        memo:'刪除開箱後退回庫存', createdAt:getNowISO(), openedAt:null, updatedAt:getNowISO()
+        memo:'刪除開箱後退回庫存', createdAt:getNowISO(), openedAt:null, updatedAt:getNowISO(), depleted:false
       };
       records.push(newInv);
       returnedInventory={id:newInv.id,wasNew:true,previousQuantity:0};
@@ -2540,7 +2685,7 @@ async function deleteRec(id, returnToInventory = false){
  
   undoData = { index, record: removed, returnedInventory };
   if(saveData()){
-    renderAll();
+    renderDataViews();
     showUndoToast(returnToInventory ? '已刪除結果並退回庫存' : '已刪除，可在 5 秒內復原');
   }else{
     records=JSON.parse(snapshot);
@@ -2566,11 +2711,14 @@ function showUndoToast(msg){
       const invIndex = records.findIndex(x=>x.id===info.id);
       if(invIndex >= 0) {
         if(info.wasNew) records.splice(invIndex,1);
-        else records[invIndex].quantity=info.previousQuantity;
+        else{
+          records[invIndex].quantity=info.previousQuantity;
+          records[invIndex].depleted=info.previousDepleted;
+        }
       }
     }
     undoData=null; undoToast=null; t.remove();
-    if(saveAndRender()) showToast('已復原');
+    if(saveAndRender('data')) showToast('已復原');
   };
   undoTimer=setTimeout(()=>{ undoData=null; undoToast=null; t.remove(); },5000);
 }
@@ -2632,6 +2780,8 @@ function openEdit(id){
 async function saveEdit(){
   const id=document.getElementById('edit-id').value;
   const r=records.find(x=>x.id===id); if(!r) return;
+  const beforeRecord=JSON.stringify(r);
+  const beforeSignature=recordStatsSignature(r);
  
   if(r.itemType===ITEM.LEAGUE){
     const date=document.getElementById('edit-obtain-date').value;
@@ -2673,7 +2823,12 @@ async function saveEdit(){
     }
     r.updatedAt = getNowISO();
   }
-  if(!saveAndRender()) return;
+  const scope=beforeSignature===recordStatsSignature(r)?'table':'data';
+  if(!saveAndRender(scope)){
+    const index=records.findIndex(record=>record.id===id);
+    if(index>=0) records[index]=JSON.parse(beforeRecord);
+    return;
+  }
   closeModal('edit-modal'); showToast('紀錄已更新');
 }
  
@@ -2708,8 +2863,8 @@ function buildBatch(){
   info.innerHTML=`<div class="sub-box"><div style="display:flex;justify-content:space-between;align-items:center;"><span>目前 ${type===ITEM.SKILL?'技能券':'教練券'}庫存</span><b style="font-size:1.2rem;color:${inventory>=count?'var(--success)':'var(--danger)'};">${inventory} 張</b></div>${inventory<count?`<div style="margin-top:6px;color:var(--danger);font-size:.75rem;">⚠️ 庫存不足，無法開 ${count} 張。</div>`:''}</div>`;
  
   const box=document.getElementById('batch-rows'); box.innerHTML='';
-  if (!Number.isInteger(count) || count <= 0 || count>100){
-    info.innerHTML='<div class="sub-box" style="color:var(--danger)">自訂張數必須是 1～100 的整數。</div>';
+  if (!Number.isInteger(count) || count <= 0 || count>30){
+    info.innerHTML='<div class="sub-box" style="color:var(--danger)">自訂張數必須是 1～30 的整數。</div>';
     return;
   }
   for(let i=0;i<count;i++){
@@ -2739,7 +2894,7 @@ async function submitBatch(){
   const inventory=getInventory(type);
  
   if(!isValidDateString(openDate) || openDate>localDateString()) { showToast('請填寫有效且不晚於今天的開箱日期', 'error'); return; }
-  if(!Number.isInteger(requested) || requested<1 || requested>100){ showToast('開箱張數必須是 1～100', 'error'); return; }
+  if(!Number.isInteger(requested) || requested<1 || requested>30){ showToast('開箱張數必須是 1～30', 'error'); return; }
   if(inventory<requested){ showToast(`庫存不足：目前 ${inventory} 張，要求 ${requested} 張`,'error'); return; }
   const sources=getInventorySources(type).filter(source=>source.obtainDate<=openDate);
   const eligibleInventory=sources.reduce((sum,source)=>sum+Number(source.quantity||0),0);
@@ -2779,12 +2934,12 @@ async function submitBatch(){
     while(sourceIndex < sources.length && Number(sources[sourceIndex].quantity) <= 0) { sourceIndex++; }
     if(sourceIndex>=sources.length){ showToast('系統錯誤：扣除庫存失敗', 'error'); return; }
     sources[sourceIndex].quantity--;
+    sources[sourceIndex].depleted=Number(sources[sourceIndex].quantity)<=0;
     sources[sourceIndex].updatedAt = getNowISO();
   }
   
   records.push(...newRecords);
-  records=records.filter(r=> !(r.eventType==='obtain' && r.status===STAT.UNOPEN && Number(r.quantity)<=0));
-  if(!saveAndRender()){
+  if(!saveAndRender('data')){
     records=JSON.parse(snapshot);
     return;
   }
@@ -2805,7 +2960,7 @@ function downloadBlob(blob,filename){
 function exportData(fmt){
   if(fmt==='json'){
     const data={ schemaVersion:SCHEMA_VERSION, appVersion:APP_VERSION, exportedAt:getNowISO(), updatedAt:databaseUpdatedAt, lastCloudSyncAt, records, targets, pityState };
-    downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), `白教白技_V4.1.1_backup_${localDateString()}.json`);
+    downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), `白教白技_V4.1.2_backup_${localDateString()}.json`);
     showToast('JSON 備份完成'); return;
   }
   let csv='獲取日期,開箱日期,事件,種類,獲得方式,數量,狀態,分類,名稱,階級/評價,詳細數值,備註\n';
@@ -2813,7 +2968,7 @@ function exportData(fmt){
     const values=[r.obtainDate||'',r.openDate||'',r.eventType||'',r.itemType||'',r.method||'',r.quantity||0,r.status||'',r.content?.category||'',r.content?.name||'',r.content?.tier||r.content?.grade||'',r.content?.detail||'',r.itemType===ITEM.LEAGUE?`完賽${r.quantity}季`:r.memo||''];
     csv+=values.map(v=>{let s=String(v??'');if(/^\s*[=+\-@]/.test(s))s="'"+s;return `"${s.replace(/"/g,'""')}"`;}).join(',')+'\n';
   });
-  downloadBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}), `白教白技_V4.1.1_records_${localDateString()}.csv`);
+  downloadBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}), `白教白技_V4.1.2_records_${localDateString()}.csv`);
   showToast('CSV 匯出完成');
 }
  
@@ -2904,7 +3059,8 @@ function normalizeImportedData(data){
     const openDate=status===STAT.OPEN ? (r.openDate||r.date) : null;
     if(status===STAT.OPEN && (!isValidDateString(openDate) || openDate<obtainDate || openDate>today)){ warn(r); continue; }
     const unopenedQuantity=Number(r.quantity);
-    if(status===STAT.UNOPEN && (!Number.isInteger(unopenedQuantity) || unopenedQuantity<1)){ warn(r); continue; }
+    const depleted=status===STAT.UNOPEN && r.depleted===true && unopenedQuantity===0;
+    if(status===STAT.UNOPEN && (!Number.isInteger(unopenedQuantity) || unopenedQuantity<0 || (unopenedQuantity===0&&!depleted))){ warn(r); continue; }
  
     let validContent = null;
     let isValid = true;
@@ -2931,6 +3087,7 @@ function normalizeImportedData(data){
       quantity: status===STAT.OPEN ? 1 : unopenedQuantity,
       method, source: {type:sourceType(method),label:method,...(sourceRecordId?{sourceRecordId}:{})},
       status, content:validContent, memo:String(r.memo||''),
+      depleted:status===STAT.UNOPEN ? depleted : false,
       createdAt: validIso(r.createdAt)?r.createdAt:timestampForDate(obtainDate),
       openedAt: status===STAT.OPEN ? (validIso(r.openedAt)?r.openedAt:timestampForDate(openDate)) : null,
       updatedAt: validIso(r.updatedAt)?r.updatedAt:now
@@ -3066,11 +3223,11 @@ async function downloadFromCloud(){
  
 async function clearRecordsOnly(){
   if(!await customConfirm('確定清除所有掉落與聯賽紀錄？')) return;
-  records=[]; if(saveAndRender()) showToast('已清除所有紀錄');
+  records=[]; if(saveAndRender('data')) showToast('已清除所有紀錄');
 }
 async function clearTargetsOnly(){
   if(!await customConfirm('確定清除所有心願設定？')) return;
-  targets=[]; if(saveAndRender()) showToast('已清除心願');
+  targets=[]; if(saveAndRender('targets')) showToast('已清除心願');
 }
 async function clearAllData(){
   if(!await customConfirm('這會永久清除 V4 資料、心願與保留的 V3 原始備份。確定？')) return;
@@ -3102,9 +3259,31 @@ function renderAll(){
   renderGoodCoaches();
 }
  
-function saveAndRender(){
+function renderDataViews({chartsToo=true}={}){
+  updateMonthFilter();
+  renderKPIs();
+  if(chartsToo) renderCharts();
+  renderTable();
+  renderTargetStats();
+  renderSourceAnalysis();
+  renderGoodCoaches();
+}
+ 
+function saveAndRender(scope='all'){
   if(saveData()){
-    renderAll();
+    if(scope==='data') renderDataViews();
+    else if(scope==='table'){
+      updateMonthFilter();
+      renderTable();
+    }else if(scope==='pity'){
+      document.getElementById('setting-pity-points').value=pityState.points??'';
+      renderPityStats();
+    }else if(scope==='targets'){
+      renderTargets();
+      renderKPIs();
+      renderTargetStats();
+      renderTable();
+    }else renderAll();
     return true;
   }
   return false;
@@ -3113,14 +3292,23 @@ function saveAndRender(){
 // 移除部分 inline onclick 綁定以避免 ID injection 造成 HTML 破壞
 // Tabs
 document.querySelectorAll('.tab-btn').forEach(button=>{ button.addEventListener('click',()=>switchTab(button.dataset.tab,button)); });
-// Filter
-['filter-text','filter-date-from','filter-date-to','filter-month','filter-type','filter-source','filter-result'].forEach(id=>{
-  const el=document.getElementById(id);
-  el.addEventListener(el.tagName==='INPUT'?'input':'change', ()=>{ currentPage=1; renderTable(); });
+// Filter：文字搜尋防抖，其他條件立即套用
+const renderFilteredTable=()=>{ currentPage=1; renderTable(); };
+document.getElementById('filter-text').addEventListener('input',debounce(renderFilteredTable,300));
+['filter-date-from','filter-date-to','filter-month','filter-type','filter-source','filter-result'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',renderFilteredTable);
 });
 // Pagination
 document.getElementById('prev-page').addEventListener('click',()=>{ if(currentPage>1){ currentPage--; renderTable(); } });
 document.getElementById('next-page').addEventListener('click',()=>{ const total=getFilteredRecords().length; const pages=Math.max(1,Math.ceil(total/PAGE_SIZE)); if(currentPage<pages){ currentPage++; renderTable(); } });
+document.getElementById('toggle-gas-url').addEventListener('click',()=>{
+  const input=document.getElementById('gas-url');
+  const button=document.getElementById('toggle-gas-url');
+  const reveal=input.type==='password';
+  input.type=reveal?'url':'password';
+  button.textContent=reveal?'隱藏':'顯示';
+  button.setAttribute('aria-label',reveal?'隱藏 GAS 網址':'顯示 GAS 網址');
+});
 // Modal close / Backdrop click
 document.querySelectorAll('.modal-close').forEach(btn=>{ btn.addEventListener('click',()=>closeModal(btn.dataset.modal)); });
 document.querySelectorAll('.modal-backdrop').forEach(modal=>{ modal.addEventListener('click',e=>{ if(e.target===modal && modal.id!=='confirm-modal' && modal.id!=='delete-options-modal'){ modal.style.display='none'; } }); });

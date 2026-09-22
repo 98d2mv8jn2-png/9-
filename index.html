@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>白教/白技教掉落統計系統 V4.0</title>
-
+<title>白教／白技掉落統計系統 V4.1.1</title>
+ 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+ 
 <style>
 :root{
   --bg:#1A1C23;
@@ -26,14 +26,14 @@
   --text-muted:#9E9B96;
   --radius:8px;
 }
-
+ 
 *{
   box-sizing:border-box;
   margin:0;
   padding:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
-
+ 
 body{
   background:var(--bg);
   color:var(--text);
@@ -42,11 +42,11 @@ body{
   margin:0 auto;
   overflow-x:hidden;
 }
-
+ 
 button,input,select{
   font:inherit;
 }
-
+ 
 .header-container{
   padding:18px 12px 0 12px;
   position:sticky;
@@ -56,7 +56,7 @@ button,input,select{
   z-index:50;
   border-bottom:1px solid var(--border);
 }
-
+ 
 h1{
   font-size:1.3rem;
   color:var(--primary);
@@ -65,24 +65,24 @@ h1{
   align-items:center;
   justify-content:space-between;
 }
-
+ 
 .version{
   font-size:.65rem;
   color:var(--text-muted);
   font-weight:400;
 }
-
+ 
 .tabs{
   display:flex;
   gap:20px;
   overflow-x:auto;
   scrollbar-width:none;
 }
-
+ 
 .tabs::-webkit-scrollbar{
   display:none;
 }
-
+ 
 .tab-btn{
   background:transparent;
   border:none;
@@ -95,56 +95,56 @@ h1{
   transition:.2s;
   white-space:nowrap;
 }
-
+ 
 .tab-btn.active{
   color:var(--primary);
   border-bottom-color:var(--primary);
 }
-
+ 
 .tab-content{
   display:none;
   padding:16px 12px;
   animation:fadeIn .3s ease;
 }
-
+ 
 .tab-content.active{
   display:block;
 }
-
+ 
 @keyframes fadeIn{
   from{opacity:0;transform:translateY(5px)}
   to{opacity:1;transform:translateY(0)}
 }
-
+ 
 .grid{
   display:grid;
   grid-template-columns:1fr;
   gap:14px;
 }
-
+ 
 .grid-2{
   grid-template-columns:1fr;
 }
-
+ 
 .grid-3{
   grid-template-columns:1fr;
 }
-
+ 
 .grid-kpi{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:14px;
   margin-bottom:14px;
 }
-
+ 
 @media(min-width:500px){
   .grid-2{grid-template-columns:1fr 1fr}
 }
-
+ 
 @media(min-width:768px){
   .grid-3{grid-template-columns:repeat(3,1fr)}
 }
-
+ 
 .card{
   background:var(--card);
   border-radius:var(--radius);
@@ -153,7 +153,7 @@ h1{
   box-shadow:0 4px 12px rgba(0,0,0,.1);
   min-width:0;
 }
-
+ 
 .card-title{
   font-size:1rem;
   font-weight:600;
@@ -165,31 +165,31 @@ h1{
   justify-content:space-between;
   align-items:center;
 }
-
+ 
 .stat-card{
   text-align:center;
   padding:12px;
   position:relative;
 }
-
+ 
 .stat-label{
   font-size:.75rem;
   color:var(--text-muted);
   margin-bottom:4px;
 }
-
+ 
 .stat-val{
   font-size:1.4rem;
   font-weight:700;
   color:var(--primary);
 }
-
+ 
 .stat-sub{
   font-size:.7rem;
   color:var(--text-muted);
   margin-top:4px;
 }
-
+ 
 .quick-bar{
   display:flex;
   gap:8px;
@@ -199,11 +199,11 @@ h1{
   padding-bottom:4px;
   scrollbar-width:none;
 }
-
+ 
 .quick-bar::-webkit-scrollbar{
   display:none;
 }
-
+ 
 .btn-quick{
   flex-shrink:0;
   background:var(--card-inner);
@@ -216,21 +216,21 @@ h1{
   cursor:pointer;
   transition:.15s;
 }
-
+ 
 .btn-quick:hover{
   border-color:var(--primary);
 }
-
+ 
 .btn-league{
   background:rgba(146,163,141,.15);
   border-color:var(--success);
   color:var(--success);
 }
-
+ 
 .form-group{
   margin-bottom:10px;
 }
-
+ 
 label{
   display:block;
   font-size:.75rem;
@@ -238,7 +238,7 @@ label{
   margin-bottom:4px;
   color:var(--text-muted);
 }
-
+ 
 select,
 input,
 button{
@@ -251,14 +251,14 @@ button{
   font-size:.85rem;
   transition:.15s;
 }
-
+ 
 select:focus,
 input:focus{
   outline:none;
   border-color:var(--primary);
   background:var(--card);
 }
-
+ 
 button.btn-primary{
   background:var(--primary);
   color:#1A1C23;
@@ -266,7 +266,7 @@ button.btn-primary{
   border:none;
   cursor:pointer;
 }
-
+ 
 button.btn-success{
   background:var(--success);
   color:#1A1C23;
@@ -274,7 +274,7 @@ button.btn-success{
   border:none;
   cursor:pointer;
 }
-
+ 
 button.btn-subtle{
   background:transparent;
   color:var(--text-muted);
@@ -284,19 +284,19 @@ button.btn-subtle{
   font-size:.75rem;
   width:auto;
 }
-
+ 
 button.btn-danger{
   background:rgba(190,140,140,.15);
   color:var(--danger);
   border:1px solid var(--danger);
   cursor:pointer;
 }
-
+ 
 button:disabled{
   opacity:.45;
   cursor:not-allowed;
 }
-
+ 
 .sub-box{
   background:var(--card-inner);
   border:1px dashed var(--border);
@@ -304,28 +304,28 @@ button:disabled{
   border-radius:6px;
   margin-bottom:10px;
 }
-
+ 
 .table-container{
   max-height:calc(100vh - 250px);
   overflow:auto;
   border:1px solid var(--border);
   border-radius:6px;
 }
-
+ 
 table{
   width:100%;
   border-collapse:collapse;
   font-size:.8rem;
   min-width:900px;
 }
-
+ 
 th,td{
   padding:10px 8px;
   text-align:left;
   border-bottom:1px solid var(--border);
   white-space:nowrap;
 }
-
+ 
 th{
   background:#1E2128;
   position:sticky;
@@ -334,16 +334,16 @@ th{
   z-index:10;
   font-weight:600;
 }
-
+ 
 tr.target-highlight{
   background-color:var(--gold-bg);
   border-left:3px solid var(--gold);
 }
-
+ 
 tr.target-highlight td:first-child{
   padding-left:12px;
 }
-
+ 
 .action-btn{
   background:rgba(133,152,167,.15);
   color:var(--primary);
@@ -355,7 +355,7 @@ tr.target-highlight td:first-child{
   margin-right:4px;
   width:auto;
 }
-
+ 
 .del-btn{
   background:rgba(190,140,140,.15);
   color:var(--danger);
@@ -366,17 +366,17 @@ tr.target-highlight td:first-child{
   font-size:.7rem;
   width:auto;
 }
-
+ 
 .action-btn:hover{
   background:var(--primary);
   color:#1A1C23;
 }
-
+ 
 .del-btn:hover{
   background:var(--danger);
   color:#fff;
 }
-
+ 
 .badge{
   display:inline-block;
   padding:3px 6px;
@@ -384,73 +384,73 @@ tr.target-highlight td:first-child{
   font-size:.7rem;
   font-weight:600;
 }
-
+ 
 .badge-coach{
   background:rgba(196,176,151,.2);
   color:#C4B097;
   border:1px solid rgba(196,176,151,.4);
 }
-
+ 
 .badge-skill{
   background:rgba(133,152,167,.2);
   color:#8598A7;
   border:1px solid rgba(133,152,167,.4);
 }
-
+ 
 .badge-pending{
   background:rgba(190,140,140,.2);
   color:#BE8C8C;
   border:1px solid rgba(190,140,140,.4);
 }
-
+ 
 .badge-opened{
   background:rgba(146,163,141,.2);
   color:#92A38D;
   border:1px solid rgba(146,163,141,.4);
 }
-
+ 
 .badge-tier-3{
   background:rgba(190,140,140,.3);
   color:#E8E4DF;
   border:1px solid #BE8C8C;
 }
-
+ 
 .badge-grade-good{
   background:rgba(146,163,141,.2);
   color:#92A38D;
   border:1px solid rgba(146,163,141,.4);
 }
-
+ 
 .badge-grade-normal{
-  background:rgba(133,152,167,.2);
-  color:#8598A7;
-  border:1px solid rgba(133,152,167,.4);
+  background:rgba(205,186,136,.2); /* Reverted to #CDBA88 as requested */
+  color:#CDBA88;
+  border:1px solid rgba(205,186,136,.4);
 }
-
+ 
 .badge-grade-bad{
   background:rgba(190,140,140,.2);
   color:#BE8C8C;
   border:1px solid rgba(190,140,140,.4);
 }
-
+ 
 .badge-target{
   background:var(--gold-bg);
   color:var(--gold);
   border:1px solid var(--gold);
 }
-
+ 
 .badge-league{
   background:rgba(146,163,141,.1);
   color:#92A38D;
   border:1px dotted #92A38D;
 }
-
+ 
 .badge-source{
   background:rgba(133,152,167,.1);
   color:var(--primary);
   border:1px solid rgba(133,152,167,.3);
 }
-
+ 
 .target-chip{
   background:var(--card-inner);
   border:1px solid var(--border);
@@ -460,27 +460,28 @@ tr.target-highlight td:first-child{
   font-size:.75rem;
   cursor:pointer;
   display:inline-block;
+  width:auto;
   margin:0 4px 6px 0;
 }
-
+ 
 .target-chip.active{
   background:var(--gold-bg);
   border-color:var(--gold);
   color:var(--gold);
   font-weight:600;
 }
-
+ 
 .target-section{
   margin-bottom:12px;
 }
-
+ 
 .target-section-title{
   font-size:.75rem;
   color:var(--primary);
   font-weight:600;
   margin-bottom:5px;
 }
-
+ 
 .fab{
   position:fixed;
   bottom:30px;
@@ -501,12 +502,12 @@ tr.target-highlight td:first-child{
   transition:transform .2s;
   border:none;
 }
-
+ 
 .fab:hover{
   transform:scale(1.08);
   background:var(--primary-hover);
 }
-
+ 
 .modal-backdrop{
   display:none;
   position:fixed;
@@ -518,7 +519,7 @@ tr.target-highlight td:first-child{
   padding:12px;
   backdrop-filter:blur(3px);
 }
-
+ 
 .modal-content{
   background:var(--card);
   width:100%;
@@ -529,11 +530,11 @@ tr.target-highlight td:first-child{
   max-height:90vh;
   overflow-y:auto;
 }
-
+ 
 .modal-wide{
   max-width:850px;
 }
-
+ 
 #toast-container{
   position:fixed;
   top:20px;
@@ -544,7 +545,7 @@ tr.target-highlight td:first-child{
   gap:10px;
   pointer-events:none;
 }
-
+ 
 .toast{
   background:var(--card);
   color:var(--text);
@@ -555,17 +556,18 @@ tr.target-highlight td:first-child{
   animation:slideIn .3s forwards;
   font-size:.85rem;
   font-weight:600;
+  pointer-events:auto;
 }
-
+ 
 .toast.success{border-color:var(--success)}
 .toast.error{border-color:var(--danger)}
 .toast.info{border-color:var(--primary)}
-
+ 
 @keyframes slideIn{
   from{transform:translateX(120%);opacity:0}
   to{transform:translateX(0);opacity:1}
 }
-
+ 
 .luck-tag{
   position:absolute;
   top:10px;
@@ -575,65 +577,65 @@ tr.target-highlight td:first-child{
   border-radius:10px;
   font-weight:bold;
 }
-
+ 
 .luck-ou{
   background:rgba(196,176,151,.2);
   color:var(--gold);
   border:1px solid var(--gold);
 }
-
+ 
 .luck-normal{
   background:rgba(133,152,167,.2);
   color:var(--primary);
   border:1px solid var(--primary);
 }
-
+ 
 .luck-fei{
   background:rgba(190,140,140,.2);
   color:var(--danger);
   border:1px solid var(--danger);
 }
-
+ 
 .mini-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
   gap:8px;
 }
-
+ 
 .mini-stat{
   background:var(--card-inner);
   border:1px solid var(--border);
   border-radius:6px;
   padding:10px;
 }
-
+ 
 .mini-stat-label{
   color:var(--text-muted);
   font-size:.7rem;
 }
-
+ 
 .mini-stat-value{
   font-size:1.1rem;
   font-weight:700;
   margin-top:3px;
 }
-
+ 
 .source-table{
   width:100%;
   min-width:650px;
 }
-
+ 
 .source-table th,
 .source-table td{
   text-align:center;
 }
-
+ 
 .section-note{
   font-size:.7rem;
   color:var(--text-muted);
   line-height:1.5;
 }
-
+ 
 .pagination{
   display:flex;
   justify-content:center;
@@ -641,94 +643,94 @@ tr.target-highlight td:first-child{
   gap:8px;
   margin-top:10px;
 }
-
+ 
 .page-info{
   color:var(--text-muted);
   font-size:.75rem;
 }
-
+ 
 .empty{
   text-align:center;
   color:var(--text-muted);
   padding:24px;
 }
-
+ 
 @media(max-width:600px){
   .header-container{
     padding-top:12px;
   }
-
+ 
   h1{
     font-size:1.05rem;
   }
-
+ 
   .card{
     padding:12px;
   }
-
+ 
   .stat-val{
     font-size:1.2rem;
   }
-
+ 
   #toast-container{
     left:12px;
     right:12px;
     top:12px;
   }
-
+ 
   .toast{
     width:100%;
   }
 }
 </style>
 </head>
-
+ 
 <body>
-
+ 
 <div id="toast-container"></div>
-
+ 
 <div class="header-container">
   <h1>
-    ⚾ 掉落統計系統
-    <span class="version">V4.0</span>
+    ⚾ 白教／白技掉落統計系統
+    <span class="version">V4.1.1</span>
   </h1>
-
+ 
   <div class="tabs">
     <button class="tab-btn active" data-tab="dashboard">📊 總覽數據</button>
     <button class="tab-btn" data-tab="records">📝 歷史明細</button>
     <button class="tab-btn" data-tab="settings">⚙️ 設定與工具</button>
   </div>
 </div>
-
+ 
 <!-- ==================== DASHBOARD ==================== -->
-
+ 
 <div id="tab-dashboard" class="tab-content active">
-
+ 
   <div class="quick-bar">
     <button class="btn-quick btn-league" onclick="openLeagueModal()">🏁 登記聯賽結算</button>
     <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL,'刷聯賽')">⚡ +1 聯賽技能券</button>
     <button class="btn-quick" onclick="quickCheckIn(ITEM.COACH,'刷聯賽拿到')">⚡ +1 聯賽教練券</button>
     <button class="btn-quick" onclick="quickCheckIn(ITEM.SKILL,'聯賽60000分保底')">📦 +1 6萬保底</button>
   </div>
-
+ 
   <div id="export-area" style="background:var(--bg);padding:10px 0;">
-
+ 
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;">
       <span style="font-size:.85rem;color:var(--text-muted)">核心數據指標</span>
       <button class="btn-subtle"
               style="color:var(--gold);border-color:var(--gold)"
               onclick="exportScreenshot()">📸 儲存戰報圖</button>
     </div>
-
+ 
     <div class="grid-kpi">
-
+ 
       <div class="card stat-card">
         <div id="luck-badge" class="luck-tag luck-normal">計算中</div>
         <div class="stat-label">白技 III 階出貨率</div>
         <div class="stat-val" id="kpi-tier3-rate" style="color:var(--gold)">0%</div>
         <div class="stat-sub" id="kpi-tier3-count">0 / 0 張</div>
       </div>
-
+ 
       <div class="card stat-card">
         <div class="stat-label">未開庫存（技 / 教）</div>
         <div class="stat-val" style="color:var(--danger)">
@@ -738,7 +740,7 @@ tr.target-highlight td:first-child{
         </div>
         <div class="stat-sub">目前可開箱庫存</div>
       </div>
-
+ 
       <div class="card stat-card">
         <div class="stat-label">目前連黑</div>
         <div class="stat-val" style="font-size:1.15rem;display:flex;justify-content:center;gap:8px">
@@ -748,7 +750,7 @@ tr.target-highlight td:first-child{
         </div>
         <div class="stat-sub">自上次大獎後未出張數</div>
       </div>
-
+ 
       <div class="card stat-card">
         <div class="stat-label">歷史最長連黑</div>
         <div class="stat-val" style="font-size:1.15rem">
@@ -758,23 +760,23 @@ tr.target-highlight td:first-child{
         </div>
         <div class="stat-sub">技 / 教</div>
       </div>
-
+ 
       <div class="card stat-card">
-        <div class="stat-label">聯賽平均掉落</div>
+        <div class="stat-label">聯賽自然掉落平均</div>
         <div class="stat-val" id="kpi-seasons-exp" style="font-size:1.15rem">--</div>
         <div class="stat-sub" id="kpi-seasons-sub">尚未登記完賽季數</div>
       </div>
-
+ 
       <div class="card stat-card" id="pity-card">
-        <div class="stat-label">6萬保底歷史週期</div>
+        <div class="stat-label">6萬保底積分（手動記錄）</div>
         <div class="stat-val" id="kpi-pity-cycle" style="font-size:1.05rem">--</div>
-        <div class="stat-sub" id="kpi-pity-sub">需至少 2 次保底</div>
+        <div class="stat-sub" id="kpi-pity-sub">尚未記錄積分</div>
       </div>
-
+ 
     </div>
-
+ 
     <!-- 進階統計 -->
-
+ 
     <div class="card" style="margin-bottom:14px">
       <div class="card-title">
         <span>📈 個人統計</span>
@@ -785,172 +787,174 @@ tr.target-highlight td:first-child{
           <option value="month">本月</option>
         </select>
       </div>
-
+ 
       <div class="mini-grid">
-
+ 
         <div class="mini-stat">
           <div class="mini-stat-label">技能開箱</div>
           <div class="mini-stat-value" id="stat-skill-open">0</div>
         </div>
-
+ 
         <div class="mini-stat">
           <div class="mini-stat-label">教練開箱</div>
           <div class="mini-stat-value" id="stat-coach-open">0</div>
         </div>
-
+ 
         <div class="mini-stat">
           <div class="mini-stat-label">技能 III</div>
           <div class="mini-stat-value" id="stat-skill-iii">0</div>
         </div>
-
+ 
         <div class="mini-stat">
           <div class="mini-stat-label">優良教練</div>
           <div class="mini-stat-value" id="stat-coach-good">0</div>
         </div>
-
+ 
         <div class="mini-stat">
           <div class="mini-stat-label">目標命中</div>
           <div class="mini-stat-value" id="stat-target-hit">0</div>
         </div>
-
+ 
         <div class="mini-stat">
           <div class="mini-stat-label">總獲取</div>
           <div class="mini-stat-value" id="stat-obtain-total">0</div>
         </div>
-
+ 
       </div>
     </div>
-
+ 
     <!-- 圖表 -->
-
+ 
     <div class="grid" style="margin-top:14px">
-
+ 
       <div class="card">
         <div class="card-title">
           <span>📦 獲取 / 開箱趨勢</span>
-
+ 
           <select id="chart-period" style="width:auto" onchange="renderCharts()">
             <option value="month">月份</option>
             <option value="week">週</option>
             <option value="day">日期</option>
           </select>
         </div>
-
+ 
         <canvas id="monthlyChart" height="100"></canvas>
       </div>
-
+ 
       <div class="grid grid-2">
-
+ 
         <div class="card">
           <div class="card-title" style="font-size:.85rem">白技階級分佈</div>
           <canvas id="tierChart" height="130"></canvas>
         </div>
-
+ 
         <div class="card">
           <div class="card-title" style="font-size:.85rem">教練品質評級</div>
           <canvas id="coachGradeChart" height="130"></canvas>
         </div>
-
+ 
       </div>
-
+ 
       <div class="card">
         <div class="card-title">🎯 心願命中統計</div>
         <div id="target-stats"></div>
       </div>
-
+ 
       <div class="card">
         <div class="card-title">📊 來源交叉分析</div>
-
+ 
         <div class="table-container" style="max-height:300px">
           <table class="source-table">
             <thead>
               <tr>
                 <th>來源</th>
                 <th>技能獲取</th>
+                <th>技能已開</th>
                 <th>技能 III</th>
                 <th>教練獲取</th>
+                <th>教練已開</th>
                 <th>優良</th>
                 <th>III率</th>
                 <th>優良率</th>
               </tr>
             </thead>
-
+ 
             <tbody id="source-analysis-body"></tbody>
           </table>
         </div>
       </div>
-
+ 
       <div class="card">
         <div class="card-title">🏆 個人紀錄</div>
-
+ 
         <div class="mini-grid">
-
+ 
           <div class="mini-stat">
             <div class="mini-stat-label">最多單日開箱</div>
             <div class="mini-stat-value" id="record-day-open">0</div>
           </div>
-
+ 
           <div class="mini-stat">
             <div class="mini-stat-label">單月最多獲取</div>
             <div class="mini-stat-value" id="record-month-obtain">0</div>
           </div>
-
+ 
           <div class="mini-stat">
             <div class="mini-stat-label">最長技能黑手</div>
             <div class="mini-stat-value" id="record-skill-black">0</div>
           </div>
-
+ 
           <div class="mini-stat">
             <div class="mini-stat-label">最長教練黑手</div>
             <div class="mini-stat-value" id="record-coach-black">0</div>
           </div>
-
+ 
         </div>
       </div>
-
+ 
     </div>
-
+ 
   </div>
 </div>
-
+ 
 <!-- ==================== RECORDS ==================== -->
-
+ 
 <div id="tab-records" class="tab-content">
-
+ 
   <div class="card">
-
+ 
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-
+ 
       <input
         type="text"
         id="filter-text"
         placeholder="搜尋名稱/備註/來源..."
         style="flex:1;min-width:150px"
       >
-
+ 
       <input
         type="date"
         id="filter-date-from"
         style="width:145px"
       >
-
+ 
       <input
         type="date"
         id="filter-date-to"
         style="width:145px"
       >
-
+ 
       <select id="filter-month" style="width:110px">
         <option value="all">所有月份</option>
       </select>
-
+ 
       <select id="filter-type" style="width:110px">
         <option value="all">所有類別</option>
         <option value="白金教練券">教練券</option>
         <option value="白金技能教練券">技能券</option>
         <option value="聯賽進度">聯賽進度</option>
       </select>
-
+ 
       <select id="filter-source" style="width:130px">
         <option value="all">所有來源</option>
         <option value="刷聯賽">刷聯賽</option>
@@ -959,16 +963,16 @@ tr.target-highlight td:first-child{
         <option value="其他">其他</option>
         <option value="賽季結算">賽季結算</option>
       </select>
-
+ 
       <select id="filter-result" style="width:120px">
         <option value="all">所有結果</option>
         <option value="target">🎯 心願</option>
         <option value="jackpot">⭐ 大獎</option>
         <option value="unopened">📦 未開啟</option>
       </select>
-
+ 
     </div>
-
+ 
     <div class="table-container">
       <table>
         <thead>
@@ -982,171 +986,195 @@ tr.target-highlight td:first-child{
             <th style="min-width:130px">操作</th>
           </tr>
         </thead>
-
+ 
         <tbody id="records-tbody"></tbody>
       </table>
     </div>
-
+ 
     <div style="margin-top:8px;text-align:right;font-size:.75rem;color:var(--text-muted)">
       共 <span id="record-count">0</span> 筆
     </div>
-
+ 
     <div class="pagination">
       <button class="btn-subtle" id="prev-page">上一頁</button>
       <span class="page-info" id="page-info">第 1 頁</span>
       <button class="btn-subtle" id="next-page">下一頁</button>
     </div>
-
+ 
   </div>
 </div>
-
+ 
 <!-- ==================== SETTINGS ==================== -->
-
+ 
 <div id="tab-settings" class="tab-content">
-
+ 
   <div class="card" style="margin-bottom:14px">
-
+ 
+    <div class="card-title">
+      🎯 保底積分設定
+    </div>
+    
+    <div class="grid grid-2">
+      <div class="form-group">
+        <label>目前 6萬保底積分 (0~59999)</label>
+        <input type="number" id="setting-pity-points" min="0" max="59999" step="1" placeholder="尚未設定">
+      </div>
+      <div style="display: flex; align-items: flex-end; gap: 8px; margin-bottom: 10px;">
+        <button class="btn-primary" onclick="updatePityPoints()">更新積分</button>
+        <button class="btn-subtle" style="color:var(--danger); border-color:var(--danger)" onclick="resetPityPoints()">歸零</button>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="card" style="margin-bottom:14px">
+ 
     <div class="card-title">
       🎯 心願目標設定
       <span>(<span id="target-count">0</span>)</span>
     </div>
-
+ 
     <div class="section-note" style="margin-bottom:10px">
       目標現在會記錄「類型＋分類＋名稱」，避免不同種類同名造成誤判。
     </div>
-
+ 
     <div style="max-height:350px;overflow-y:auto">
-
+ 
       <div class="target-section">
         <div class="target-section-title">⚾ 打者白技</div>
         <div id="chips-batter-skills"></div>
       </div>
-
+ 
       <div class="target-section">
         <div class="target-section-title">⚾ 投手白技</div>
         <div id="chips-pitcher-skills"></div>
       </div>
-
+ 
       <div class="target-section">
         <div class="target-section-title">👔 打擊教練</div>
         <div id="chips-batter-coaches"></div>
       </div>
-
+ 
       <div class="target-section">
         <div class="target-section-title">👔 投手教練</div>
         <div id="chips-pitcher-coaches"></div>
       </div>
-
+ 
     </div>
-
+ 
   </div>
-
+ 
   <div class="card" style="margin-bottom:14px">
-
+ 
     <div class="card-title">📦 庫存管理與開箱</div>
-
+ 
     <div class="grid grid-2">
-
+ 
       <button class="btn-primary" onclick="openBatchModal()">
         ⚡ 批量開箱模式
       </button>
-
+ 
       <button class="btn-subtle"
               onclick="openModal('good-coach-modal')">
         ⭐ 檢視優良教練
       </button>
-
+ 
     </div>
-
+ 
   </div>
-
+ 
   <div class="card" style="margin-bottom:14px">
-
+ 
     <div class="card-title">⚙️ 資料管理與備份</div>
-
+ 
     <div class="grid grid-2" style="margin-bottom:10px">
-
+ 
       <button class="btn-subtle" onclick="exportData('json')">
         ⬇️ 備份 JSON
       </button>
-
+ 
       <button class="btn-subtle" onclick="document.getElementById('import-file').click()">
         ⬆️ 匯入 JSON
       </button>
-
+ 
       <input
         type="file"
         id="import-file"
         style="display:none"
         accept=".json"
       >
-
+ 
     </div>
-
-    <div class="grid grid-2">
-
+ 
+    <div class="grid grid-2" style="margin-bottom: 10px;">
+ 
       <button class="btn-subtle" onclick="exportData('csv')">
         📄 匯出 CSV
       </button>
-
+ 
       <button class="btn-subtle" onclick="openModal('cloud-modal')">
         ☁️ GAS 雲端同步
       </button>
-
+ 
     </div>
-
-  </div>
-
-  <div class="card">
-
-    <div class="card-title">🧹 清理資料</div>
-
+    
     <div class="grid grid-2">
-
+      <button class="btn-subtle" style="color:var(--primary)" onclick="restoreBeforeImport()">
+        ↩️ 復原上次匯入前資料
+      </button>
+    </div>
+ 
+  </div>
+ 
+  <div class="card">
+ 
+    <div class="card-title">🧹 清理資料</div>
+ 
+    <div class="grid grid-2">
+ 
       <button
         class="btn-subtle"
         style="color:var(--danger);border-color:var(--danger)"
         onclick="clearRecordsOnly()">
         清除掉落紀錄
       </button>
-
+ 
       <button
         class="btn-subtle"
         style="color:var(--gold);border-color:var(--gold)"
         onclick="clearTargetsOnly()">
         清除心願
       </button>
-
+ 
     </div>
-
+ 
     <button
       class="btn-subtle"
       style="color:var(--danger);border-color:var(--danger);width:100%;margin-top:10px"
       onclick="clearAllData()">
       ⚠️ 清空所有本機資料
     </button>
-
+ 
   </div>
-
+ 
 </div>
-
+ 
 <button class="fab" onclick="openAddModal()" aria-label="新增紀錄">+</button>
-
+ 
 <!-- ==================== ADD MODAL ==================== -->
-
+ 
 <div id="add-modal" class="modal-backdrop">
-
+ 
   <div class="modal-content">
-
+ 
     <div class="card-title">
       <span>📝 新增紀錄</span>
       <button class="btn-subtle modal-close" data-modal="add-modal">✕</button>
     </div>
-
+ 
     <form id="add-form">
-
+ 
       <div class="grid grid-2">
-
+ 
         <div class="form-group">
           <label>種類</label>
           <select id="item-type">
@@ -1154,263 +1182,294 @@ tr.target-highlight td:first-child{
             <option value="白金教練券">教練券</option>
           </select>
         </div>
-
+ 
         <div class="form-group">
           <label>獲取方式</label>
           <select id="obtain-method"></select>
         </div>
-
+ 
         <div class="form-group">
           <label>獲取日期</label>
           <input type="date" id="obtain-date" required>
         </div>
-
+ 
         <div class="form-group" id="add-quantity-group">
           <label id="add-quantity-label">數量</label>
           <input type="number" id="quantity" min="1" step="1" value="1" required>
         </div>
-
+ 
       </div>
-
+ 
       <div class="form-group" id="memo-group" style="display:none">
         <label>其他方式備註</label>
         <input type="text" id="memo" placeholder="請輸入來源">
       </div>
-
+ 
       <div class="sub-box">
-
+ 
         <div class="form-group">
           <label>狀態</label>
-
+ 
           <select id="open-status">
             <option value="未開啟">暫存不開（累計庫存）</option>
             <option value="已開啟">立即開啟（填寫結果）</option>
           </select>
-
+ 
         </div>
-
+ 
         <div id="detail-fields" style="display:none"></div>
-
+ 
       </div>
-
+ 
       <button type="submit"
               class="btn-primary"
               style="margin-top:8px;padding:12px">
         確認新增
       </button>
-
+ 
     </form>
-
+ 
   </div>
 </div>
-
+ 
 <!-- ==================== LEAGUE ==================== -->
-
+ 
 <div id="league-modal" class="modal-backdrop">
-
+ 
   <div class="modal-content" style="max-width:320px">
-
+ 
     <div class="card-title">
       <span>🏁 登記聯賽</span>
       <button class="btn-subtle modal-close" data-modal="league-modal">✕</button>
     </div>
-
+ 
     <div class="form-group">
       <label>日期</label>
       <input type="date" id="league-date">
     </div>
-
+ 
     <div class="form-group">
       <label>完成季數</label>
       <input type="number" id="league-seasons" min="0.1" step="0.1" value="1">
     </div>
-
+ 
     <button class="btn-primary" onclick="submitLeague()">
       確認完賽
     </button>
-
+ 
   </div>
 </div>
-
+ 
 <!-- ==================== GOOD COACH ==================== -->
-
+ 
 <div id="good-coach-modal" class="modal-backdrop">
-
+ 
   <div class="modal-content">
-
+ 
     <div class="card-title">
       <span>⭐ 優良教練</span>
       <button class="btn-subtle modal-close" data-modal="good-coach-modal">✕</button>
     </div>
-
+ 
     <div id="good-coach-list"></div>
-
+ 
   </div>
 </div>
-
+ 
 <!-- ==================== CONFIRM ==================== -->
-
+ 
 <div id="confirm-modal"
      class="modal-backdrop"
      style="z-index:10000">
-
+ 
   <div class="modal-content"
        style="max-width:340px;text-align:center">
-
+ 
     <div style="font-size:1.1rem;margin-bottom:16px;font-weight:600"
          id="confirm-msg">
     </div>
-
+ 
     <div style="display:flex;gap:10px">
-
+ 
       <button class="btn-subtle" id="confirm-no">
         取消
       </button>
-
+ 
       <button class="btn-primary"
               id="confirm-yes"
               style="background:var(--danger);color:#fff">
         確定
       </button>
-
+ 
     </div>
-
+ 
   </div>
 </div>
-
+ 
+<!-- ==================== DELETE OPTIONS MODAL ==================== -->
+<div id="delete-options-modal" class="modal-backdrop" style="z-index:9990">
+  <div class="modal-content" style="max-width:340px;text-align:center">
+    <div style="font-size:1.05rem;margin-bottom:16px;font-weight:600" id="delete-options-msg">
+      選擇刪除方式
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <button class="btn-primary" style="background:var(--danger);color:#fff" id="del-opt-completely">
+        徹底刪除整筆紀錄
+      </button>
+      <button class="btn-primary" id="del-opt-return">
+        刪除結果並退回 1 張庫存
+      </button>
+      <button class="btn-subtle" id="del-opt-cancel">
+        取消
+      </button>
+    </div>
+  </div>
+</div>
+ 
+ 
 <!-- ==================== CLOUD ==================== -->
-
+ 
 <div id="cloud-modal" class="modal-backdrop">
-
+ 
   <div class="modal-content">
-
+ 
     <div class="card-title">
       <span>☁️ GAS 雲端同步</span>
       <button class="btn-subtle modal-close" data-modal="cloud-modal">✕</button>
     </div>
-
+ 
     <div class="section-note" style="margin-bottom:10px">
       請輸入 Google Apps Script Web App URL。
-      V4 會以 JSON POST 傳送完整資料。
+      系統會以 JSON POST 傳送完整資料。
     </div>
-
+ 
     <div class="form-group">
       <label>Web App URL</label>
       <input type="url" id="gas-url" placeholder="https://script.google.com/...">
     </div>
-
+ 
     <button class="btn-primary" onclick="syncToCloud()">
       ☁️ 上傳同步
     </button>
-
+ 
     <button class="btn-subtle"
             style="margin-top:8px;width:100%"
             onclick="downloadFromCloud()">
       ⬇️ 從雲端下載
     </button>
-
+ 
     <button class="btn-subtle"
             style="margin-top:8px;width:100%"
             onclick="saveCloudUrl()">
       儲存網址
     </button>
-
+ 
   </div>
 </div>
-
+ 
 <!-- ==================== EDIT ==================== -->
-
+ 
 <div id="edit-modal" class="modal-backdrop">
-
+ 
   <div class="modal-content modal-wide">
-
+ 
     <div class="card-title">
       <span>✏️ 完整編輯紀錄</span>
       <button class="btn-subtle modal-close" data-modal="edit-modal">✕</button>
     </div>
-
+ 
     <input type="hidden" id="edit-id">
-
+ 
     <div id="edit-fields"></div>
-
+ 
     <button class="btn-primary"
             onclick="saveEdit()"
             style="margin-top:10px">
       儲存修改
     </button>
-
+ 
   </div>
 </div>
-
+ 
 <!-- ==================== BATCH ==================== -->
-
+ 
 <div id="batch-modal" class="modal-backdrop">
-
+ 
   <div class="modal-content modal-wide">
-
+ 
     <div class="card-title">
       <span>⚡ 批量開箱</span>
       <button class="btn-subtle modal-close" data-modal="batch-modal">✕</button>
     </div>
-
+    
+    <div class="form-group">
+      <label>開箱日期</label>
+      <input type="date" id="batch-open-date" required>
+    </div>
+ 
     <div id="batch-inventory-info"
          style="margin-bottom:10px">
     </div>
-
+ 
     <div class="grid grid-2" style="margin-bottom:10px">
-
-      <select id="batch-type">
+ 
+      <select id="batch-type" onchange="buildBatch()">
         <option value="白金技能教練券">技能券</option>
         <option value="白金教練券">教練券</option>
       </select>
-
-      <select id="batch-count">
-        <option value="1">1 張</option>
-        <option value="3">3 張</option>
-        <option value="5">5 張</option>
-        <option value="10">10 張</option>
-      </select>
-
+ 
+      <div style="display:flex; gap:8px;">
+        <select id="batch-count" style="flex:1" onchange="handleBatchCountChange()">
+          <option value="1">1 張</option>
+          <option value="3">3 張</option>
+          <option value="5">5 張</option>
+          <option value="10">10 張</option>
+          <option value="custom">自訂</option>
+        </select>
+        <input type="number" id="batch-count-custom" style="display:none; width:80px;" min="1" max="100" step="1" value="1" onchange="buildBatch()">
+      </div>
+ 
     </div>
-
+ 
     <div id="batch-rows"
          style="max-height:40vh;overflow-y:auto;margin-bottom:10px">
     </div>
-
+ 
     <button class="btn-success" onclick="submitBatch()">
       確認開出
     </button>
-
+ 
   </div>
 </div>
-
+ 
 <script>
-
+ 
 /* ============================================================
-   V4.0 核心設定
+   V4.1.1 核心設定 & Schema 5
 ============================================================ */
-
-const APP_VERSION = '4.0.0';
-const SCHEMA_VERSION = 4;
-
+ 
+const APP_VERSION = '4.1.1';
+const SCHEMA_VERSION = 5;
+ 
 const STORAGE = {
   DATA: 'coach_v4_data',
   OLD_RECORDS: 'coach_v3_rec',
   OLD_TARGETS: 'coach_v3_tar',
-  GAS_URL: 'coach_v3_gas_url'
+  GAS_URL: 'coach_v3_gas_url',
+  BEFORE_IMPORT: 'coach_v5_before_import'
 };
-
+ 
 const ITEM = {
   SKILL:'白金技能教練券',
   COACH:'白金教練券',
   LEAGUE:'聯賽進度'
 };
-
+ 
 const STAT = {
   UNOPEN:'未開啟',
   OPEN:'已開啟'
 };
-
+ 
 const skillList = {
   '打者':[
     '精準打擊',
@@ -1437,7 +1496,7 @@ const skillList = {
     '變色龍'
   ]
 };
-
+ 
 const coachList = {
   '打擊':[
     '開路先鋒專家',
@@ -1464,7 +1523,7 @@ const coachList = {
     '操控擊球仰角'
   ]
 };
-
+ 
 const methodOpts = {
   [ITEM.SKILL]:[
     '刷聯賽',
@@ -1476,48 +1535,54 @@ const methodOpts = {
     '其他'
   ]
 };
-
+ 
 let records = [];
 let targets = [];
+let pityState = { points: null, updatedAt: null };
+let databaseUpdatedAt = null;
+let lastCloudSyncAt = null;
 let charts = {};
 let currentPage = 1;
 const PAGE_SIZE = 50;
 let undoData = null;
 let undoTimer = null;
-
+let undoToast = null;
+ 
 /* ============================================================
-   日期
+   通用核心與日期函式
 ============================================================ */
-
+ 
 function pad(n){
   return String(n).padStart(2,'0');
 }
-
+ 
 function localDateString(date=new Date()){
   return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
 }
-
+ 
 const todayStr = localDateString();
-
+ 
 function parseDateOnly(s){
-  if(!s) return null;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(s||''))) return null;
   const p = String(s).split('-').map(Number);
-  if(p.length !== 3 || p.some(isNaN)) return null;
-  return new Date(p[0],p[1]-1,p[2]);
+  const d = new Date(p[0],p[1]-1,p[2]);
+  return localDateString(d)===s ? d : null;
 }
-
+ 
+function isValidDateString(s){
+  return Boolean(parseDateOnly(s));
+}
+ 
 function formatDate(s){
   if(!s) return '-';
   return String(s);
 }
-
-function daysBetween(a,b){
-  const da = parseDateOnly(a);
-  const db = parseDateOnly(b);
-  if(!da || !db) return 0;
-  return Math.round((db-da)/86400000);
+ 
+function formatDateTime(value){
+  if(!value || Number.isNaN(Date.parse(value))) return '未記錄';
+  return new Date(value).toLocaleString('zh-TW',{hour12:false});
 }
-
+ 
 function startOfWeek(date){
   const d = new Date(date);
   const day = d.getDay();
@@ -1525,11 +1590,11 @@ function startOfWeek(date){
   d.setDate(d.getDate()+diff);
   return localDateString(d);
 }
-
-/* ============================================================
-   ID
-============================================================ */
-
+ 
+function getNowISO() {
+  return new Date().toISOString();
+}
+ 
 function uid(){
   if(window.crypto && crypto.randomUUID){
     return crypto.randomUUID();
@@ -1538,11 +1603,7 @@ function uid(){
     Math.random().toString(36).slice(2) +
     Math.random().toString(36).slice(2);
 }
-
-/* ============================================================
-   HTML 安全
-============================================================ */
-
+ 
 function esc(value){
   return String(value ?? '')
     .replace(/&/g,'&amp;')
@@ -1551,3581 +1612,1486 @@ function esc(value){
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#039;');
 }
-
+ 
+/* ============================================================
+   重構後的歷史庫存與期間判斷核心
+============================================================ */
+ 
+// 歷史數量計算基準：開箱紀錄固定為 1，獲取紀錄取剩餘庫存
+function recordQuantity(r) {
+  if (r.eventType === 'open') return 1;
+  const n = Number(r.quantity);
+  return (Number.isFinite(n) && n > 0) ? n : 0;
+}
+ 
+function isDateInSelectedPeriod(date) {
+  const period = document.getElementById('period-filter')?.value || 'all';
+  if (period === 'all') return true;
+  if (!date) return false;
+ 
+  const now = new Date();
+  const today = localDateString(now);
+ 
+  if (period === 'day') return date === today;
+ 
+  if (period === 'week') {
+    const start = startOfWeek(now);
+    return date >= start && date <= today;
+  }
+ 
+  if (period === 'month') {
+    return date.startsWith(today.slice(0, 7));
+  }
+  return true;
+}
+ 
+// 產生同日精確排序的比較值
+function openedSortValue(r) {
+  return `${r.openDate || ''}|${r.openedAt || r.createdAt || r.id || ''}`;
+}
+ 
+// 保底機制：自然掉落或保底掉落白技時，重置積分
+function resetPityPointsIfSkillDrop(type, method) {
+  if (type === ITEM.SKILL && ['刷聯賽', '聯賽60000分保底'].includes(method)) {
+    pityState.points = 0;
+    pityState.updatedAt = getNowISO();
+  }
+}
+ 
+function normalizePityState(value){
+  const points = Number(value?.points);
+  if(!Number.isInteger(points) || points < 0 || points > 59999){
+    return { points:null, updatedAt:null };
+  }
+  return {
+    points,
+    updatedAt:typeof value?.updatedAt==='string' && value.updatedAt
+      ? value.updatedAt
+      : null
+  };
+}
+ 
+function timestampForDate(date, offset=0){
+  const d=parseDateOnly(date) || new Date();
+  d.setHours(12,0,0,Math.min(999,Math.max(0,offset)));
+  return d.toISOString();
+}
+ 
+function upgradeLoadedRecords(input){
+  if(!Array.isArray(input)) return [];
+  const total=input.length;
+  return input.map((record,index)=>{
+    const r={...record};
+    const order=Math.min(999,total-index);
+    r.createdAt=typeof r.createdAt==='string' && r.createdAt
+      ? r.createdAt
+      : timestampForDate(r.obtainDate||todayStr,order);
+    r.openedAt=r.eventType==='open'
+      ? (typeof r.openedAt==='string' && r.openedAt
+          ? r.openedAt
+          : timestampForDate(r.openDate||r.obtainDate||todayStr,order))
+      : null;
+    r.updatedAt=typeof r.updatedAt==='string' && r.updatedAt
+      ? r.updatedAt
+      : r.openedAt||r.createdAt;
+    return r;
+  });
+}
+ 
 /* ============================================================
    Storage
 ============================================================ */
-
+ 
 function loadData(){
-
   const v4 = localStorage.getItem(STORAGE.DATA);
-
   if(v4){
-
     try{
-
       const parsed = JSON.parse(v4);
-
       if(validateDatabase(parsed)){
-        records = parsed.records;
-        targets = parsed.targets;
+        const normalized=normalizeImportedData(parsed);
+        if(!normalized) throw new Error('資料格式不正確');
+        const needsUpgrade=parsed.schemaVersion!==SCHEMA_VERSION ||
+          parsed.records.some(r=>!r?.createdAt || (r.eventType==='open'&&!r.openedAt) || !r?.updatedAt);
+        records = upgradeLoadedRecords(normalized.records);
+        targets = normalized.targets;
+        pityState = normalized.pityState;
+        databaseUpdatedAt = typeof parsed.updatedAt==='string' ? parsed.updatedAt : getNowISO();
+        lastCloudSyncAt = typeof parsed.lastCloudSyncAt==='string' ? parsed.lastCloudSyncAt : null;
+        if(needsUpgrade || normalized.warnings.length){
+          saveData({touchUpdatedAt:false});
+        }
+        if(normalized.warnings.length){
+          showToast(`已略過 ${normalized.warnings.length} 筆無效本機紀錄`,'error');
+        }
         return;
       }
-
     }catch(e){
-
-      console.warn('V4 資料讀取失敗',e);
-
+      console.warn('資料讀取失敗',e);
     }
-
   }
-
   migrateV3();
-
 }
-
+ 
 function validateDatabase(data){
-
   if(!data || typeof data !== 'object') return false;
   if(!Array.isArray(data.records)) return false;
-  if(!Array.isArray(data.targets)) return false;
-
   return true;
 }
-
-/* ============================================================
-   V3 → V4 Migration
-============================================================ */
-
+ 
 function migrateV3(){
-
-  let oldRecords = [];
-  let oldTargets = null;
-
-  try{
-    oldRecords = JSON.parse(
-      localStorage.getItem(STORAGE.OLD_RECORDS) || '[]'
-    );
-  }catch(e){
-    oldRecords = [];
-  }
-
-  try{
-    oldTargets = JSON.parse(
-      localStorage.getItem(STORAGE.OLD_TARGETS) || 'null'
-    );
-  }catch(e){
-    oldTargets = null;
-  }
-
+  // (相容性遷移保留 V3 邏輯，但加上時間戳記)
+  let oldRecords = []; let oldTargets = null;
+  try { oldRecords = JSON.parse(localStorage.getItem(STORAGE.OLD_RECORDS) || '[]'); } catch(e){}
+  try { oldTargets = JSON.parse(localStorage.getItem(STORAGE.OLD_TARGETS) || 'null'); } catch(e){}
+  
   records = [];
-
   if(Array.isArray(oldRecords)){
-
     oldRecords.forEach(old => {
-
       if(!old || !old.type || !old.date) return;
-
+      const now = getNowISO();
       if(old.type === ITEM.LEAGUE){
-
         records.push({
-          id:uid(),
-          eventType:'league',
-          itemType:ITEM.LEAGUE,
-          obtainDate:old.date,
-          openDate:null,
-          quantity:Number(old.seasons)||0,
-          method:'賽季結算',
-          source:{
-            type:'league',
-            label:'賽季結算'
-          },
-          status:'-',
-          content:null,
-          memo:old.memo || ''
+          id:uid(), eventType:'league', itemType:ITEM.LEAGUE,
+          obtainDate:old.date, openDate:null, quantity:Number(old.seasons)||0,
+          method:'賽季結算', source:{type:'league',label:'賽季結算'}, status:'-',
+          content:null, memo:old.memo||'', createdAt:now, openedAt:null, updatedAt:now
         });
-
         return;
       }
-
       const quantity = Math.max(1,Number(old.quantity)||1);
-
       if(old.status === STAT.UNOPEN){
-
         records.push({
-          id:uid(),
-          eventType:'obtain',
-          itemType:old.type,
-          obtainDate:old.date,
-          openDate:null,
-          quantity,
-          method:old.method || '其他',
-          source:{
-            type:sourceType(old.method),
-            label:old.method || '其他'
-          },
-          status:STAT.UNOPEN,
-          content:null,
-          memo:old.memo || ''
+          id:uid(), eventType:'obtain', itemType:old.type,
+          obtainDate:old.date, openDate:null, quantity,
+          method:old.method||'其他', source:{type:sourceType(old.method),label:old.method||'其他'},
+          status:STAT.UNOPEN, content:null, memo:old.memo||'', createdAt:now, openedAt:null, updatedAt:now
         });
-
       }else{
-
         for(let i=0;i<quantity;i++){
-
           records.push({
-            id:uid(),
-            eventType:'open',
-            itemType:old.type,
-            obtainDate:old.date,
-            openDate:old.date,
-            quantity:1,
-            method:old.method || '其他',
-            source:{
-              type:sourceType(old.method),
-              label:old.method || '其他'
-            },
-            status:STAT.OPEN,
-            content:old.content
-              ? JSON.parse(JSON.stringify(old.content))
-              : null,
-            memo:old.memo || ''
+            id:uid(), eventType:'open', itemType:old.type,
+            obtainDate:old.date, openDate:old.date, quantity:1,
+            method:old.method||'其他', source:{type:sourceType(old.method),label:old.method||'其他'},
+            status:STAT.OPEN, content:old.content?JSON.parse(JSON.stringify(old.content)):null,
+            memo:old.memo||'', createdAt:now, openedAt:now, updatedAt:now
           });
-
         }
-
       }
-
     });
-
   }
-
   targets = [];
-
   if(Array.isArray(oldTargets)){
-
+    // V3 targets migration logic...
     oldTargets.forEach(name => {
-
-      const skillCategories = Object.keys(skillList);
-
-      skillCategories.forEach(cat => {
-
-        if(skillList[cat].includes(name)){
-
-          targets.push({
-            type:'skill',
-            category:cat,
-            name
-          });
-
-        }
-
-      });
-
-      Object.keys(coachList).forEach(cat => {
-
-        if(coachList[cat].includes(name)){
-
-          targets.push({
-            type:'coach',
-            category:cat,
-            name
-          });
-
-        }
-
-      });
-
+      Object.keys(skillList).forEach(cat => { if(skillList[cat].includes(name)) targets.push({type:'skill',category:cat,name}); });
+      Object.keys(coachList).forEach(cat => { if(coachList[cat].includes(name)) targets.push({type:'coach',category:cat,name}); });
     });
-
   }
-
-  if(!targets.length){
-
-    targets = [
-      {
-        type:'skill',
-        category:'打者',
-        name:'先鋒'
-      },
-      {
-        type:'skill',
-        category:'打者',
-        name:'打者洞察力'
-      }
-    ];
-
+  if(!targets.length) {
+    targets = [{type:'skill',category:'打者',name:'先鋒'}, {type:'skill',category:'打者',name:'打者洞察力'}];
   }
-
+  const normalized=normalizeImportedData({records,targets,pityState});
+  if(normalized){
+    records=upgradeLoadedRecords(normalized.records);
+    targets=normalized.targets;
+  }
   saveData();
-
-  if(oldRecords.length){
-
-    showToast(
-      `已自動升級 V3.1 → V4，共轉換 ${records.length} 筆資料`,
-      'success'
-    );
-
-  }
-
 }
-
+ 
 function sourceType(method){
-
   if(method === '聯賽60000分保底') return 'pity';
   if(method === '刷聯賽' || method === '刷聯賽拿到') return 'league';
   return 'other';
 }
-
-function saveData(){
-
-  const db = {
-    schemaVersion:SCHEMA_VERSION,
-    appVersion:APP_VERSION,
-    updatedAt:new Date().toISOString(),
-    records,
-    targets
-  };
-
-  localStorage.setItem(
-    STORAGE.DATA,
-    JSON.stringify(db)
-  );
-
-  /* 同時保留舊 key，方便 V3 還原 */
-  localStorage.setItem(
-    STORAGE.OLD_RECORDS,
-    JSON.stringify(records)
-  );
-
-  localStorage.setItem(
-    STORAGE.OLD_TARGETS,
-    JSON.stringify(targets)
-  );
-
+ 
+function saveData({touchUpdatedAt=true}={}){
+  try{
+    if(touchUpdatedAt || !databaseUpdatedAt) databaseUpdatedAt=getNowISO();
+    const db = {
+      schemaVersion:SCHEMA_VERSION,
+      appVersion:APP_VERSION,
+      updatedAt:databaseUpdatedAt,
+      lastCloudSyncAt,
+      records,
+      targets,
+      pityState
+    };
+    localStorage.setItem(STORAGE.DATA, JSON.stringify(db));
+    return true;
+  }catch(e){
+    console.error(e);
+    showToast('本機資料儲存失敗，請立即匯出JSON備份', 'error');
+    return false;
+  }
 }
-
+ 
+function backupBeforeImport() {
+  try {
+    const backup = { schemaVersion: SCHEMA_VERSION, appVersion: APP_VERSION, backupAt: getNowISO(), updatedAt:databaseUpdatedAt, lastCloudSyncAt, records, targets, pityState };
+    localStorage.setItem(STORAGE.BEFORE_IMPORT, JSON.stringify(backup));
+  } catch(e) {}
+}
+ 
+function restoreBeforeImport() {
+  const backupStr = localStorage.getItem(STORAGE.BEFORE_IMPORT);
+  if (!backupStr) { showToast('找不到備份紀錄', 'error'); return; }
+  customConfirm('確定要復原為上次匯入/下載前的狀態？').then(ok => {
+    if(!ok) return;
+    try {
+      const b = JSON.parse(backupStr);
+      records = upgradeLoadedRecords(b.records || []);
+      targets = Array.isArray(b.targets) ? b.targets : [];
+      pityState = normalizePityState(b.pityState);
+      databaseUpdatedAt = b.updatedAt || getNowISO();
+      lastCloudSyncAt = b.lastCloudSyncAt || null;
+      if(saveAndRender()) showToast('已復原為匯入前狀態');
+    } catch(e) { showToast('復原失敗', 'error'); }
+  });
+}
+ 
 /* ============================================================
    UI
 ============================================================ */
-
+ 
 function switchTab(tabId,button){
-
-  document.querySelectorAll('.tab-content')
-    .forEach(x=>x.classList.remove('active'));
-
-  document.querySelectorAll('.tab-btn')
-    .forEach(x=>x.classList.remove('active'));
-
-  document.getElementById('tab-'+tabId)
-    .classList.add('active');
-
-  if(button){
-    button.classList.add('active');
-  }
-
+  document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-'+tabId).classList.add('active');
+  if(button) button.classList.add('active');
 }
-
-function openModal(id){
-  const el=document.getElementById(id);
-  if(el) el.style.display='flex';
-}
-
-function closeModal(id){
-  const el=document.getElementById(id);
-  if(el) el.style.display='none';
-}
-
+ 
+function openModal(id){ const el=document.getElementById(id); if(el) el.style.display='flex'; }
+function closeModal(id){ const el=document.getElementById(id); if(el) el.style.display='none'; }
+ 
 function showToast(msg,type='success'){
-
   const t=document.createElement('div');
-
-  t.className=`toast ${type}`;
-  t.innerText=msg;
-
-  document.getElementById('toast-container')
-    .appendChild(t);
-
-  setTimeout(()=>{
-    t.remove();
-  },3200);
-
+  t.className=`toast ${type}`; t.innerText=msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(()=>t.remove(), 3200);
 }
-
+ 
 function customConfirm(msg){
-
   return new Promise(resolve=>{
-
     const modal=document.getElementById('confirm-modal');
-
-    document.getElementById('confirm-msg')
-      .innerText=msg;
-
+    document.getElementById('confirm-msg').innerText=msg;
     modal.style.display='flex';
-
-    const yes=document.getElementById('confirm-yes');
-    const no=document.getElementById('confirm-no');
-
-    yes.onclick=()=>{
-      modal.style.display='none';
-      resolve(true);
-    };
-
-    no.onclick=()=>{
-      modal.style.display='none';
-      resolve(false);
-    };
-
+    document.getElementById('confirm-yes').onclick=()=>{ modal.style.display='none'; resolve(true); };
+    document.getElementById('confirm-no').onclick=()=>{ modal.style.display='none'; resolve(false); };
   });
-
 }
-
+ 
+function updateMonthFilter(){
+  const select=document.getElementById('filter-month');
+  if(!select) return;
+  const current=select.value;
+  const months=[...new Set(records
+    .map(r=>r.obtainDate)
+    .filter(isValidDateString)
+    .map(date=>date.slice(0,7))
+  )].sort().reverse();
+  select.replaceChildren();
+  const all=document.createElement('option');
+  all.value='all'; all.textContent='所有月份'; select.appendChild(all);
+  months.forEach(month=>{
+    const option=document.createElement('option');
+    option.value=month; option.textContent=month; select.appendChild(option);
+  });
+  select.value=months.includes(current) ? current : 'all';
+}
+ 
+function targetKey(t){
+  return `${t.type}|${t.category}|${t.name}`;
+}
+ 
+function toggleTarget(type,category,name){
+  const candidate={type,category,name};
+  const key=targetKey(candidate);
+  const index=targets.findIndex(t=>targetKey(t)===key);
+  if(index>=0) targets.splice(index,1);
+  else targets.push(candidate);
+  if(saveData()){
+    renderTargets();
+    renderTargetStats();
+    renderTable();
+  }
+}
+ 
+function renderTargetChips(containerId,type,category,list){
+  const container=document.getElementById(containerId);
+  if(!container) return;
+  container.replaceChildren();
+  list.forEach(name=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='target-chip';
+    button.textContent=name;
+    if(targets.some(t=>t.type===type && t.category===category && t.name===name)){
+      button.classList.add('active');
+    }
+    button.addEventListener('click',()=>toggleTarget(type,category,name));
+    container.appendChild(button);
+  });
+}
+ 
+function renderTargets(){
+  document.getElementById('target-count').textContent=targets.length;
+  renderTargetChips('chips-batter-skills','skill','打者',skillList['打者']);
+  renderTargetChips('chips-pitcher-skills','skill','投手',skillList['投手']);
+  renderTargetChips('chips-batter-coaches','coach','打擊',coachList['打擊']);
+  renderTargetChips('chips-pitcher-coaches','coach','投手',coachList['投手']);
+}
+ 
+function renderGoodCoaches(){
+  const container=document.getElementById('good-coach-list');
+  const list=records
+    .filter(r=>r.itemType===ITEM.COACH && isOpened(r) && r.content.grade==='優良')
+    .sort((a,b)=>openedSortValue(b).localeCompare(openedSortValue(a)));
+  if(!list.length){
+    container.innerHTML='<div class="empty">尚無優良教練</div>';
+    return;
+  }
+  container.innerHTML=list.map(r=>`
+    <div style="padding:9px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;gap:10px;">
+      <div><b>${esc(r.content.name)}</b><br><small style="color:var(--text-muted)">${esc(r.content.category)}｜${esc(r.openDate)}</small></div>
+      <div style="color:var(--primary)">${esc(r.content.detail||'-')}</div>
+    </div>
+  `).join('');
+}
+ 
+function updChart(id,type,labels,datasets,options={}){
+  if(typeof Chart==='undefined') return;
+  if(charts[id]) charts[id].destroy();
+  const canvas=document.getElementById(id);
+  if(!canvas) return;
+  charts[id]=new Chart(canvas,{type,data:{labels,datasets},options});
+}
+ 
 /* ============================================================
-   新增
+   新增與快捷操作
 ============================================================ */
-
+ 
 function resetAddForm(){
-
   document.getElementById('item-type').value=ITEM.SKILL;
   document.getElementById('quantity').value=1;
   document.getElementById('quantity').disabled=false;
   document.getElementById('add-quantity-label').innerText='數量';
   document.getElementById('memo').value='';
   document.getElementById('open-status').value=STAT.UNOPEN;
-
-  document.getElementById('obtain-date').value=todayStr;
-  document.getElementById('obtain-date').max=todayStr;
-
+  const today=localDateString();
+  document.getElementById('obtain-date').value=today;
+  document.getElementById('obtain-date').max=today;
   updateFormFields();
-
   document.getElementById('memo-group').style.display='none';
-
 }
-
-function openAddModal(){
-
-  resetAddForm();
-
-  openModal('add-modal');
-
-}
-
+ 
+function openAddModal(){ resetAddForm(); openModal('add-modal'); }
+ 
 function updateFormFields(){
-
   const type=document.getElementById('item-type').value;
   const method=document.getElementById('obtain-method');
-
   method.innerHTML='';
-
   methodOpts[type].forEach(x=>{
-
-    const op=document.createElement('option');
-    op.value=x;
-    op.textContent=x;
-    method.appendChild(op);
-
+    const op=document.createElement('option'); op.value=x; op.textContent=x; method.appendChild(op);
   });
-
-  document.getElementById('memo-group').style.display=
-    method.value==='其他'?'block':'none';
-
+  document.getElementById('memo-group').style.display=method.value==='其他'?'block':'none';
   renderDetailFields();
-
 }
-
+ 
 function renderDetailFields(){
-
   const type=document.getElementById('item-type').value;
-  const isOpen=
-    document.getElementById('open-status').value===STAT.OPEN;
-
+  const isOpen=document.getElementById('open-status').value===STAT.OPEN;
   const box=document.getElementById('detail-fields');
   const qtyInput=document.getElementById('quantity');
   const qtyLabel=document.getElementById('add-quantity-label');
-
+ 
   if(!isOpen){
-
-    box.style.display='none';
-    box.innerHTML='';
-    qtyInput.disabled=false;
-    qtyLabel.innerText='數量';
-    return;
-
+    box.style.display='none'; box.innerHTML=''; qtyInput.disabled=false; qtyLabel.innerText='數量'; return;
   }
-
-  /* 立即開箱時鎖定數量為 1，防止手滑一次產生多筆相同開箱明細 */
-  qtyInput.value=1;
-  qtyInput.disabled=true;
-  qtyLabel.innerText='數量（立即開箱固定為 1）';
-
+  qtyInput.value=1; qtyInput.disabled=true; qtyLabel.innerText='數量（立即開箱固定為 1）';
   box.style.display='grid';
-
   if(type===ITEM.SKILL){
-
     box.innerHTML=`
-
-      <div class="form-group">
-        <label>分類</label>
-        <select id="detail-cat">
-          <option value="打者">打者</option>
-          <option value="投手">投手</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>技能</label>
-        <select id="detail-name"></select>
-      </div>
-
-      <div class="form-group">
-        <label>階級</label>
-        <select id="detail-tier">
-          <option value="III">III階</option>
-          <option value="II">II階</option>
-          <option value="I">I階</option>
-        </select>
-      </div>
-
+      <div class="form-group"><label>分類</label><select id="detail-cat"><option value="打者">打者</option><option value="投手">投手</option></select></div>
+      <div class="form-group"><label>技能</label><select id="detail-name"></select></div>
+      <div class="form-group"><label>階級</label><select id="detail-tier"><option value="III">III階</option><option value="II">II階</option><option value="I">I階</option></select></div>
     `;
-
-    const cat=document.getElementById('detail-cat');
-
-    cat.addEventListener('change',()=>{
-      populateDetailName(skillList);
-    });
-
+    const cat=document.getElementById('detail-cat'); cat.addEventListener('change',()=>populateDetailName(skillList));
     populateDetailName(skillList);
-
   }else{
-
     box.innerHTML=`
-
-      <div class="form-group">
-        <label>分類</label>
-        <select id="detail-cat">
-          <option value="打擊">打擊</option>
-          <option value="投手">投手</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>教練</label>
-        <select id="detail-name"></select>
-      </div>
-
-      <div class="form-group">
-        <label>評價</label>
-        <select id="detail-grade">
-          <option value="優良">優良</option>
-          <option value="普通">普通</option>
-          <option value="劣等">劣等</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>數值 / 詳細資料</label>
-        <input id="detail-val" type="text" placeholder="選填">
-      </div>
-
+      <div class="form-group"><label>分類</label><select id="detail-cat"><option value="打擊">打擊</option><option value="投手">投手</option></select></div>
+      <div class="form-group"><label>教練</label><select id="detail-name"></select></div>
+      <div class="form-group"><label>評價</label><select id="detail-grade"><option value="優良">優良</option><option value="普通">普通</option><option value="劣等">劣等</option></select></div>
+      <div class="form-group"><label>數值 / 詳細資料</label><input id="detail-val" type="text" placeholder="選填"></div>
     `;
-
-    const cat=document.getElementById('detail-cat');
-
-    cat.addEventListener('change',()=>{
-      populateDetailName(coachList);
-    });
-
+    const cat=document.getElementById('detail-cat'); cat.addEventListener('change',()=>populateDetailName(coachList));
     populateDetailName(coachList);
-
   }
-
 }
-
+ 
 function populateDetailName(list){
-
-  const cat=document.getElementById('detail-cat');
-  const name=document.getElementById('detail-name');
-
-  name.innerHTML='';
-
-  list[cat.value].forEach(x=>{
-
-    const op=document.createElement('option');
-    op.value=x;
-    op.textContent=x;
-    name.appendChild(op);
-
-  });
-
+  const cat=document.getElementById('detail-cat'); const name=document.getElementById('detail-name');
+  name.innerHTML=''; list[cat.value].forEach(x=>{ const op=document.createElement('option'); op.value=x; op.textContent=x; name.appendChild(op); });
 }
-
+ 
 function getAddContent(){
-
   const type=document.getElementById('item-type').value;
-
-  if(type===ITEM.SKILL){
-
-    return {
-      category:document.getElementById('detail-cat').value,
-      name:document.getElementById('detail-name').value,
-      tier:document.getElementById('detail-tier').value
-    };
-
-  }
-
-  return {
-
-    category:document.getElementById('detail-cat').value,
-    name:document.getElementById('detail-name').value,
-    grade:document.getElementById('detail-grade').value,
-    detail:document.getElementById('detail-val').value.trim()
-
-  };
-
+  if(type===ITEM.SKILL) return { category:document.getElementById('detail-cat').value, name:document.getElementById('detail-name').value, tier:document.getElementById('detail-tier').value };
+  return { category:document.getElementById('detail-cat').value, name:document.getElementById('detail-name').value, grade:document.getElementById('detail-grade').value, detail:document.getElementById('detail-val').value.trim() };
 }
-
-document.getElementById('item-type')
-  .addEventListener('change',updateFormFields);
-
-document.getElementById('open-status')
-  .addEventListener('change',renderDetailFields);
-
-document.getElementById('obtain-method')
-  .addEventListener('change',e=>{
-
-    document.getElementById('memo-group').style.display=
-      e.target.value==='其他'?'block':'none';
-
-  });
-
-document.getElementById('add-form')
-  .addEventListener('submit',e=>{
-
-    e.preventDefault();
-
-    const type=
-      document.getElementById('item-type').value;
-
-    const method=
-      document.getElementById('obtain-method').value;
-
-    const date=
-      document.getElementById('obtain-date').value;
-
-    const qty=
-      Number(document.getElementById('quantity').value);
-
-    const isOpen=
-      document.getElementById('open-status').value===STAT.OPEN;
-
-    const memo=
-      document.getElementById('memo').value.trim();
-
-    if(!date){
-
-      showToast('請選擇日期','error');
-      return;
-
-    }
-
-    if(!Number.isInteger(qty)||qty<1){
-
-      showToast('數量必須是大於 0 的整數','error');
-      return;
-
-    }
-
-    if(method==='其他'&&!memo){
-
-      showToast('「其他方式」必須填寫備註','error');
-      return;
-
-    }
-
-    if(isOpen){
-
-      const content=getAddContent();
-
-      records.push({
-
-        id:uid(),
-
-        eventType:'open',
-
-        itemType:type,
-
-        obtainDate:date,
-
-        openDate:date,
-
-        quantity:1,
-
-        method,
-
-        source:{
-          type:sourceType(method),
-          label:method
-        },
-
-        status:STAT.OPEN,
-
-        content:JSON.parse(JSON.stringify(content)),
-
-        memo
-
-      });
-
-    }else{
-
-      records.push({
-
-        id:uid(),
-
-        eventType:'obtain',
-
-        itemType:type,
-
-        obtainDate:date,
-
-        openDate:null,
-
-        quantity:qty,
-
-        method,
-
-        source:{
-          type:sourceType(method),
-          label:method
-        },
-
-        status:STAT.UNOPEN,
-
-        content:null,
-
-        memo
-
-      });
-
-    }
-
-    saveAndRender();
-
-    closeModal('add-modal');
-
-    showToast(
-      isOpen
-        ? '已新增 1 張開箱結果'
-        : `已新增 ${qty} 張庫存`
-    );
-
-  });
-
-/* ============================================================
-   聯賽
-============================================================ */
-
+ 
+document.getElementById('item-type').addEventListener('change',updateFormFields);
+document.getElementById('open-status').addEventListener('change',renderDetailFields);
+document.getElementById('obtain-method').addEventListener('change',e=>{ document.getElementById('memo-group').style.display=e.target.value==='其他'?'block':'none'; });
+ 
+document.getElementById('add-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const type=document.getElementById('item-type').value;
+  const method=document.getElementById('obtain-method').value;
+  const date=document.getElementById('obtain-date').value;
+  const qty=Number(document.getElementById('quantity').value);
+  const isOpen=document.getElementById('open-status').value===STAT.OPEN;
+  const memo=document.getElementById('memo').value.trim();
+ 
+  if(!isValidDateString(date) || date>localDateString()){ showToast('請選擇有效且不晚於今天的日期','error'); return; }
+  if(!Number.isInteger(qty)||qty<1){ showToast('數量必須是大於 0 的整數','error'); return; }
+  if(method==='其他'&&!memo){ showToast('「其他方式」必須填寫備註','error'); return; }
+ 
+  const now = getNowISO();
+ 
+  if(isOpen){
+    records.push({
+      id:uid(), eventType:'open', itemType:type, obtainDate:date, openDate:date,
+      quantity:1, method, source:{type:sourceType(method),label:method}, status:STAT.OPEN,
+      content:JSON.parse(JSON.stringify(getAddContent())), memo, createdAt:now, openedAt:now, updatedAt:now
+    });
+  }else{
+    records.push({
+      id:uid(), eventType:'obtain', itemType:type, obtainDate:date, openDate:null,
+      quantity:qty, method, source:{type:sourceType(method),label:method}, status:STAT.UNOPEN,
+      content:null, memo, createdAt:now, openedAt:null, updatedAt:now
+    });
+  }
+  
+  if(date===localDateString()) resetPityPointsIfSkillDrop(type, method);
+  if(!saveAndRender()) return;
+  closeModal('add-modal');
+  showToast(isOpen ? '已新增 1 張開箱結果' : `已新增 ${qty} 張庫存`);
+});
+ 
 function openLeagueModal(){
-
-  document.getElementById('league-date').value=todayStr;
-  document.getElementById('league-date').max=todayStr;
+  const today=localDateString();
+  document.getElementById('league-date').value=today;
+  document.getElementById('league-date').max=today;
   document.getElementById('league-seasons').value=1;
-
   openModal('league-modal');
-
 }
-
+ 
 function submitLeague(){
-
-  const date=
-    document.getElementById('league-date').value;
-
-  const seasons=
-    Number(document.getElementById('league-seasons').value);
-
-  if(!date){
-
-    showToast('請選日期','error');
-    return;
-
-  }
-
-  if(!seasons || seasons<=0){
-
-    showToast('季數必須大於 0','error');
-    return;
-
-  }
-
+  const date=document.getElementById('league-date').value;
+  const seasons=Number(document.getElementById('league-seasons').value);
+  if(!isValidDateString(date) || date>localDateString()){ showToast('請選擇有效且不晚於今天的日期','error'); return; }
+  if(!Number.isFinite(seasons) || seasons<=0){ showToast('季數必須大於 0','error'); return; }
+ 
+  const now = getNowISO();
   records.push({
-
-    id:uid(),
-
-    eventType:'league',
-
-    itemType:ITEM.LEAGUE,
-
-    obtainDate:date,
-
-    openDate:null,
-
-    quantity:seasons,
-
-    method:'賽季結算',
-
-    source:{
-      type:'league',
-      label:'賽季結算'
-    },
-
-    status:'-',
-
-    content:null,
-
-    memo:`完賽 ${seasons} 季`
-
+    id:uid(), eventType:'league', itemType:ITEM.LEAGUE, obtainDate:date, openDate:null,
+    quantity:seasons, method:'賽季結算', source:{type:'league',label:'賽季結算'}, status:'-',
+    content:null, memo:`完賽 ${seasons} 季`, createdAt:now, openedAt:null, updatedAt:now
   });
-
-  saveAndRender();
-
+  if(!saveAndRender()) return;
   closeModal('league-modal');
-
   showToast(`已登記 ${seasons} 季聯賽`);
-
 }
-
+ 
 function quickCheckIn(type,method){
-
+  const now = getNowISO();
+  const today=localDateString();
   records.push({
-
-    id:uid(),
-
-    eventType:'obtain',
-
-    itemType:type,
-
-    obtainDate:todayStr,
-
-    openDate:null,
-
-    quantity:1,
-
-    method,
-
-    source:{
-      type:sourceType(method),
-      label:method
-    },
-
-    status:STAT.UNOPEN,
-
-    content:null,
-
-    memo:'快捷'
-
+    id:uid(), eventType:'obtain', itemType:type, obtainDate:today, openDate:null,
+    quantity:1, method, source:{type:sourceType(method),label:method}, status:STAT.UNOPEN,
+    content:null, memo:'快捷', createdAt:now, openedAt:null, updatedAt:now
   });
-
-  saveAndRender();
-
+  resetPityPointsIfSkillDrop(type, method);
+  if(!saveAndRender()) return;
   showToast(`+1 ${type}`);
-
 }
-
+ 
 /* ============================================================
-   庫存計算
+   庫存與過濾器
 ============================================================ */
-
+ 
 function getInventory(type){
-
   let total=0;
-
   records.forEach(r=>{
-
-    if(r.itemType!==type) return;
-
-    if(r.eventType==='obtain' &&
-       r.status===STAT.UNOPEN){
-
-      total+=Number(r.quantity)||0;
-
+    if(r.itemType===type && r.eventType==='obtain' && r.status===STAT.UNOPEN){
+      const q = Number(r.quantity);
+      if(Number.isFinite(q) && q > 0) total+=q;
     }
-
   });
-
   return total;
-
 }
-
+ 
 function getInventorySources(type){
-
-  return records
-    .filter(r=>
-      r.itemType===type &&
-      r.eventType==='obtain' &&
-      r.status===STAT.UNOPEN &&
-      Number(r.quantity)>0
-    )
-    .sort((a,b)=>{
-
-      const d=(parseDateOnly(a.obtainDate)||0)-
-              (parseDateOnly(b.obtainDate)||0);
-
-      return d;
-
-    });
-
+  return records.filter(r=>r.itemType===type && r.eventType==='obtain' && r.status===STAT.UNOPEN && Number(r.quantity)>0)
+    .sort((a,b)=> (parseDateOnly(a.obtainDate)||0)-(parseDateOnly(b.obtainDate)||0) || (a.createdAt||'').localeCompare(b.createdAt||''));
 }
-
-/* ============================================================
-   統計工具
-============================================================ */
-
-function isOpened(r){
-  return r.eventType==='open' &&
-         r.status===STAT.OPEN &&
-         r.content;
-}
-
-function isObtained(r){
-  return r.eventType==='obtain';
-}
-
+ 
+function isOpened(r){ return r.eventType==='open' && r.status===STAT.OPEN && r.content; }
 function isTarget(r){
-
   if(!isOpened(r)) return false;
-
-  const type=
-    r.itemType===ITEM.SKILL?'skill':'coach';
-
-  return targets.some(t=>
-    t.type===type &&
-    t.category===r.content.category &&
-    t.name===r.content.name
-  );
-
+  const type=r.itemType===ITEM.SKILL?'skill':'coach';
+  return targets.some(t=>t.type===type && t.category===r.content.category && t.name===r.content.name);
 }
-
 function isJackpot(r){
-
   if(!isOpened(r)) return false;
-
-  if(r.itemType===ITEM.SKILL){
-    return r.content.tier==='III';
-  }
-
-  if(r.itemType===ITEM.COACH){
-    return r.content.grade==='優良';
-  }
-
-  return false;
-
+  return r.itemType===ITEM.SKILL ? r.content.tier==='III' : r.content.grade==='優良';
 }
-
-function filterPeriod(list){
-
-  const period=
-    document.getElementById('period-filter')?.value||'all';
-
-  if(period==='all') return list;
-
-  const now=new Date();
-
-  const today=localDateString(now);
-
-  if(period==='day'){
-
-    return list.filter(r=>
-      (r.openDate||r.obtainDate)===today
-    );
-
-  }
-
-  if(period==='week'){
-
-    const start=startOfWeek(now);
-
-    return list.filter(r=>{
-      const d=r.openDate||r.obtainDate;
-      return d>=start && d<=today;
-    });
-
-  }
-
-  if(period==='month'){
-
-    const prefix=today.slice(0,7);
-
-    return list.filter(r=>
-      (r.openDate||r.obtainDate)?.startsWith(prefix)
-    );
-
-  }
-
-  return list;
-
-}
-
+ 
 /* ============================================================
-   KPI
+   KPI 與圖表統計
 ============================================================ */
-
+ 
+function updatePityPoints() {
+  const v = document.getElementById('setting-pity-points').value;
+  const points=Number(v);
+  if (v === '' || !Number.isInteger(points) || points < 0 || points > 59999) { showToast('積分必須是 0～59999 的整數', 'error'); return; }
+  pityState.points = points;
+  pityState.updatedAt = getNowISO();
+  if(saveAndRender()) showToast('積分已更新');
+}
+function resetPityPoints() {
+  pityState.points = 0; pityState.updatedAt = getNowISO();
+  if(saveAndRender()) showToast('積分已歸零');
+}
+ 
+function renderPityStats(){
+  const card = document.getElementById('pity-card');
+  const pointsEl = document.getElementById('kpi-pity-cycle');
+  const subEl = document.getElementById('kpi-pity-sub');
+  
+  if (pityState.points !== null) {
+    const pct = (pityState.points / 60000 * 100).toFixed(1);
+    pointsEl.innerText = `${pityState.points.toLocaleString()} / 60,000`;
+    const updated=formatDateTime(pityState.updatedAt);
+    subEl.innerText = `進度 ${pct}% ｜ 最後更新: ${updated}`;
+    card.style.border = pityState.points >= 58000 ? '1px solid var(--danger)' : '';
+  } else {
+    pointsEl.innerText = '--';
+    subEl.innerText = '尚未記錄積分';
+    card.style.border = '';
+  }
+}
+ 
 function renderKPIs(){
-
   let unopenedSkill=getInventory(ITEM.SKILL);
   let unopenedCoach=getInventory(ITEM.COACH);
-
-  const openedSkills=
-    records.filter(r=>
-      r.itemType===ITEM.SKILL &&
-      isOpened(r)
-    );
-
-  const openedCoaches=
-    records.filter(r=>
-      r.itemType===ITEM.COACH &&
-      isOpened(r)
-    );
-
-  const skillIII=
-    openedSkills.filter(r=>
-      r.content.tier==='III'
-    );
-
-  const goodCoach=
-    openedCoaches.filter(r=>
-      r.content.grade==='優良'
-    );
-
-  document.getElementById('kpi-unopened-skill')
-    .innerText=unopenedSkill;
-
-  document.getElementById('kpi-unopened-coach')
-    .innerText=unopenedCoach;
-
-  const rate=openedSkills.length
-    ? skillIII.length/openedSkills.length*100
-    : 0;
-
-  document.getElementById('kpi-tier3-rate')
-    .innerText=rate.toFixed(1)+'%';
-
-  document.getElementById('kpi-tier3-count')
-    .innerText=
-      `${skillIII.length} / ${openedSkills.length} 張`;
-
-  /* 個人統計 */
-
-  const periodRecords=filterPeriod(records);
-
-  const ps=periodRecords.filter(r=>
-    r.itemType===ITEM.SKILL &&
-    isOpened(r)
-  );
-
-  const pc=periodRecords.filter(r=>
-    r.itemType===ITEM.COACH &&
-    isOpened(r)
-  );
-
-  document.getElementById('stat-skill-open')
-    .innerText=ps.length;
-
-  document.getElementById('stat-coach-open')
-    .innerText=pc.length;
-
-  document.getElementById('stat-skill-iii')
-    .innerText=
-      ps.filter(r=>r.content.tier==='III').length;
-
-  document.getElementById('stat-coach-good')
-    .innerText=
-      pc.filter(r=>r.content.grade==='優良').length;
-
-  document.getElementById('stat-target-hit')
-    .innerText=
-      periodRecords.filter(isTarget).length;
-
-  document.getElementById('stat-obtain-total')
-    .innerText=
-      periodRecords
-        .filter(isObtained)
-        .reduce((s,r)=>s+Number(r.quantity||0),0);
-
-  /* 黑手 */
-
-  const skillStreak=getCurrentStreak(ITEM.SKILL);
-  const coachStreak=getCurrentStreak(ITEM.COACH);
-
-  document.getElementById('kpi-streak-skill')
-    .innerText=skillStreak.current;
-
-  document.getElementById('kpi-streak-coach')
-    .innerText=coachStreak.current;
-
-  document.getElementById('kpi-max-streak-skill')
-    .innerText=getMaxStreak(ITEM.SKILL);
-
-  document.getElementById('kpi-max-streak-coach')
-    .innerText=getMaxStreak(ITEM.COACH);
-
-  document.getElementById('record-skill-black')
-    .innerText=getMaxStreak(ITEM.SKILL);
-
-  document.getElementById('record-coach-black')
-    .innerText=getMaxStreak(ITEM.COACH);
-
-  /* 歷史個人紀錄 */
-
-  document.getElementById('record-day-open')
-    .innerText=getMaxOpenPerDay();
-
-  document.getElementById('record-month-obtain')
-    .innerText=getMaxObtainPerMonth();
-
-  /* 聯賽 */
-
-  const seasons=
-    records
-      .filter(r=>r.itemType===ITEM.LEAGUE)
-      .reduce((s,r)=>s+Number(r.quantity||0),0);
-
-  const leagueSkill=
-    records
-      .filter(r=>
-        r.eventType==='obtain' &&
-        r.itemType===ITEM.SKILL &&
-        r.method==='刷聯賽'
-      )
-      .reduce((s,r)=>s+Number(r.quantity||0),0);
-
-  const leagueCoach=
-    records
-      .filter(r=>
-        r.eventType==='obtain' &&
-        r.itemType===ITEM.COACH &&
-        r.method==='刷聯賽拿到'
-      )
-      .reduce((s,r)=>s+Number(r.quantity||0),0);
-
+ 
+  document.getElementById('kpi-unopened-skill').innerText=unopenedSkill;
+  document.getElementById('kpi-unopened-coach').innerText=unopenedCoach;
+ 
+  // 全域已開統計
+  const openedSkills = records.filter(r=>r.itemType===ITEM.SKILL && isOpened(r));
+  const openedCoaches = records.filter(r=>r.itemType===ITEM.COACH && isOpened(r));
+  const skillIII = openedSkills.filter(r=>r.content.tier==='III');
+  
+  const rate=openedSkills.length ? skillIII.length/openedSkills.length*100 : 0;
+  document.getElementById('kpi-tier3-rate').innerText=rate.toFixed(1)+'%';
+  document.getElementById('kpi-tier3-count').innerText=`${skillIII.length} / ${openedSkills.length} 張`;
+ 
+  // 區分開箱期間 vs 獲取期間
+  const periodOpened = records.filter(r => isOpened(r) && isDateInSelectedPeriod(r.openDate));
+  const periodObtained = records.filter(r => r.itemType!==ITEM.LEAGUE && ['obtain','open'].includes(r.eventType) && isDateInSelectedPeriod(r.obtainDate));
+ 
+  const ps = periodOpened.filter(r=>r.itemType===ITEM.SKILL);
+  const pc = periodOpened.filter(r=>r.itemType===ITEM.COACH);
+ 
+  document.getElementById('stat-skill-open').innerText = ps.length;
+  document.getElementById('stat-coach-open').innerText = pc.length;
+  document.getElementById('stat-skill-iii').innerText = ps.filter(r=>r.content.tier==='III').length;
+  document.getElementById('stat-coach-good').innerText = pc.filter(r=>r.content.grade==='優良').length;
+  document.getElementById('stat-target-hit').innerText = periodOpened.filter(isTarget).length;
+  
+  // 總獲取 (使用期內的 obtain 數量 + open 固定 1)
+  const obtainTotal = periodObtained.reduce((s,r) => s + recordQuantity(r), 0);
+  document.getElementById('stat-obtain-total').innerText = obtainTotal;
+ 
+  // 黑手排序與計算
+  document.getElementById('kpi-streak-skill').innerText=getCurrentStreak(ITEM.SKILL);
+  document.getElementById('kpi-streak-coach').innerText=getCurrentStreak(ITEM.COACH);
+  document.getElementById('kpi-max-streak-skill').innerText=getMaxStreak(ITEM.SKILL);
+  document.getElementById('kpi-max-streak-coach').innerText=getMaxStreak(ITEM.COACH);
+  document.getElementById('record-skill-black').innerText=getMaxStreak(ITEM.SKILL);
+  document.getElementById('record-coach-black').innerText=getMaxStreak(ITEM.COACH);
+  document.getElementById('record-day-open').innerText=getMaxOpenPerDay();
+  document.getElementById('record-month-obtain').innerText=getMaxObtainPerMonth();
+ 
+  // 聯賽
+  const seasons=records.filter(r=>r.itemType===ITEM.LEAGUE).reduce((s,r)=>s+Number(r.quantity||0),0);
+  const leagueSkill=records.filter(r=>r.itemType===ITEM.SKILL && r.method==='刷聯賽' && ['obtain','open'].includes(r.eventType)).reduce((s,r)=>s+recordQuantity(r),0);
+  const leagueCoach=records.filter(r=>r.itemType===ITEM.COACH && r.method==='刷聯賽拿到' && ['obtain','open'].includes(r.eventType)).reduce((s,r)=>s+recordQuantity(r),0);
+ 
   if(seasons>0){
-
-    document.getElementById('kpi-seasons-exp')
-      .innerHTML=
-      `<span style="color:var(--accent)">
-        ${ (leagueCoach/seasons).toFixed(2) }
-      </span>
+    document.getElementById('kpi-seasons-exp').innerHTML=`
+      <span style="color:var(--accent)">${ (leagueCoach/seasons).toFixed(2) }</span>
       <span style="color:var(--border)">|</span>
-      <span style="color:var(--primary)">
-        ${ (leagueSkill/seasons).toFixed(2) }
-      </span>`;
-
-    document.getElementById('kpi-seasons-sub')
-      .innerText=`累計 ${seasons} 季`;
-
+      <span style="color:var(--primary)">${ (leagueSkill/seasons).toFixed(2) }</span>`;
+    document.getElementById('kpi-seasons-sub').innerText=`累計 ${seasons} 季`;
   }else{
-
-    document.getElementById('kpi-seasons-exp')
-      .innerText='--';
-
-    document.getElementById('kpi-seasons-sub')
-      .innerText='尚未登記完賽季數';
-
+    document.getElementById('kpi-seasons-exp').innerText='--';
+    document.getElementById('kpi-seasons-sub').innerText='尚未登記完賽季數';
   }
-
-  /* 歷史平均比較 */
-
+ 
+  // 近期 vs 歷史比較
   const badge=document.getElementById('luck-badge');
-
-  if(openedSkills.length<30){
-
-    badge.innerText='樣本仍少';
-    badge.className='luck-tag luck-normal';
-
+  const chronological=[...openedSkills].sort((a,b)=>openedSortValue(a).localeCompare(openedSortValue(b)));
+  const recent=chronological.slice(-30);
+  const history=chronological.slice(0,-30);
+ 
+  if(recent.length<30||history.length<30){
+    badge.innerText='樣本仍少'; badge.className='luck-tag luck-normal'; badge.title='';
   }else{
-
-    const historicalRate=rate;
-
-    if(historicalRate>=10){
-
-      badge.innerText='高於個人平均區間';
-      badge.className='luck-tag luck-ou';
-
-    }else if(historicalRate>=6){
-
-      badge.innerText='接近個人平均';
-      badge.className='luck-tag luck-normal';
-
-    }else{
-
-      badge.innerText='低於個人平均區間';
-      badge.className='luck-tag luck-fei';
-
-    }
-
+    const recentRate=recent.filter(r=>r.content.tier==='III').length/recent.length*100;
+    const historyRate=history.filter(r=>r.content.tier==='III').length/history.length*100;
+    const diff=recentRate-historyRate;
+    if(diff>=2){ badge.innerText='近期高於歷史'; badge.className='luck-tag luck-ou'; }
+    else if(diff<=-2){ badge.innerText='近期低於歷史'; badge.className='luck-tag luck-fei'; }
+    else { badge.innerText='近期接近歷史'; badge.className='luck-tag luck-normal'; }
+    badge.title=`近期 ${recentRate.toFixed(1)}%｜較早歷史 ${historyRate.toFixed(1)}%`;
   }
-
+ 
+  // 設定畫面積分狀態
+  document.getElementById('setting-pity-points').value = pityState.points !== null ? pityState.points : '';
   renderPityStats();
-
 }
-
+ 
 function getCurrentStreak(type){
-
-  const arr=records
-    .filter(r=>
-      r.itemType===type &&
-      isOpened(r)
-    )
-    .sort((a,b)=>
-      (a.openDate||'').localeCompare(b.openDate||'')
-    );
-
+  const arr=records.filter(r=>r.itemType===type && isOpened(r)).sort((a,b)=>openedSortValue(a).localeCompare(openedSortValue(b)));
   let count=0;
-
   for(let i=arr.length-1;i>=0;i--){
-
     if(isJackpot(arr[i])) break;
-
-    count+=Number(arr[i].quantity||1);
-
+    count++;
   }
-
-  return {
-    current:count
-  };
-
+  return count;
 }
-
+ 
 function getMaxStreak(type){
-
-  const arr=records
-    .filter(r=>
-      r.itemType===type &&
-      isOpened(r)
-    )
-    .sort((a,b)=>
-      (a.openDate||'').localeCompare(b.openDate||'')
-    );
-
-  let current=0;
-  let max=0;
-
+  const arr=records.filter(r=>r.itemType===type && isOpened(r)).sort((a,b)=>openedSortValue(a).localeCompare(openedSortValue(b)));
+  let current=0, max=0;
   arr.forEach(r=>{
-
-    if(isJackpot(r)){
-
-      max=Math.max(max,current);
-      current=0;
-
-    }else{
-
-      current+=Number(r.quantity||1);
-
-    }
-
+    if(isJackpot(r)){ max=Math.max(max,current); current=0; }
+    else{ current++; }
   });
-
-  max=Math.max(max,current);
-
-  return max;
-
+  return Math.max(max,current);
 }
-
-/* ============================================================
-   保底統計
-============================================================ */
-
-function median(arr){
-
-  if(!arr.length) return 0;
-
-  const a=[...arr].sort((x,y)=>x-y);
-
-  const mid=Math.floor(a.length/2);
-
-  return a.length%2
-    ? a[mid]
-    : (a[mid-1]+a[mid])/2;
-
-}
-
-function renderPityStats(){
-
-  const dates=records
-    .filter(r=>
-      r.eventType==='obtain' &&
-      r.itemType===ITEM.SKILL &&
-      r.method==='聯賽60000分保底'
-    )
-    .map(r=>r.obtainDate)
-    .filter(Boolean)
-    .sort();
-
-  const card=document.getElementById('pity-card');
-
-  if(dates.length<2){
-
-    document.getElementById('kpi-pity-cycle')
-      .innerText=dates.length===1?'已有 1 次':'--';
-
-    document.getElementById('kpi-pity-sub')
-      .innerText='至少需要 2 次保底才能計算間隔';
-
-    card.style.border='';
-    card.style.boxShadow='';
-
-    return;
-
-  }
-
-  const intervals=[];
-
-  for(let i=1;i<dates.length;i++){
-
-    intervals.push(
-      daysBetween(dates[i-1],dates[i])
-    );
-
-  }
-
-  const avg=
-    intervals.reduce((a,b)=>a+b,0)/intervals.length;
-
-  const med=median(intervals);
-
-  const last=dates[dates.length-1];
-
-  const estimated=new Date(
-    parseDateOnly(last).getTime()+
-    med*86400000
-  );
-
-  const next=localDateString(estimated);
-
-  document.getElementById('kpi-pity-cycle')
-    .innerText=`平均 ${avg.toFixed(0)} 天`;
-
-  document.getElementById('kpi-pity-sub')
-    .innerText=
-      `中位 ${med.toFixed(0)} 天｜區間 ${Math.min(...intervals)}-${Math.max(...intervals)} 天｜估 ${next}`;
-
-  const daysLeft=
-    daysBetween(todayStr,next);
-
-  if(daysLeft<=3){
-
-    card.style.border='1px solid var(--danger)';
-    card.style.boxShadow='0 0 10px rgba(190,140,140,.3)';
-
-  }else{
-
-    card.style.border='';
-    card.style.boxShadow='';
-
-  }
-
-}
-
-/* ============================================================
-   圖表
-============================================================ */
-
-function destroyChart(id){
-
-  if(charts[id]){
-
-    charts[id].destroy();
-    charts[id]=null;
-
-  }
-
-}
-
-function renderCharts(){
-
-  const mode=
-    document.getElementById('chart-period').value;
-
+ 
+function getMaxOpenPerDay(){
   const map={};
-
+  records.filter(isOpened).forEach(r=>{ map[r.openDate] = (map[r.openDate]||0) + 1; });
+  const vals = Object.values(map);
+  return vals.length ? Math.max(...vals) : 0;
+}
+ 
+function getMaxObtainPerMonth(){
+  const map={};
   records.forEach(r=>{
-
+    if(r.itemType===ITEM.LEAGUE || !['obtain','open'].includes(r.eventType)) return;
+    const month = r.obtainDate?.slice(0,7);
+    if(month) map[month] = (map[month]||0) + recordQuantity(r);
+  });
+  const vals = Object.values(map);
+  return vals.length ? Math.max(...vals) : 0;
+}
+ 
+function getChartKey(date, mode) {
+  if (mode === 'month') return date.slice(0, 7);
+  if (mode === 'week') return startOfWeek(parseDateOnly(date));
+  return date;
+}
+ 
+function renderCharts(){
+  const mode=document.getElementById('chart-period').value;
+  const map={};
+ 
+  records.forEach(r=>{
     if(r.itemType===ITEM.LEAGUE) return;
-
-    const date=r.eventType==='open'
-      ? r.openDate
-      : r.obtainDate;
-
-    if(!date) return;
-
-    let key;
-
-    if(mode==='month'){
-
-      key=date.slice(0,7);
-
-    }else if(mode==='week'){
-
-      key=startOfWeek(parseDateOnly(date));
-
-    }else{
-
-      key=date;
-
+    
+    // 分開算 Obtain 和 Open 兩個時間軸事件
+    if(['obtain','open'].includes(r.eventType) && r.obtainDate){
+      const k = getChartKey(r.obtainDate, mode);
+      if(!map[k]) map[k] = {obtainSkill:0, obtainCoach:0, openSkill:0, openCoach:0};
+      if(r.itemType===ITEM.SKILL) map[k].obtainSkill += recordQuantity(r);
+      if(r.itemType===ITEM.COACH) map[k].obtainCoach += recordQuantity(r);
     }
-
-    if(!map[key]){
-
-      map[key]={
-        obtainSkill:0,
-        obtainCoach:0,
-        openSkill:0,
-        openCoach:0
-      };
-
+    
+    if(r.eventType==='open' && r.openDate && isOpened(r)){
+      const k = getChartKey(r.openDate, mode);
+      if(!map[k]) map[k] = {obtainSkill:0, obtainCoach:0, openSkill:0, openCoach:0};
+      if(r.itemType===ITEM.SKILL) map[k].openSkill += 1;
+      if(r.itemType===ITEM.COACH) map[k].openCoach += 1;
     }
-
-    if(r.eventType==='obtain'){
-
-      if(r.itemType===ITEM.SKILL)
-        map[key].obtainSkill+=Number(r.quantity||0);
-
-      if(r.itemType===ITEM.COACH)
-        map[key].obtainCoach+=Number(r.quantity||0);
-
-    }
-
-    if(r.eventType==='open'){
-
-      if(r.itemType===ITEM.SKILL)
-        map[key].openSkill+=Number(r.quantity||0);
-
-      if(r.itemType===ITEM.COACH)
-        map[key].openCoach+=Number(r.quantity||0);
-
-    }
-
   });
-
+ 
   const labels=Object.keys(map).sort();
-
-  updChart(
-    'monthlyChart',
-    'bar',
-    labels.length?labels:['無'],
-    [
-      {
-        label:'獲取技能',
-        data:labels.map(x=>map[x].obtainSkill),
-        backgroundColor:'#8598A7'
-      },
-      {
-        label:'獲取教練',
-        data:labels.map(x=>map[x].obtainCoach),
-        backgroundColor:'#C4B097'
-      },
-      {
-        label:'開箱技能',
-        data:labels.map(x=>map[x].openSkill),
-        backgroundColor:'#92A38D'
-      },
-      {
-        label:'開箱教練',
-        data:labels.map(x=>map[x].openCoach),
-        backgroundColor:'#BE8C8C'
-      }
-    ],
-    {
-      responsive:true,
-      plugins:{
-        legend:{
-          position:'bottom',
-          labels:{
-            color:'#E8E4DF'
-          }
-        }
-      },
-      scales:{
-        x:{
-          ticks:{color:'#9E9B96'}
-        },
-        y:{
-          ticks:{color:'#9E9B96'},
-          beginAtZero:true
-        }
-      }
-    }
+  const chartLabels=labels.length?labels:['無資料'];
+  const values=key=>labels.length ? labels.map(x=>map[x][key]) : [0];
+  updChart('monthlyChart', 'bar', chartLabels, [
+      { label:'獲取技能', data:values('obtainSkill'), backgroundColor:'#8598A7' },
+      { label:'獲取教練', data:values('obtainCoach'), backgroundColor:'#C4B097' },
+      { label:'開箱技能', data:values('openSkill'), backgroundColor:'#92A38D' },
+      { label:'開箱教練', data:values('openCoach'), backgroundColor:'#BE8C8C' }
+    ], { responsive:true, plugins:{legend:{position:'bottom',labels:{color:'#E8E4DF'}}}, scales:{ x:{ticks:{color:'#9E9B96'}}, y:{ticks:{color:'#9E9B96'},beginAtZero:true} } }
   );
-
-  const tier={
-    III:0,
-    II:0,
-    I:0
-  };
-
-  const grade={
-    優良:0,
-    普通:0,
-    劣等:0
-  };
-
-  records.forEach(r=>{
-
-    if(!isOpened(r)) return;
-
-    if(r.itemType===ITEM.SKILL){
-
-      if(tier[r.content.tier]!==undefined)
-        tier[r.content.tier]++;
-
-    }
-
-    if(r.itemType===ITEM.COACH){
-
-      if(grade[r.content.grade]!==undefined)
-        grade[r.content.grade]++;
-
-    }
-
+ 
+  const tier={III:0,II:0,I:0}, grade={優良:0,普通:0,劣等:0};
+  records.filter(isOpened).forEach(r=>{
+    if(r.itemType===ITEM.SKILL && tier[r.content.tier]!==undefined) tier[r.content.tier]++;
+    if(r.itemType===ITEM.COACH && grade[r.content.grade]!==undefined) grade[r.content.grade]++;
   });
-
+ 
   const pieOpt={
     plugins:{
-      legend:{
-        position:'right',
-        labels:{
-          color:'#E8E4DF',
-          boxWidth:10
-        }
-      },
-      datalabels:{
-        color:'#1A1C23',
-        font:{weight:'bold'},
-        formatter:(value,ctx)=>{
-
-          const total=
-            ctx.chart.data.datasets[0].data
-              .reduce((a,b)=>a+b,0);
-
-          if(!total || !value) return '';
-
-          const p=value/total*100;
-
-          return p>=5
-            ? p.toFixed(0)+'%'
-            : '';
-
-        }
-      }
+      legend:{position:'right',labels:{color:'#E8E4DF',boxWidth:10}},
+      datalabels:{ color:'#1A1C23', font:{weight:'bold'}, formatter:(v,ctx)=>{ const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0); return total&&v ? ((v/total*100>=5)?(v/total*100).toFixed(0)+'%':'') : ''; } }
     }
   };
-
-  updChart(
-    'tierChart',
-    'pie',
-    Object.keys(tier),
-    [{
-      data:Object.values(tier),
-      backgroundColor:[
-        '#BE8C8C',
-        '#92A38D',
-        '#9E9B96'
-      ]
-    }],
-    pieOpt
-  );
-
-  updChart(
-    'coachGradeChart',
-    'pie',
-    Object.keys(grade),
-    [{
-      data:Object.values(grade),
-      backgroundColor:[
-        '#92A38D',
-        '#8598A7',
-        '#BE8C8C'
-      ]
-    }],
-    pieOpt
-  );
-
+  updChart('tierChart','pie',Object.keys(tier),[{data:Object.values(tier),backgroundColor:['#BE8C8C','#92A38D','#9E9B96']}],pieOpt);
+  updChart('coachGradeChart','pie',Object.keys(grade),[{data:Object.values(grade),backgroundColor:['#92A38D','#8598A7','#BE8C8C']}],pieOpt);
 }
-
-function updChart(id,type,labels,datasets,options){
-
-  if(charts[id]){
-
-    charts[id].data.labels=labels;
-    charts[id].data.datasets=datasets;
-    charts[id].options=options;
-    charts[id].update();
-
-  }else{
-
-    charts[id]=new Chart(
-      document.getElementById(id),
-      {
-        type,
-        data:{
-          labels,
-          datasets
-        },
-        options
-      }
-    );
-
-  }
-
-}
-
-/* ============================================================
-   來源分析
-============================================================ */
-
+ 
 function renderSourceAnalysis(){
-
-  const sources={
-
-    '刷聯賽':{
-      skill:0,
-      skillIII:0,
-      coach:0,
-      good:0
-    },
-
-    '刷聯賽拿到':{
-      skill:0,
-      skillIII:0,
-      coach:0,
-      good:0
-    },
-
-    '聯賽60000分保底':{
-      skill:0,
-      skillIII:0,
-      coach:0,
-      good:0
-    },
-
-    '其他':{
-      skill:0,
-      skillIII:0,
-      coach:0,
-      good:0
-    }
-
-  };
-
+  const makeSourceStats=()=>({ skillObtained:0, skillOpened:0, skillIII:0, coachObtained:0, coachOpened:0, coachGood:0 });
+  const sources={ '刷聯賽':makeSourceStats(), '刷聯賽拿到':makeSourceStats(), '聯賽60000分保底':makeSourceStats(), '其他':makeSourceStats() };
+ 
   records.forEach(r=>{
-
-    const source=
-      sources[r.method]||sources['其他'];
-
-    if(r.eventType==='obtain'){
-
-      if(r.itemType===ITEM.SKILL)
-        source.skill+=Number(r.quantity||0);
-
-      if(r.itemType===ITEM.COACH)
-        source.coach+=Number(r.quantity||0);
-
+    if(r.itemType===ITEM.LEAGUE || !['obtain', 'open'].includes(r.eventType)) return;
+    const source = sources[r.method] || sources['其他'];
+    const qty = recordQuantity(r);
+ 
+    if(r.itemType===ITEM.SKILL){
+      source.skillObtained+=qty;
+      if(r.eventType==='open'&&isOpened(r)){ source.skillOpened+=1; if(r.content.tier==='III') source.skillIII+=1; }
+    }else if(r.itemType===ITEM.COACH){
+      source.coachObtained+=qty;
+      if(r.eventType==='open'&&isOpened(r)){ source.coachOpened+=1; if(r.content.grade==='優良') source.coachGood+=1; }
     }
-
-    if(r.eventType==='open'){
-
-      if(r.itemType===ITEM.SKILL){
-
-        source.skill+=Number(r.quantity||0);
-
-        if(r.content.tier==='III')
-          source.skillIII+=Number(r.quantity||0);
-
-      }
-
-      if(r.itemType===ITEM.COACH){
-
-        source.coach+=Number(r.quantity||0);
-
-        if(r.content.grade==='優良')
-          source.good+=Number(r.quantity||0);
-
-      }
-
-    }
-
   });
-
-  const tbody=
-    document.getElementById('source-analysis-body');
-
-  tbody.innerHTML=Object.entries(sources)
-    .map(([name,x])=>{
-
-      const skillRate=
-        x.skill
-          ? (x.skillIII/x.skill*100).toFixed(1)+'%'
-          : '-';
-
-      const coachRate=
-        x.coach
-          ? (x.good/x.coach*100).toFixed(1)+'%'
-          : '-';
-
-      return `
-        <tr>
-          <td>${esc(name)}</td>
-          <td>${x.skill}</td>
-          <td>${x.skillIII}</td>
-          <td>${x.coach}</td>
-          <td>${x.good}</td>
-          <td>${skillRate}</td>
-          <td>${coachRate}</td>
-        </tr>
-      `;
-
-    })
-    .join('');
-
+ 
+  document.getElementById('source-analysis-body').innerHTML=Object.entries(sources).map(([name,x])=>{
+    const skillRate=x.skillOpened ? (x.skillIII/x.skillOpened*100).toFixed(1)+'%' : '-';
+    const coachRate=x.coachOpened ? (x.coachGood/x.coachOpened*100).toFixed(1)+'%' : '-';
+    return `<tr><td>${esc(name)}</td><td>${x.skillObtained}</td><td>${x.skillOpened}</td><td>${x.skillIII}</td><td>${x.coachObtained}</td><td>${x.coachOpened}</td><td>${x.coachGood}</td><td>${skillRate}</td><td>${coachRate}</td></tr>`;
+  }).join('');
 }
-
-/* ============================================================
-   目標統計
-============================================================ */
-
+ 
 function renderTargetStats(){
-
-  const opened=
-    records.filter(isOpened);
-
-  const total=opened.length;
-
-  const html=targets.length
-    ? targets.map(t=>{
-
-        const type=t.type==='skill'
-          ? ITEM.SKILL
-          : ITEM.COACH;
-
-        const hits=
-          opened.filter(r=>
-            r.itemType===type &&
-            r.content.category===t.category &&
-            r.content.name===t.name
-          ).length;
-
-        const relevant=
-          opened.filter(r=>
-            r.itemType===type
-          ).length;
-
-        const rate=
-          relevant
-            ? (hits/relevant*100).toFixed(2)
-            : '0.00';
-
-        return `
-          <div style="
-            padding:8px 0;
-            border-bottom:1px dashed var(--border);
-            display:flex;
-            justify-content:space-between;
-            gap:10px;
-          ">
-            <span>
-              <span class="badge badge-target">🎯</span>
-              ${esc(t.category)}｜${esc(t.name)}
-            </span>
-
-            <span style="color:var(--primary)">
-              ${hits} 次
-              <small style="color:var(--text-muted)">
-                (${rate}%)
-              </small>
-            </span>
-          </div>
-        `;
-
-      }).join('')
-    : `<div class="empty">尚未設定心願</div>`;
-
+  const opened = records.filter(isOpened);
+  const html=targets.length ? targets.map(t=>{
+    const type = t.type==='skill'?ITEM.SKILL:ITEM.COACH;
+    const hits = opened.filter(r=>r.itemType===type && r.content.category===t.category && r.content.name===t.name).length;
+    const relevant = opened.filter(r=>r.itemType===type).length;
+    const rate = relevant ? (hits/relevant*100).toFixed(2) : '0.00';
+    return `<div style="padding:8px 0; border-bottom:1px dashed var(--border); display:flex; justify-content:space-between; gap:10px;">
+              <span><span class="badge badge-target">🎯</span> ${esc(t.category)}｜${esc(t.name)}</span>
+              <span style="color:var(--primary)">${hits} 次 <small style="color:var(--text-muted)">(${rate}%)</small></span>
+            </div>`;
+  }).join('') : `<div class="empty">尚未設定心願</div>`;
   document.getElementById('target-stats').innerHTML=html;
-
 }
-
+ 
+ 
 /* ============================================================
-   個人紀錄
+   歷史表格與過濾
 ============================================================ */
-
-function getMaxOpenPerDay(){
-
-  const map={};
-
-  records.forEach(r=>{
-
-    if(!isOpened(r)) return;
-
-    const d=r.openDate;
-
-    map[d]=(map[d]||0)+Number(r.quantity||1);
-
-  });
-
-  return Object.values(map).length
-    ? Math.max(...Object.values(map))
-    : 0;
-
-}
-
-function getMaxObtainPerMonth(){
-
-  const map={};
-
-  records.forEach(r=>{
-
-    if(r.eventType!=='obtain') return;
-
-    const d=r.obtainDate?.slice(0,7);
-
-    if(!d) return;
-
-    map[d]=(map[d]||0)+Number(r.quantity||0);
-
-  });
-
-  return Object.values(map).length
-    ? Math.max(...Object.values(map))
-    : 0;
-
-}
-
-/* ============================================================
-   歷史表格
-============================================================ */
-
 function getFilteredRecords(){
-
-  const text=
-    document.getElementById('filter-text').value
-      .trim()
-      .toLowerCase();
-
-  const from=
-    document.getElementById('filter-date-from').value;
-
-  const to=
-    document.getElementById('filter-date-to').value;
-
-  const month=
-    document.getElementById('filter-month').value;
-
-  const type=
-    document.getElementById('filter-type').value;
-
-  const source=
-    document.getElementById('filter-source').value;
-
-  const result=
-    document.getElementById('filter-result').value;
-
-  return records
-    .filter(r=>{
-
-      const searchText=[
-        r.itemType,
-        r.method,
-        r.memo,
-        r.content?.name,
-        r.content?.category,
-        r.content?.tier,
-        r.content?.grade
-      ]
-      .join(' ')
-      .toLowerCase();
-
-      if(text&&!searchText.includes(text))
-        return false;
-
-      const date=
-        r.eventType==='open'
-          ? r.openDate
-          : r.obtainDate;
-
-      if(from&&date<from) return false;
-      if(to&&date>to) return false;
-
-      if(month!=='all'&&!date.startsWith(month))
-        return false;
-
-      if(type!=='all'&&r.itemType!==type)
-        return false;
-
-      if(source!=='all'&&r.method!==source)
-        return false;
-
-      if(result==='target'&&!isTarget(r))
-        return false;
-
-      if(result==='jackpot'&&!isJackpot(r))
-        return false;
-
-      if(result==='unopened'&&
-         !(r.eventType==='obtain'&&
-           r.status===STAT.UNOPEN))
-        return false;
-
-      return true;
-
-    })
-    .sort((a,b)=>{
-
-      const da=
-        a.eventType==='open'
-          ? a.openDate
-          : a.obtainDate;
-
-      const db=
-        b.eventType==='open'
-          ? b.openDate
-          : b.obtainDate;
-
-      return String(db||'').localeCompare(String(da||''));
-
-    });
-
-}
-
-function renderTable(){
-
-  const all=getFilteredRecords();
-
-  document.getElementById('record-count')
-    .innerText=all.length;
-
-  const totalPages=
-    Math.max(1,Math.ceil(all.length/PAGE_SIZE));
-
-  if(currentPage>totalPages)
-    currentPage=totalPages;
-
-  const start=(currentPage-1)*PAGE_SIZE;
-  const rows=all.slice(start,start+PAGE_SIZE);
-
-  const tbody=
-    document.getElementById('records-tbody');
-
-  if(!rows.length){
-
-    tbody.innerHTML=`
-      <tr>
-        <td colspan="7" class="empty">
-          沒有符合條件的紀錄
-        </td>
-      </tr>
-    `;
-
-  }else{
-
-    tbody.innerHTML=rows.map(r=>{
-
-      if(r.itemType===ITEM.LEAGUE){
-
-        return `
-          <tr>
-            <td>${esc(r.obtainDate)}</td>
-            <td>-</td>
-            <td>
-              <span class="badge badge-league">
-                🏁 聯賽
-              </span>
-            </td>
-            <td>${Number(r.quantity||0)} 季</td>
-            <td>賽季結算</td>
-            <td>${esc(r.memo)}</td>
-            <td>
-              <button
-                class="action-btn"
-                onclick="openEdit('${r.id}')">
-                編
-              </button>
-
-              <button
-                class="del-btn"
-                onclick="deleteRec('${r.id}')">
-                刪
-              </button>
-            </td>
-          </tr>
-        `;
-
-      }
-
-      let status='';
-
-      if(r.eventType==='obtain'){
-
-        status=`
-          <span class="badge badge-pending">
-            📦 未開
-          </span>
-        `;
-
-      }else if(r.content){
-
-        const target=isTarget(r);
-
-        let badgeClass='badge-opened';
-
-        let value='';
-
-        if(r.itemType===ITEM.SKILL){
-
-          badgeClass=
-            r.content.tier==='III'
-              ? 'badge-tier-3'
-              : 'badge-opened';
-
-          value=
-            `${esc(r.content.tier)}階`;
-
-        }else{
-
-          if(r.content.grade==='優良')
-            badgeClass='badge-grade-good';
-          else if(r.content.grade==='普通')
-            badgeClass='badge-grade-normal';
-          else
-            badgeClass='badge-grade-bad';
-
-          value=esc(r.content.grade);
-
-        }
-
-        status=`
-          <span class="badge ${badgeClass}">
-            ${value}
-          </span>
-
-          <b>${esc(r.content.name)}</b>
-
-          ${target
-            ? '<span class="badge badge-target">🎯</span>'
-            : ''}
-        `;
-
-      }
-
-      const target=isTarget(r);
-
-      return `
-        <tr class="${target?'target-highlight':''}">
-
-          <td>
-            ${esc(r.obtainDate)}
-          </td>
-
-          <td>
-            ${r.openDate
-              ? esc(r.openDate)
-              : '-'}
-          </td>
-
-          <td>
-
-            <span class="badge ${
-              r.itemType===ITEM.COACH
-                ? 'badge-coach'
-                : 'badge-skill'
-            }">
-              ${
-                r.itemType===ITEM.COACH
-                  ? '教練券'
-                  : '技能券'
-              }
-            </span>
-
-            <br>
-
-            <span class="badge badge-source">
-              ${esc(r.method)}
-            </span>
-
-          </td>
-
-          <td>
-            ${Number(r.quantity||0)} 張
-          </td>
-
-          <td>
-            ${status}
-          </td>
-
-          <td>
-            ${esc(r.memo||'')}
-          </td>
-
-          <td>
-
-            <button
-              class="action-btn"
-              onclick="openEdit('${r.id}')">
-              編
-            </button>
-
-            <button
-              class="del-btn"
-              onclick="deleteRec('${r.id}')">
-              刪
-            </button>
-
-          </td>
-
-        </tr>
-      `;
-
-    }).join('');
-
-  }
-
-  document.getElementById('page-info')
-    .innerText=`第 ${currentPage} / ${totalPages} 頁`;
-
-  document.getElementById('prev-page')
-    .disabled=currentPage<=1;
-
-  document.getElementById('next-page')
-    .disabled=currentPage>=totalPages;
-
-}
-
-/* ============================================================
-   月份 Filter
-============================================================ */
-
-function updateMonthFilter(){
-
-  const select=
-    document.getElementById('filter-month');
-
-  const current=select.value;
-
-  const months=[
-    ...new Set(
-      records
-        .map(r=>r.obtainDate)
-        .filter(Boolean)
-        .map(x=>x.slice(0,7))
-    )
-  ].sort().reverse();
-
-  select.innerHTML=
-    '<option value="all">所有月份</option>'+
-    months
-      .map(x=>`<option value="${x}">${x}</option>`)
-      .join('');
-
-  if(months.includes(current))
-    select.value=current;
-
-}
-
-/* ============================================================
-   Targets
-============================================================ */
-
-function targetKey(t){
-  return `${t.type}|${t.category}|${t.name}`;
-}
-
-function toggleTarget(type,category,name){
-
-  const obj={
-    type,
-    category,
-    name
-  };
-
-  const key=targetKey(obj);
-
-  const index=
-    targets.findIndex(x=>targetKey(x)===key);
-
-  if(index>=0){
-
-    targets.splice(index,1);
-
-  }else{
-
-    targets.push(obj);
-
-  }
-
-  saveData();
-  renderTargets();
-  renderTable();
-  renderTargetStats();
-
-}
-
-function renderTargets(){
-
-  document.getElementById('target-count')
-    .innerText=targets.length;
-
-  renderTargetChips(
-    'chips-batter-skills',
-    'skill',
-    '打者',
-    skillList['打者']
-  );
-
-  renderTargetChips(
-    'chips-pitcher-skills',
-    'skill',
-    '投手',
-    skillList['投手']
-  );
-
-  renderTargetChips(
-    'chips-batter-coaches',
-    'coach',
-    '打擊',
-    coachList['打擊']
-  );
-
-  renderTargetChips(
-    'chips-pitcher-coaches',
-    'coach',
-    '投手',
-    coachList['投手']
-  );
-
-}
-
-function renderTargetChips(id,type,category,list){
-
-  document.getElementById(id).innerHTML=
-    list.map(name=>{
-
-      const active=
-        targets.some(t=>
-          t.type===type &&
-          t.category===category &&
-          t.name===name
-        );
-
-      return `
-        <span
-          class="target-chip ${active?'active':''}"
-          onclick="toggleTarget(
-            '${type}',
-            '${category}',
-            '${name.replace(/'/g,"\\'")}'
-          )">
-          ${esc(name)}
-        </span>
-      `;
-
-    }).join('');
-
-}
-
-/* ============================================================
-   優良教練
-============================================================ */
-
-function renderGoodCoaches(){
-
-  const list=
-    records
-      .filter(r=>
-        r.itemType===ITEM.COACH &&
-        isOpened(r) &&
-        r.content.grade==='優良'
-      )
-      .sort((a,b)=>
-        String(b.openDate).localeCompare(String(a.openDate))
-      );
-
-  document.getElementById('good-coach-list').innerHTML=
-    list.length
-      ? list.map(r=>`
-
-        <div style="
-          padding:9px 0;
-          border-bottom:1px dashed var(--border);
-          display:flex;
-          justify-content:space-between;
-          gap:10px;
-        ">
-
-          <div>
-            <b>${esc(r.content.name)}</b>
-            <br>
-            <small style="color:var(--text-muted)">
-              ${esc(r.content.category)}
-              ｜${esc(r.openDate)}
-            </small>
-          </div>
-
-          <div style="color:var(--primary)">
-            ${esc(r.content.detail||'-')}
-          </div>
-
-        </div>
-
-      `).join('')
-      :
-      `<div class="empty">尚無優良教練</div>`;
-
-}
-
-/* ============================================================
-   完整 Edit
-============================================================ */
-
-function openEdit(id){
-
-  const r=records.find(x=>x.id===id);
-
-  if(!r) return;
-
-  document.getElementById('edit-id').value=id;
-
-  const box=document.getElementById('edit-fields');
-
-  if(r.itemType===ITEM.LEAGUE){
-
-    box.innerHTML=`
-
-      <div class="grid grid-2">
-
-        <div class="form-group">
-          <label>完賽日期</label>
-          <input
-            type="date"
-            id="edit-obtain-date"
-            value="${esc(r.obtainDate)}">
-        </div>
-
-        <div class="form-group">
-          <label>完成季數</label>
-          <input
-            type="number"
-            id="edit-quantity"
-            min="0.1"
-            step="0.1"
-            value="${Number(r.quantity||0)}">
-        </div>
-
-      </div>
-
-      <div class="form-group">
-        <label>備註</label>
-        <input
-          id="edit-memo"
-          value="${esc(r.memo||'')}">
-      </div>
-
-    `;
-
-  }else{
-
-    const isOpen=
-      r.eventType==='open';
-
-    const category=
-      r.content?.category ||
-      (r.itemType===ITEM.SKILL?'打者':'打擊');
-
-    const names=
-      r.itemType===ITEM.SKILL
-        ? skillList
-        : coachList;
-
-    box.innerHTML=`
-
-      <div class="grid grid-2">
-
-        <div class="form-group">
-          <label>獲取日期</label>
-          <input
-            type="date"
-            id="edit-obtain-date"
-            value="${esc(r.obtainDate)}">
-        </div>
-
-        <div class="form-group">
-          <label>開箱日期</label>
-          <input
-            type="date"
-            id="edit-open-date"
-            value="${esc(r.openDate||'')}">
-        </div>
-
-        <div class="form-group">
-          <label>獲取方式</label>
-          <select id="edit-method">
-            ${methodOpts[r.itemType]
-              .map(m=>`
-                <option
-                  value="${esc(m)}"
-                  ${r.method===m?'selected':''}>
-                  ${esc(m)}
-                </option>
-              `)
-              .join('')}
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>狀態</label>
-          <select id="edit-status">
-            <option
-              value="未開啟"
-              ${!isOpen?'selected':''}>
-              未開啟
-            </option>
-            <option
-              value="已開啟"
-              ${isOpen?'selected':''}>
-              已開啟
-            </option>
-          </select>
-        </div>
-
-      </div>
-
-      <div class="form-group">
-        <label>備註</label>
-        <input
-          id="edit-memo"
-          value="${esc(r.memo||'')}">
-      </div>
-
-      <div class="sub-box">
-
-        <div class="form-group">
-          <label>分類</label>
-          <select id="edit-category">
-            ${Object.keys(names)
-              .map(c=>`
-                <option
-                  value="${esc(c)}"
-                  ${category===c?'selected':''}>
-                  ${esc(c)}
-                </option>
-              `)
-              .join('')}
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>${r.itemType===ITEM.SKILL?'技能':'教練'}</label>
-          <select id="edit-name"></select>
-        </div>
-
-        ${
-          r.itemType===ITEM.SKILL
-          ? `
-            <div class="form-group">
-              <label>階級</label>
-              <select id="edit-tier">
-                ${['III','II','I']
-                  .map(x=>`
-                    <option
-                      value="${x}"
-                      ${r.content?.tier===x?'selected':''}>
-                      ${x}階
-                    </option>
-                  `)
-                  .join('')}
-              </select>
-            </div>
-          `
-          : `
-            <div class="form-group">
-              <label>評價</label>
-              <select id="edit-grade">
-                ${['優良','普通','劣等']
-                  .map(x=>`
-                    <option
-                      value="${x}"
-                      ${r.content?.grade===x?'selected':''}>
-                      ${x}
-                    </option>
-                  `)
-                  .join('')}
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>詳細數值</label>
-              <input
-                id="edit-detail"
-                value="${esc(r.content?.detail||'')}">
-            </div>
-          `
-        }
-
-      </div>
-
-    `;
-
-    populateEditNames(
-      names,
-      category,
-      r.content?.name||''
-    );
-
-    document.getElementById('edit-category')
-      .addEventListener('change',()=>{
-
-        populateEditNames(
-          names,
-          document.getElementById('edit-category').value,
-          ''
-        );
-
-      });
-
-  }
-
-  openModal('edit-modal');
-
-}
-
-function populateEditNames(list,category,current){
-
-  const select=document.getElementById('edit-name');
-
-  if(!select) return;
-
-  select.innerHTML='';
-
-  list[category].forEach(name=>{
-
-    const op=document.createElement('option');
-
-    op.value=name;
-    op.textContent=name;
-
-    if(name===current)
-      op.selected=true;
-
-    select.appendChild(op);
-
+  const text=document.getElementById('filter-text').value.trim().toLowerCase();
+  const from=document.getElementById('filter-date-from').value;
+  const to=document.getElementById('filter-date-to').value;
+  const month=document.getElementById('filter-month').value;
+  const type=document.getElementById('filter-type').value;
+  const source=document.getElementById('filter-source').value;
+  const result=document.getElementById('filter-result').value;
+ 
+  return records.filter(r=>{
+    const searchText=[r.itemType,r.method,r.memo,r.content?.name,r.content?.category,r.content?.tier,r.content?.grade].join(' ').toLowerCase();
+    if(text&&!searchText.includes(text)) return false;
+    const date = r.eventType==='open' ? r.openDate : r.obtainDate;
+    if(from&&date<from) return false;
+    if(to&&date>to) return false;
+    if(month!=='all'&&!date.startsWith(month)) return false;
+    if(type!=='all'&&r.itemType!==type) return false;
+    if(source!=='all'&&r.method!==source) return false;
+    if(result==='target'&&!isTarget(r)) return false;
+    if(result==='jackpot'&&!isJackpot(r)) return false;
+    if(result==='unopened'&&!(r.eventType==='obtain'&&r.status===STAT.UNOPEN)) return false;
+    return true;
+  }).sort((a,b)=>{
+    const da = a.eventType==='open' ? a.openDate : a.obtainDate;
+    const db = b.eventType==='open' ? b.openDate : b.obtainDate;
+    return String(db||'').localeCompare(String(da||'')) || String(b.createdAt||b.id).localeCompare(String(a.createdAt||a.id));
   });
-
 }
-
-function saveEdit(){
-
-  const id=document.getElementById('edit-id').value;
-
-  const r=records.find(x=>x.id===id);
-
-  if(!r) return;
-
-  if(r.itemType===ITEM.LEAGUE){
-
-    const date=
-      document.getElementById('edit-obtain-date').value;
-
-    const quantity=
-      Number(document.getElementById('edit-quantity').value);
-
-    if(!date||quantity<=0){
-
-      showToast('資料不正確','error');
-      return;
-
-    }
-
-    r.obtainDate=date;
-    r.quantity=quantity;
-    r.memo=
-      document.getElementById('edit-memo').value.trim();
-
+ 
+function renderTable(){
+  const all=getFilteredRecords();
+  document.getElementById('record-count').innerText=all.length;
+  const totalPages=Math.max(1,Math.ceil(all.length/PAGE_SIZE));
+  if(currentPage>totalPages) currentPage=totalPages;
+  const rows=all.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+  const tbody=document.getElementById('records-tbody');
+ 
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="7" class="empty">沒有符合條件的紀錄</td></tr>`;
   }else{
-
-    const obtainDate=
-      document.getElementById('edit-obtain-date').value;
-
-    const openDate=
-      document.getElementById('edit-open-date').value;
-
-    const status=
-      document.getElementById('edit-status').value;
-
-    r.obtainDate=obtainDate;
-
-    r.method=
-      document.getElementById('edit-method').value;
-
-    r.source={
-      type:sourceType(r.method),
-      label:r.method
-    };
-
-    r.memo=
-      document.getElementById('edit-memo').value.trim();
-
-    if(status===STAT.UNOPEN){
-
-      r.eventType='obtain';
-      r.status=STAT.UNOPEN;
-      r.openDate=null;
-      r.content=null;
-
-    }else{
-
-      /* 防呆：防止數量大於 1 的庫存直接被整筆轉為已開啟，破壞開箱統計數據 */
-      if(r.status === STAT.UNOPEN && r.quantity > 1) {
-        showToast('數量大於 1 的庫存，請使用「批量開箱」功能進行開箱', 'error');
-        return;
+    tbody.innerHTML=rows.map(r=>{
+      if(r.itemType===ITEM.LEAGUE){
+        return `<tr><td>${esc(r.obtainDate)}</td><td>-</td><td><span class="badge badge-league">🏁 聯賽</span></td><td>${Number(r.quantity||0)} 季</td><td>賽季結算</td><td>${esc(r.memo)}</td><td><button class="action-btn" onclick="openEdit('${r.id}')">編</button><button class="del-btn" onclick="deleteRec('${r.id}')">刪</button></td></tr>`;
       }
-
-      if(!openDate){
-
-        showToast('已開啟紀錄必須有開箱日期','error');
-        return;
-
+      let status='';
+      if(r.eventType==='obtain'){
+        status=`<span class="badge badge-pending">📦 未開</span>`;
+      }else if(r.content){
+        const target=isTarget(r);
+        let badgeClass='badge-opened', value='';
+        if(r.itemType===ITEM.SKILL){
+          badgeClass = r.content.tier==='III' ? 'badge-tier-3' : 'badge-opened';
+          value = `${esc(r.content.tier)}階`;
+        }else{
+          if(r.content.grade==='優良') badgeClass='badge-grade-good';
+          else if(r.content.grade==='普通') badgeClass='badge-grade-normal';
+          else badgeClass='badge-grade-bad';
+          value=esc(r.content.grade);
+        }
+        status=`<span class="badge ${badgeClass}">${value}</span> <b>${esc(r.content.name)}</b> ${target?'<span class="badge badge-target">🎯</span>':''}`;
       }
-
-      /* 確保開啟狀態下每筆資料數量固定為 1 */
-      r.quantity = 1;
-
-      r.eventType='open';
-      r.status=STAT.OPEN;
-      r.openDate=openDate;
-
-      const category=
-        document.getElementById('edit-category').value;
-
-      const name=
-        document.getElementById('edit-name').value;
-
-      if(r.itemType===ITEM.SKILL){
-
-        r.content={
-          category,
-          name,
-          tier:document.getElementById('edit-tier').value
-        };
-
-      }else{
-
-        r.content={
-          category,
-          name,
-          grade:document.getElementById('edit-grade').value,
-          detail:document.getElementById('edit-detail').value.trim()
-        };
-
-      }
-
-    }
-
+      return `<tr class="${isTarget(r)?'target-highlight':''}">
+        <td>${esc(r.obtainDate)}</td><td>${r.openDate?esc(r.openDate):'-'}</td>
+        <td><span class="badge ${r.itemType===ITEM.COACH?'badge-coach':'badge-skill'}">${r.itemType===ITEM.COACH?'教練券':'技能券'}</span><br><span class="badge badge-source">${esc(r.method)}</span></td>
+        <td>${Number(r.quantity||0)} 張</td><td>${status}</td><td>${esc(r.memo||'')}</td>
+        <td><button class="action-btn" onclick="openEdit('${r.id}')">編</button><button class="del-btn" onclick="promptDelete('${r.id}')">刪</button></td>
+      </tr>`;
+    }).join('');
   }
-
-  saveAndRender();
-
-  closeModal('edit-modal');
-
-  showToast('紀錄已更新');
-
+  document.getElementById('page-info').innerText=`第 ${currentPage} / ${totalPages} 頁`;
+  document.getElementById('prev-page').disabled=currentPage<=1;
+  document.getElementById('next-page').disabled=currentPage>=totalPages;
 }
-
+ 
 /* ============================================================
-   Delete / Undo
+   完整 Edit 與刪除復原
 ============================================================ */
-
-async function deleteRec(id){
-
-  const index=
-    records.findIndex(r=>r.id===id);
-
+ 
+function promptDelete(id){
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  if(r.eventType==='open'){
+    document.getElementById('delete-options-msg').dataset.targetId = id;
+    openModal('delete-options-modal');
+  } else {
+    deleteRec(id);
+  }
+}
+ 
+document.getElementById('del-opt-completely').onclick = () => {
+  const id = document.getElementById('delete-options-msg').dataset.targetId;
+  closeModal('delete-options-modal');
+  deleteRec(id, false);
+};
+document.getElementById('del-opt-return').onclick = () => {
+  const id = document.getElementById('delete-options-msg').dataset.targetId;
+  closeModal('delete-options-modal');
+  deleteRec(id, true);
+};
+document.getElementById('del-opt-cancel').onclick = () => closeModal('delete-options-modal');
+ 
+async function deleteRec(id, returnToInventory = false){
+  const index = records.findIndex(r=>r.id===id);
   if(index<0) return;
-
-  if(!await customConfirm('確定刪除這筆紀錄？'))
-    return;
-
-  const removed=records[index];
-
-  records.splice(index,1);
-
-  undoData={
-    index,
-    record:removed
-  };
-
-  saveAndRender();
-
-  showUndoToast('已刪除，可在 5 秒內復原');
-
-}
-
-function showUndoToast(msg){
-
-  clearTimeout(undoTimer);
-
-  const container=
-    document.getElementById('toast-container');
-
-  const t=document.createElement('div');
-
-  t.className='toast success';
-
-  t.innerHTML=`
-    ${esc(msg)}
-    <button
-      style="
-        width:auto;
-        margin-left:10px;
-        padding:3px 8px;
-        background:transparent;
-        color:var(--gold);
-        border:1px solid var(--gold);
-        cursor:pointer;
-      "
-      id="undo-button">
-      復原
-    </button>
-  `;
-
-  container.appendChild(t);
-
-  document.getElementById('undo-button')
-    .onclick=()=>{
-
-      if(!undoData) return;
-
-      records.splice(
-        undoData.index,
-        0,
-        undoData.record
-      );
-
-      undoData=null;
-
-      saveAndRender();
-
-      t.remove();
-
-      showToast('已復原');
-
-    };
-
-  undoTimer=setTimeout(()=>{
-
+ 
+  if(!returnToInventory){
+    const message=records[index].eventType==='open'
+      ? '這會徹底刪除開箱結果且不退回庫存，確定？'
+      : '確定刪除這筆紀錄？';
+    if(!await customConfirm(message)) return;
+  }
+ 
+  const snapshot=JSON.stringify(records);
+  const removed = records[index];
+  records.splice(index, 1);
+  
+  let returnedInventory = null;
+  if (returnToInventory && removed.eventType === 'open') {
+    // 尋找可合併的庫存，或者建立新的
+    const existInv = records.find(x => x.eventType==='obtain' && x.status===STAT.UNOPEN && x.itemType===removed.itemType && x.obtainDate===removed.obtainDate && x.method===removed.method);
+    if(existInv) {
+      returnedInventory={id:existInv.id,wasNew:false,previousQuantity:Number(existInv.quantity)};
+      existInv.quantity = Number(existInv.quantity) + 1;
+      existInv.updatedAt = getNowISO();
+    } else {
+      const newInv = {
+        id:uid(), eventType:'obtain', itemType:removed.itemType, obtainDate:removed.obtainDate, openDate:null,
+        quantity:1, method:removed.method, source:{...removed.source}, status:STAT.UNOPEN, content:null,
+        memo:'刪除開箱後退回庫存', createdAt:getNowISO(), openedAt:null, updatedAt:getNowISO()
+      };
+      records.push(newInv);
+      returnedInventory={id:newInv.id,wasNew:true,previousQuantity:0};
+    }
+  }
+ 
+  undoData = { index, record: removed, returnedInventory };
+  if(saveData()){
+    renderAll();
+    showUndoToast(returnToInventory ? '已刪除結果並退回庫存' : '已刪除，可在 5 秒內復原');
+  }else{
+    records=JSON.parse(snapshot);
     undoData=null;
-    t.remove();
-
-  },5000);
-
+  }
 }
-
+ 
+function showUndoToast(msg){
+  clearTimeout(undoTimer);
+  if(undoToast) undoToast.remove();
+  const container=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  undoToast=t;
+  t.className='toast success';
+  t.innerHTML=`${esc(msg)} <button style="width:auto;margin-left:10px;padding:3px 8px;background:transparent;color:var(--gold);border:1px solid var(--gold);cursor:pointer;">復原</button>`;
+  container.appendChild(t);
+ 
+  t.querySelector('button').onclick=()=>{
+    if(!undoData) return;
+    records.splice(undoData.index, 0, undoData.record);
+    if(undoData.returnedInventory) {
+      const info=undoData.returnedInventory;
+      const invIndex = records.findIndex(x=>x.id===info.id);
+      if(invIndex >= 0) {
+        if(info.wasNew) records.splice(invIndex,1);
+        else records[invIndex].quantity=info.previousQuantity;
+      }
+    }
+    undoData=null; undoToast=null; t.remove();
+    if(saveAndRender()) showToast('已復原');
+  };
+  undoTimer=setTimeout(()=>{ undoData=null; undoToast=null; t.remove(); },5000);
+}
+ 
+function populateEditNames(list,category,current){
+  const select=document.getElementById('edit-name');
+  if(!select || !Array.isArray(list[category])) return;
+  select.replaceChildren();
+  list[category].forEach(name=>{
+    const option=document.createElement('option');
+    option.value=name;
+    option.textContent=name;
+    option.selected=name===current;
+    select.appendChild(option);
+  });
+}
+ 
+ 
+function openEdit(id){
+  const r=records.find(x=>x.id===id); if(!r) return;
+  document.getElementById('edit-id').value=id;
+  const box=document.getElementById('edit-fields');
+  
+  if(r.itemType===ITEM.LEAGUE){
+    box.innerHTML=`
+      <div class="grid grid-2">
+        <div class="form-group"><label>完賽日期</label><input type="date" id="edit-obtain-date" value="${esc(r.obtainDate)}"></div>
+        <div class="form-group"><label>完成季數</label><input type="number" id="edit-quantity" min="0.1" step="0.1" value="${Number(r.quantity||0)}"></div>
+      </div>
+      <div class="form-group"><label>備註</label><input id="edit-memo" value="${esc(r.memo||'')}"></div>
+    `;
+  }else{
+    const isOpen = r.eventType==='open';
+    const category = r.content?.category || (r.itemType===ITEM.SKILL?'打者':'打擊');
+    const names = r.itemType===ITEM.SKILL ? skillList : coachList;
+    box.innerHTML=`
+      <div class="grid grid-2">
+        <div class="form-group"><label>獲取日期</label><input type="date" id="edit-obtain-date" value="${esc(r.obtainDate)}"></div>
+        <div class="form-group"><label>開箱日期</label><input type="date" id="edit-open-date" value="${esc(r.openDate||'')}"></div>
+        <div class="form-group"><label>獲取方式</label><select id="edit-method">${methodOpts[r.itemType].map(m=>`<option value="${esc(m)}" ${r.method===m?'selected':''}>${esc(m)}</option>`).join('')}</select></div>
+        <div class="form-group"><label>狀態</label><select id="edit-status"><option value="未開啟" ${!isOpen?'selected':''}>未開啟</option><option value="已開啟" ${isOpen?'selected':''}>已開啟</option></select></div>
+      </div>
+      <div class="form-group"><label>備註</label><input id="edit-memo" value="${esc(r.memo||'')}"></div>
+      <div class="sub-box">
+        <div class="form-group"><label>分類</label><select id="edit-category">${Object.keys(names).map(c=>`<option value="${esc(c)}" ${category===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+        <div class="form-group"><label>${r.itemType===ITEM.SKILL?'技能':'教練'}</label><select id="edit-name"></select></div>
+        ${r.itemType===ITEM.SKILL
+          ? `<div class="form-group"><label>階級</label><select id="edit-tier">${['III','II','I'].map(x=>`<option value="${x}" ${r.content?.tier===x?'selected':''}>${x}階</option>`).join('')}</select></div>`
+          : `<div class="form-group"><label>評價</label><select id="edit-grade">${['優良','普通','劣等'].map(x=>`<option value="${x}" ${r.content?.grade===x?'selected':''}>${x}</option>`).join('')}</select></div>
+             <div class="form-group"><label>詳細數值</label><input id="edit-detail" value="${esc(r.content?.detail||'')}"></div>`}
+      </div>
+    `;
+    populateEditNames(names, category, r.content?.name||'');
+    document.getElementById('edit-category').addEventListener('change',()=>populateEditNames(names, document.getElementById('edit-category').value, ''));
+  }
+  openModal('edit-modal');
+}
+ 
+async function saveEdit(){
+  const id=document.getElementById('edit-id').value;
+  const r=records.find(x=>x.id===id); if(!r) return;
+ 
+  if(r.itemType===ITEM.LEAGUE){
+    const date=document.getElementById('edit-obtain-date').value;
+    const quantity=Number(document.getElementById('edit-quantity').value);
+    if(!isValidDateString(date) || date>localDateString() || !Number.isFinite(quantity) || quantity<=0){ showToast('日期或季數不正確','error'); return; }
+    r.obtainDate=date; r.quantity=quantity; r.memo=document.getElementById('edit-memo').value.trim();
+    r.updatedAt = getNowISO();
+  }else{
+    const obtainDate=document.getElementById('edit-obtain-date').value;
+    const openDate=document.getElementById('edit-open-date').value;
+    const status=document.getElementById('edit-status').value;
+    const method=document.getElementById('edit-method').value;
+    
+    if(!isValidDateString(obtainDate) || obtainDate>localDateString()) { showToast('獲取日期不正確', 'error'); return; }
+    if(status===STAT.OPEN && (!isValidDateString(openDate) || openDate>localDateString() || openDate < obtainDate)) { showToast('開箱日期必須有效、不得早於獲取日期或晚於今天', 'error'); return; }
+    
+    if(r.status === STAT.OPEN && status === STAT.UNOPEN) {
+      if(!await customConfirm('這會移除開箱結果並將1張券退回未開庫存，是否繼續？')) return;
+    }
+    if(r.status === STAT.UNOPEN && r.quantity > 1 && status === STAT.OPEN) { showToast('數量大於 1 的庫存，請使用「批量開箱」', 'error'); return; }
+ 
+    r.obtainDate=obtainDate;
+    const sourceRecordId=r.method===method ? r.source?.sourceRecordId : undefined;
+    r.method=method;
+    r.source={ type:sourceType(r.method), label:r.method, ...(sourceRecordId?{sourceRecordId}:{}) };
+    r.memo=document.getElementById('edit-memo').value.trim();
+ 
+    if(status===STAT.UNOPEN){
+      r.eventType='obtain'; r.status=STAT.UNOPEN; r.openDate=null; r.content=null; r.openedAt=null;
+      r.source={type:sourceType(r.method),label:r.method};
+    }else{
+      if(!openDate){ showToast('已開啟紀錄必須有開箱日期','error'); return; }
+      if(r.status===STAT.UNOPEN || !r.openedAt) r.openedAt = getNowISO();
+      r.quantity=1; r.eventType='open'; r.status=STAT.OPEN; r.openDate=openDate;
+      const category=document.getElementById('edit-category').value;
+      const name=document.getElementById('edit-name').value;
+      if(r.itemType===ITEM.SKILL) r.content={ category, name, tier:document.getElementById('edit-tier').value };
+      else r.content={ category, name, grade:document.getElementById('edit-grade').value, detail:document.getElementById('edit-detail').value.trim() };
+    }
+    r.updatedAt = getNowISO();
+  }
+  if(!saveAndRender()) return;
+  closeModal('edit-modal'); showToast('紀錄已更新');
+}
+ 
 /* ============================================================
-   Clear
+   批量開箱
 ============================================================ */
-
+ 
+function handleBatchCountChange() {
+  const sel = document.getElementById('batch-count');
+  const custom = document.getElementById('batch-count-custom');
+  if(sel.value === 'custom') { custom.style.display = 'block'; }
+  else { custom.style.display = 'none'; }
+  buildBatch();
+}
+ 
+function openBatchModal(){
+  document.getElementById('batch-type').value=ITEM.SKILL;
+  document.getElementById('batch-count').value='1';
+  document.getElementById('batch-count-custom').style.display='none';
+  const today=localDateString();
+  document.getElementById('batch-open-date').value=today;
+  document.getElementById('batch-open-date').max=today;
+  buildBatch(); openModal('batch-modal');
+}
+ 
+function buildBatch(){
+  const type=document.getElementById('batch-type').value;
+  const selVal=document.getElementById('batch-count').value;
+  const count= selVal==='custom' ? Number(document.getElementById('batch-count-custom').value) : Number(selVal);
+  const inventory=getInventory(type);
+  const info=document.getElementById('batch-inventory-info');
+  info.innerHTML=`<div class="sub-box"><div style="display:flex;justify-content:space-between;align-items:center;"><span>目前 ${type===ITEM.SKILL?'技能券':'教練券'}庫存</span><b style="font-size:1.2rem;color:${inventory>=count?'var(--success)':'var(--danger)'};">${inventory} 張</b></div>${inventory<count?`<div style="margin-top:6px;color:var(--danger);font-size:.75rem;">⚠️ 庫存不足，無法開 ${count} 張。</div>`:''}</div>`;
+ 
+  const box=document.getElementById('batch-rows'); box.innerHTML='';
+  if (!Number.isInteger(count) || count <= 0 || count>100){
+    info.innerHTML='<div class="sub-box" style="color:var(--danger)">自訂張數必須是 1～100 的整數。</div>';
+    return;
+  }
+  for(let i=0;i<count;i++){
+    if(type===ITEM.SKILL){
+      const cats=Object.keys(skillList);
+      box.insertAdjacentHTML('beforeend',`<div class="batch-row" style="display:grid;grid-template-columns:1fr 1.4fr .7fr;gap:5px;margin-bottom:5px;"><select class="b-cat">${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><select class="b-name"></select><select class="b-tier"><option value="III">III</option><option value="II">II</option><option value="I">I</option></select></div>`);
+    }else{
+      const cats=Object.keys(coachList);
+      box.insertAdjacentHTML('beforeend',`<div class="batch-row" style="display:grid;grid-template-columns:1fr 1.2fr .8fr 1fr;gap:5px;margin-bottom:5px;"><select class="b-cat">${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><select class="b-name"></select><select class="b-grade"><option value="優良">優良</option><option value="普通">普通</option><option value="劣等">劣等</option></select><input type="text" class="b-detail" placeholder="數值(選填)"></div>`);
+    }
+  }
+  document.querySelectorAll('.batch-row').forEach(row=>{
+    const cat=row.querySelector('.b-cat');
+    cat.addEventListener('change',()=>{
+      const list=type===ITEM.SKILL?skillList:coachList;
+      row.querySelector('.b-name').innerHTML=list[cat.value].map(x=>`<option>${esc(x)}</option>`).join('');
+    });
+    cat.dispatchEvent(new Event('change'));
+  });
+}
+ 
+async function submitBatch(){
+  const type=document.getElementById('batch-type').value;
+  const openDate=document.getElementById('batch-open-date').value;
+  const rows=[...document.querySelectorAll('.batch-row')];
+  const requested=rows.length;
+  const inventory=getInventory(type);
+ 
+  if(!isValidDateString(openDate) || openDate>localDateString()) { showToast('請填寫有效且不晚於今天的開箱日期', 'error'); return; }
+  if(!Number.isInteger(requested) || requested<1 || requested>100){ showToast('開箱張數必須是 1～100', 'error'); return; }
+  if(inventory<requested){ showToast(`庫存不足：目前 ${inventory} 張，要求 ${requested} 張`,'error'); return; }
+  const sources=getInventorySources(type).filter(source=>source.obtainDate<=openDate);
+  const eligibleInventory=sources.reduce((sum,source)=>sum+Number(source.quantity||0),0);
+  if(eligibleInventory<requested){ showToast(`開箱日期當下僅有 ${eligibleInventory} 張可用庫存`, 'error'); return; }
+  if(sources.length<1){ showToast('找不到可用庫存來源','error'); return; }
+  if(!await customConfirm(`確定開 ${requested} 張 ${type===ITEM.SKILL?'技能券':'教練券'}？`)) return;
+  const snapshot=JSON.stringify(records);
+ 
+  // 暫存陣列預處理
+  const newRecords = [];
+  let sourceIndex=0;
+  let remainingInCurrentSource = Number(sources[sourceIndex].quantity);
+  const nowBase = Date.now();
+  
+  for(let i=0; i<requested; i++) {
+    while(sourceIndex < sources.length && remainingInCurrentSource <= 0) {
+      sourceIndex++;
+      if (sourceIndex < sources.length) remainingInCurrentSource = Number(sources[sourceIndex].quantity);
+    }
+    if(sourceIndex >= sources.length) { showToast('系統錯誤：來源不足', 'error'); return; } // 安全防護
+    
+    remainingInCurrentSource--;
+    const source = sources[sourceIndex];
+    const row = rows[i];
+    const content = type===ITEM.SKILL ? { category:row.querySelector('.b-cat').value, name:row.querySelector('.b-name').value, tier:row.querySelector('.b-tier').value }
+                                      : { category:row.querySelector('.b-cat').value, name:row.querySelector('.b-name').value, grade:row.querySelector('.b-grade').value, detail:row.querySelector('.b-detail').value.trim() };
+    newRecords.push({
+      id:uid(), eventType:'open', itemType:type, obtainDate:source.obtainDate, openDate,
+      quantity:1, method:source.method, source:{type:sourceType(source.method), label:source.method, sourceRecordId:source.id},
+      status:STAT.OPEN, content, memo:'批量開箱', createdAt:new Date(nowBase + i).toISOString(), openedAt:new Date(nowBase + i).toISOString(), updatedAt:getNowISO()
+    });
+  }
+ 
+  // 套用修改
+  sourceIndex = 0; remainingInCurrentSource = Number(sources[sourceIndex].quantity);
+  for(let i=0; i<requested; i++) {
+    while(sourceIndex < sources.length && Number(sources[sourceIndex].quantity) <= 0) { sourceIndex++; }
+    if(sourceIndex>=sources.length){ showToast('系統錯誤：扣除庫存失敗', 'error'); return; }
+    sources[sourceIndex].quantity--;
+    sources[sourceIndex].updatedAt = getNowISO();
+  }
+  
+  records.push(...newRecords);
+  records=records.filter(r=> !(r.eventType==='obtain' && r.status===STAT.UNOPEN && Number(r.quantity)<=0));
+  if(!saveAndRender()){
+    records=JSON.parse(snapshot);
+    return;
+  }
+  closeModal('batch-modal');
+  showToast(`批量開箱完成，共 ${requested} 張`);
+}
+ 
+/* ============================================================
+   JSON 匯出與匯入 (加上嚴格檢查與備份)
+============================================================ */
+ 
+function downloadBlob(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a'); link.href=url; link.download=filename; document.body.appendChild(link);
+  link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+ 
+function exportData(fmt){
+  if(fmt==='json'){
+    const data={ schemaVersion:SCHEMA_VERSION, appVersion:APP_VERSION, exportedAt:getNowISO(), updatedAt:databaseUpdatedAt, lastCloudSyncAt, records, targets, pityState };
+    downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), `白教白技_V4.1.1_backup_${localDateString()}.json`);
+    showToast('JSON 備份完成'); return;
+  }
+  let csv='獲取日期,開箱日期,事件,種類,獲得方式,數量,狀態,分類,名稱,階級/評價,詳細數值,備註\n';
+  records.forEach(r=>{
+    const values=[r.obtainDate||'',r.openDate||'',r.eventType||'',r.itemType||'',r.method||'',r.quantity||0,r.status||'',r.content?.category||'',r.content?.name||'',r.content?.tier||r.content?.grade||'',r.content?.detail||'',r.itemType===ITEM.LEAGUE?`完賽${r.quantity}季`:r.memo||''];
+    csv+=values.map(v=>{let s=String(v??'');if(/^\s*[=+\-@]/.test(s))s="'"+s;return `"${s.replace(/"/g,'""')}"`;}).join(',')+'\n';
+  });
+  downloadBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}), `白教白技_V4.1.1_records_${localDateString()}.csv`);
+  showToast('CSV 匯出完成');
+}
+ 
+async function exportScreenshot(){
+  if(typeof html2canvas==='undefined'){
+    showToast('截圖元件尚未載入，請確認網路後重試','error');
+    return;
+  }
+  const target=document.getElementById('export-area');
+  if(!target) return;
+  try{
+    showToast('正在生成戰報圖...','info');
+    const canvas=await html2canvas(target,{
+      backgroundColor:'#1A1C23',
+      scale:Math.min(2,window.devicePixelRatio||1),
+      useCORS:true,
+      logging:false
+    });
+    const link=document.createElement('a');
+    link.download=`戰報_${localDateString()}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    showToast('戰報圖片已下載');
+  }catch(error){
+    console.error(error);
+    showToast('截圖失敗，請稍後再試','error');
+  }
+}
+ 
+document.getElementById('import-file').addEventListener('change', async e => {
+  const file = e.target.files?.[0]; if(!file) return;
+  try{
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    const normalized = normalizeImportedData(parsed);
+    
+    if(!normalized){ showToast('JSON 格式或資料結構錯誤','error'); return; }
+    
+    let msg = `即將匯入 ${normalized.records.length} 筆紀錄與 ${normalized.targets.length} 個心願。\n目前資料會被覆蓋，是否繼續？`;
+    if(normalized.warnings && normalized.warnings.length > 0) msg += `\n\n注意: 略過了 ${normalized.warnings.length} 筆無效紀錄。`;
+    
+    if(!await customConfirm(msg)) return;
+    backupBeforeImport();
+    records = normalized.records; targets = normalized.targets;
+    pityState = normalized.pityState;
+    databaseUpdatedAt = getNowISO();
+    lastCloudSyncAt = null;
+    if(saveAndRender()) showToast('JSON 還原成功');
+  } catch(err) { console.error(err); showToast('JSON 讀取失敗', 'error'); } finally { e.target.value=''; }
+});
+ 
+const isSafeId = id => /^[A-Za-z0-9_-]{1,100}$/.test(String(id));
+ 
+function normalizeImportedData(data){
+  let importedRecords, importedTargets, importedPityState;
+  if(Array.isArray(data)){
+    importedRecords=data; importedTargets=targets; importedPityState=pityState;
+  }else if(data && typeof data==='object'){
+    importedRecords=data.records; importedTargets=data.targets; importedPityState=data.pityState;
+  }
+  if(!Array.isArray(importedRecords)) return null;
+ 
+  const cleanRecords=[]; const warnings=[];
+  const today=localDateString();
+  const idSet = new Set();
+  const validIso=value=>typeof value==='string' && !Number.isNaN(Date.parse(value));
+  const warn=record=>warnings.push(record?.id || `第 ${warnings.length+1} 筆`);
+  
+  for(const r of importedRecords){
+    if(!r || typeof r!=='object'){ warn(r); continue; }
+    if(![ITEM.LEAGUE, ITEM.SKILL, ITEM.COACH].includes(r.itemType)){ warn(r); continue; }
+    
+    let safeId = (r.id && isSafeId(r.id) && !idSet.has(r.id)) ? r.id : uid();
+    idSet.add(safeId);
+ 
+    const now = getNowISO();
+    if(r.itemType===ITEM.LEAGUE){
+      const date=r.obtainDate||r.date;
+      const quantity=Number(r.quantity??r.seasons);
+      if(!isValidDateString(date) || date>today || !Number.isFinite(quantity) || quantity<=0){ warn(r); continue; }
+      cleanRecords.push({ id:safeId, eventType:'league', itemType:ITEM.LEAGUE, obtainDate:date, openDate:null, quantity, method:'賽季結算', source:{type:'league',label:'賽季結算'}, status:'-', content:null, memo:String(r.memo||''), createdAt:validIso(r.createdAt)?r.createdAt:timestampForDate(date), openedAt:null, updatedAt:validIso(r.updatedAt)?r.updatedAt:now });
+      continue;
+    }
+ 
+    const status = r.status===STAT.OPEN || r.eventType==='open' ? STAT.OPEN : STAT.UNOPEN;
+    const obtainDate=r.obtainDate||r.date;
+    if(!isValidDateString(obtainDate) || obtainDate>today){ warn(r); continue; }
+    const openDate=status===STAT.OPEN ? (r.openDate||r.date) : null;
+    if(status===STAT.OPEN && (!isValidDateString(openDate) || openDate<obtainDate || openDate>today)){ warn(r); continue; }
+    const unopenedQuantity=Number(r.quantity);
+    if(status===STAT.UNOPEN && (!Number.isInteger(unopenedQuantity) || unopenedQuantity<1)){ warn(r); continue; }
+ 
+    let validContent = null;
+    let isValid = true;
+    
+    if (status === STAT.OPEN) {
+      if(!r.content) { warn(r); continue; }
+      if (r.itemType === ITEM.SKILL) {
+        if (!['打者','投手'].includes(r.content.category) || !skillList[r.content.category]?.includes(r.content.name) || !['III','II','I'].includes(r.content.tier)) isValid = false;
+        else validContent = { category:r.content.category, name:r.content.name, tier:r.content.tier };
+      } else {
+        if (!['打擊','投手'].includes(r.content.category) || !coachList[r.content.category]?.includes(r.content.name) || !['優良','普通','劣等'].includes(r.content.grade)) isValid = false;
+        else validContent = { category:r.content.category, name:r.content.name, grade:r.content.grade, detail:String(r.content.detail||'') };
+      }
+      if(!isValid) { warn(r); continue; }
+    }
+ 
+    const allowedMethods=methodOpts[r.itemType];
+    const method=allowedMethods.includes(r.method) ? r.method : '其他';
+    const sourceRecordId=isSafeId(r.source?.sourceRecordId||'') ? r.source.sourceRecordId : undefined;
+ 
+    cleanRecords.push({
+      id:safeId, eventType: status===STAT.OPEN ? 'open' : 'obtain', itemType:r.itemType,
+      obtainDate, openDate,
+      quantity: status===STAT.OPEN ? 1 : unopenedQuantity,
+      method, source: {type:sourceType(method),label:method,...(sourceRecordId?{sourceRecordId}:{})},
+      status, content:validContent, memo:String(r.memo||''),
+      createdAt: validIso(r.createdAt)?r.createdAt:timestampForDate(obtainDate),
+      openedAt: status===STAT.OPEN ? (validIso(r.openedAt)?r.openedAt:timestampForDate(openDate)) : null,
+      updatedAt: validIso(r.updatedAt)?r.updatedAt:now
+    });
+  }
+ 
+  const cleanTargets = [];
+  const targetMap = new Set();
+  (Array.isArray(importedTargets) ? importedTargets : targets).forEach(t=>{
+    if(t && ['skill','coach'].includes(t.type) && t.category && t.name) {
+      const list = t.type==='skill' ? skillList : coachList;
+      if(list[t.category]?.includes(t.name)) {
+        const key = targetKey(t);
+        if(!targetMap.has(key)) { targetMap.add(key); cleanTargets.push({type:t.type, category:String(t.category), name:String(t.name)}); }
+      }
+    }
+  });
+ 
+  return {
+    records:cleanRecords,
+    targets:cleanTargets,
+    pityState:normalizePityState(importedPityState),
+    updatedAt:data?.updatedAt || null,
+    lastCloudSyncAt:data?.lastCloudSyncAt || null,
+    warnings
+  };
+}
+ 
+/* ============================================================
+   GAS 同步機制 (加上衝突判斷)
+============================================================ */
+function getCloudUrl(){
+  const value=document.getElementById('gas-url').value.trim() || localStorage.getItem(STORAGE.GAS_URL) || '';
+  try{
+    const url=new URL(value);
+    if(url.protocol!=='https:' || !url.hostname.endsWith('google.com')) throw new Error();
+    return url.toString();
+  }catch{
+    return '';
+  }
+}
+ 
+function saveCloudUrl({silent=false}={}){
+  const url=document.getElementById('gas-url').value.trim();
+  let parsed;
+  try{
+    parsed=new URL(url);
+    if(parsed.protocol!=='https:' || !parsed.hostname.endsWith('google.com')) throw new Error();
+  }catch{
+    showToast('請填寫有效的 Google Apps Script HTTPS 網址','error');
+    return false;
+  }
+  localStorage.setItem(STORAGE.GAS_URL,parsed.toString());
+  if(!silent) showToast('GAS 網址已儲存');
+  return true;
+}
+ 
+function cloudLoadUrl(url){
+  const loadUrl=new URL(url);
+  loadUrl.searchParams.set('action','load');
+  return loadUrl.toString();
+}
+ 
+async function fetchCloudData(url){
+  const response=await fetch(cloudLoadUrl(url),{cache:'no-store'});
+  if(!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+ 
+async function syncToCloud(){
+  const url=getCloudUrl();
+  if(!url){ showToast('請先設定有效的 GAS Web App URL','error'); return; }
+  document.getElementById('gas-url').value=url;
+  if(!saveCloudUrl({silent:true})) return;
+  try{
+    showToast('正在同步至 GAS...','info');
+    let cloudData=null;
+    try{ cloudData=await fetchCloudData(url); }catch(error){ console.warn('無法預讀雲端版本',error); }
+    const cloudUpdated=typeof cloudData?.updatedAt==='string' ? cloudData.updatedAt : '';
+    const localChanged=Boolean(lastCloudSyncAt && databaseUpdatedAt>lastCloudSyncAt);
+    const cloudChanged=Boolean(lastCloudSyncAt && cloudUpdated>lastCloudSyncAt);
+    if(localChanged && cloudChanged){
+      if(!await customConfirm('本機與雲端在上次同步後都有修改。是否仍以本機資料覆蓋雲端？')) return;
+    }else if(!lastCloudSyncAt && Array.isArray(cloudData?.records) && cloudData.records.length){
+      if(!await customConfirm(`雲端已有 ${cloudData.records.length} 筆紀錄。這是首次在此裝置同步，是否以本機資料覆蓋雲端？`)) return;
+    }
+ 
+    const payload={ action:'save', schemaVersion:SCHEMA_VERSION, appVersion:APP_VERSION, timestamp:getNowISO(), records, targets, pityState, updatedAt:databaseUpdatedAt };
+    const response = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) });
+    const text = await response.text();
+    let result; try{ result = JSON.parse(text); } catch{ result = {message:text}; }
+    if(!response.ok) throw new Error(result.message||`HTTP ${response.status}`);
+    
+    lastCloudSyncAt=typeof result.updatedAt==='string' ? result.updatedAt : databaseUpdatedAt;
+    if(!saveData({touchUpdatedAt:false})) return;
+    
+    closeModal('cloud-modal'); showToast(result.message||'雲端同步完成');
+  }catch(err){ console.error(err); showToast('同步失敗：'+err.message,'error'); }
+}
+ 
+async function downloadFromCloud(){
+  const urlStr=getCloudUrl();
+  if(!urlStr){ showToast('請先設定有效的 GAS URL','error'); return; }
+ 
+  try{
+    showToast('正在從 GAS 下載...','info');
+    const data=await fetchCloudData(urlStr);
+    const localUpdated = databaseUpdatedAt || ''; const lastSync = lastCloudSyncAt || '';
+    const cloudUpdated = data.updatedAt || '';
+    
+    if(localUpdated > lastSync && cloudUpdated > lastSync && lastSync) {
+      if(!await customConfirm('注意：本機與雲端在上次同步後都有修改。是否確認強制用雲端覆蓋本機？')) return;
+    }
+    
+    const normalized = normalizeImportedData(data);
+    if(!normalized) throw new Error('雲端資料格式錯誤');
+    if(!await customConfirm(`雲端有 ${normalized.records.length} 筆紀錄。\n下載後會覆蓋目前資料，確定？`)) return;
+ 
+    backupBeforeImport();
+    records=normalized.records; targets=normalized.targets;
+    pityState=normalized.pityState;
+    databaseUpdatedAt=cloudUpdated || getNowISO();
+    lastCloudSyncAt=databaseUpdatedAt;
+    if(!saveData({touchUpdatedAt:false})) return;
+    
+    closeModal('cloud-modal'); renderAll(); showToast('雲端資料已還原');
+  }catch(err){ console.error(err); showToast('雲端下載失敗：'+err.message,'error'); }
+}
+ 
+/* ============================================================
+   清除資料
+============================================================ */
+ 
 async function clearRecordsOnly(){
-
-  if(!await customConfirm(
-    '確定清除所有掉落與聯賽紀錄？'
-  )) return;
-
-  records=[];
-
-  saveAndRender();
-
-  showToast('已清除所有紀錄');
-
+  if(!await customConfirm('確定清除所有掉落與聯賽紀錄？')) return;
+  records=[]; if(saveAndRender()) showToast('已清除所有紀錄');
 }
-
 async function clearTargetsOnly(){
-
-  if(!await customConfirm(
-    '確定清除所有心願設定？'
-  )) return;
-
-  targets=[];
-
-  saveAndRender();
-
-  showToast('已清除心願');
-
+  if(!await customConfirm('確定清除所有心願設定？')) return;
+  targets=[]; if(saveAndRender()) showToast('已清除心願');
 }
-
 async function clearAllData(){
-
-  if(!await customConfirm(
-    '這會清除紀錄、心願與本機資料。確定？'
-  )) return;
-
-  records=[];
-  targets=[];
-
+  if(!await customConfirm('這會永久清除 V4 資料、心願與保留的 V3 原始備份。確定？')) return;
+  records=[]; targets=[]; pityState={ points: null, updatedAt: null };
   localStorage.removeItem(STORAGE.DATA);
   localStorage.removeItem(STORAGE.OLD_RECORDS);
   localStorage.removeItem(STORAGE.OLD_TARGETS);
-
-  targets=[
-    {
-      type:'skill',
-      category:'打者',
-      name:'先鋒'
-    },
-    {
-      type:'skill',
-      category:'打者',
-      name:'打者洞察力'
-    }
-  ];
-
-  saveAndRender();
-
-  showToast('已清空資料庫');
-
+  localStorage.removeItem(STORAGE.BEFORE_IMPORT);
+  localStorage.removeItem(STORAGE.GAS_URL);
+  document.getElementById('gas-url').value='';
+  databaseUpdatedAt=null;
+  lastCloudSyncAt=null;
+  targets=[{type:'skill',category:'打者',name:'先鋒'},{type:'skill',category:'打者',name:'打者洞察力'}];
+  if(saveAndRender()) showToast('已清空資料庫');
 }
-
+ 
 /* ============================================================
-   JSON / CSV Export
+   Render All & Event bindings
 ============================================================ */
-
-function downloadBlob(blob,filename){
-
-  const url=URL.createObjectURL(blob);
-
-  const link=document.createElement('a');
-
-  link.href=url;
-  link.download=filename;
-
-  document.body.appendChild(link);
-
-  link.click();
-
-  link.remove();
-
-  setTimeout(()=>{
-    URL.revokeObjectURL(url);
-  },1000);
-
-}
-
-function exportData(fmt){
-
-  if(fmt==='json'){
-
-    const data={
-      schemaVersion:SCHEMA_VERSION,
-      appVersion:APP_VERSION,
-      exportedAt:new Date().toISOString(),
-      records,
-      targets
-    };
-
-    downloadBlob(
-      new Blob(
-        [JSON.stringify(data,null,2)],
-        {type:'application/json'}
-      ),
-      `白教白技_V4_backup_${todayStr}.json`
-    );
-
-    showToast('JSON 備份完成');
-
-    return;
-
-  }
-
-  let csv=
-    '獲取日期,開箱日期,事件,種類,獲得方式,數量,狀態,分類,名稱,階級/評價,備註\n';
-
-  records.forEach(r=>{
-
-    const values=[
-
-      r.obtainDate||'',
-      r.openDate||'',
-      r.eventType||'',
-      r.itemType||'',
-      r.method||'',
-      r.quantity||0,
-      r.status||'',
-      r.content?.category||'',
-      r.content?.name||'',
-      r.content?.tier||r.content?.grade||'',
-      r.itemType===ITEM.LEAGUE
-        ? `完賽${r.quantity}季`
-        : r.memo||''
-
-    ];
-
-    csv+=values
-      .map(v=>csvSafe(v))
-      .join(',')+'\n';
-
-  });
-
-  downloadBlob(
-    new Blob(
-      ['\uFEFF'+csv],
-      {type:'text/csv;charset=utf-8;'}
-    ),
-    `白教白技_V4_records_${todayStr}.csv`
-  );
-
-  showToast('CSV 匯出完成');
-
-}
-
-function csvSafe(value){
-
-  let s=String(value??'');
-
-  /* 防 Excel Formula Injection */
-
-  if(/^[=+\-@]/.test(s)){
-    s="'"+s;
-  }
-
-  return `"${s.replace(/"/g,'""')}"`;
-
-}
-
-/* ============================================================
-   Import
-============================================================ */
-
-document.getElementById('import-file')
-  .addEventListener('change',importData);
-
-async function importData(e){
-
-  const file=e.target.files?.[0];
-
-  if(!file) return;
-
-  try{
-
-    const text=await file.text();
-
-    const parsed=JSON.parse(text);
-
-    const normalized=
-      normalizeImportedData(parsed);
-
-    if(!normalized){
-
-      showToast(
-        'JSON 格式或資料結構錯誤',
-        'error'
-      );
-
-      return;
-
-    }
-
-    const ok=await customConfirm(
-      `即將匯入 ${normalized.records.length} 筆紀錄與 ${normalized.targets.length} 個心願。\n目前資料會被覆蓋，是否繼續？`
-    );
-
-    if(!ok) return;
-
-    records=normalized.records;
-    targets=normalized.targets;
-
-    saveAndRender();
-
-    showToast('JSON 還原成功');
-
-  }catch(err){
-
-    console.error(err);
-
-    showToast(
-      'JSON 讀取失敗',
-      'error'
-    );
-
-  }finally{
-
-    e.target.value='';
-
-  }
-
-}
-
-function normalizeImportedData(data){
-
-  let importedRecords;
-  let importedTargets;
-
-  if(Array.isArray(data)){
-
-    importedRecords=data;
-    importedTargets=targets;
-
-  }else{
-
-    importedRecords=data.records;
-    importedTargets=data.targets;
-
-  }
-
-  if(!Array.isArray(importedRecords))
-    return null;
-
-  if(!Array.isArray(importedTargets))
-    importedTargets=targets;
-
-  const cleanRecords=[];
-
-  for(const r of importedRecords){
-
-    if(!r || typeof r!=='object')
-      continue;
-
-    if(!r.itemType)
-      continue;
-
-    if(r.itemType===ITEM.LEAGUE){
-
-      if(!r.obtainDate)
-        continue;
-
-      cleanRecords.push({
-
-        id:r.id||uid(),
-
-        eventType:'league',
-
-        itemType:ITEM.LEAGUE,
-
-        obtainDate:r.obtainDate,
-
-        openDate:null,
-
-        quantity:Number(r.quantity||r.seasons||0),
-
-        method:'賽季結算',
-
-        source:{
-          type:'league',
-          label:'賽季結算'
-        },
-
-        status:'-',
-
-        content:null,
-
-        memo:String(r.memo||'')
-
-      });
-
-      continue;
-
-    }
-
-    if(![ITEM.SKILL,ITEM.COACH]
-      .includes(r.itemType))
-      continue;
-
-    const status=
-      r.status===STAT.OPEN
-        ? STAT.OPEN
-        : STAT.UNOPEN;
-
-    cleanRecords.push({
-
-      id:r.id||uid(),
-
-      eventType:
-        status===STAT.OPEN
-          ? 'open'
-          : 'obtain',
-
-      itemType:r.itemType,
-
-      obtainDate:r.obtainDate||r.date||todayStr,
-
-      openDate:
-        status===STAT.OPEN
-          ? (r.openDate||r.date||todayStr)
-          : null,
-
-      quantity:
-        status===STAT.OPEN
-          ? 1
-          : Math.max(1,Number(r.quantity)||1),
-
-      method:r.method||'其他',
-
-      source:{
-        type:sourceType(r.method||'其他'),
-        label:r.method||'其他'
-      },
-
-      status,
-
-      content:
-        status===STAT.OPEN
-          ? r.content||null
-          : null,
-
-      memo:String(r.memo||'')
-
-    });
-
-  }
-
-  const cleanTargets=
-    importedTargets
-      .filter(t=>
-        t &&
-        ['skill','coach'].includes(t.type) &&
-        t.category &&
-        t.name
-      )
-      .map(t=>({
-        type:t.type,
-        category:String(t.category),
-        name:String(t.name)
-      }));
-
-  return {
-    records:cleanRecords,
-    targets:cleanTargets
-  };
-
-}
-
-/* ============================================================
-   GAS
-============================================================ */
-
-function saveCloudUrl(){
-
-  const url=
-    document.getElementById('gas-url').value.trim();
-
-  if(!url){
-
-    showToast('請填寫 GAS URL','error');
-    return;
-
-  }
-
-  localStorage.setItem(
-    STORAGE.GAS_URL,
-    url
-  );
-
-  showToast('GAS 網址已儲存');
-
-}
-
-async function syncToCloud(){
-
-  const url=
-    document.getElementById('gas-url').value.trim() ||
-    localStorage.getItem(STORAGE.GAS_URL);
-
-  if(!url){
-
-    showToast(
-      '請先設定 Web App URL',
-      'error'
-    );
-
-    return;
-
-  }
-
-  saveCloudUrl();
-
-  const payload={
-    action:'save',
-    schemaVersion:SCHEMA_VERSION,
-    appVersion:APP_VERSION,
-    timestamp:new Date().toISOString(),
-    records,
-    targets
-  };
-
-  try{
-
-    showToast('正在同步至 GAS...','info');
-
-    const response=await fetch(url,{
-      method:'POST',
-      headers:{
-        'Content-Type':'text/plain;charset=utf-8'
-      },
-      body:JSON.stringify(payload)
-    });
-
-    const text=await response.text();
-
-    let result;
-
-    try{
-      result=JSON.parse(text);
-    }catch{
-      result={message:text};
-    }
-
-    if(!response.ok){
-
-      throw new Error(
-        result.message||`HTTP ${response.status}`
-      );
-
-    }
-
-    closeModal('cloud-modal');
-
-    showToast(
-      result.message||'雲端同步完成'
-    );
-
-  }catch(err){
-
-    console.error(err);
-
-    showToast(
-      '同步失敗：'+err.message,
-      'error'
-    );
-
-  }
-
-}
-
-async function downloadFromCloud(){
-
-  const url=
-    document.getElementById('gas-url').value.trim() ||
-    localStorage.getItem(STORAGE.GAS_URL);
-
-  if(!url){
-
-    showToast(
-      '請先設定 GAS URL',
-      'error'
-    );
-
-    return;
-
-  }
-
-  try{
-
-    showToast('正在從 GAS 下載...','info');
-
-    const response=await fetch(
-      url+'?action=load'
-    );
-
-    if(!response.ok)
-      throw new Error(`HTTP ${response.status}`);
-
-    const data=await response.json();
-
-    const normalized=
-      normalizeImportedData(data);
-
-    if(!normalized)
-      throw new Error('雲端資料格式錯誤');
-
-    const ok=await customConfirm(
-      `雲端有 ${normalized.records.length} 筆紀錄。\n下載後會覆蓋目前資料，確定？`
-    );
-
-    if(!ok) return;
-
-    records=normalized.records;
-    targets=normalized.targets;
-
-    saveAndRender();
-
-    closeModal('cloud-modal');
-
-    showToast('雲端資料已還原');
-
-  }catch(err){
-
-    console.error(err);
-
-    showToast(
-      '雲端下載失敗：'+err.message,
-      'error'
-    );
-
-  }
-
-}
-
-/* ============================================================
-   Batch Open
-============================================================ */
-
-function openBatchModal(){
-
-  document.getElementById('batch-type').value=ITEM.SKILL;
-  document.getElementById('batch-count').value='1';
-
-  buildBatch();
-
-  openModal('batch-modal');
-
-}
-
-function buildBatch(){
-
-  const type=
-    document.getElementById('batch-type').value;
-
-  const count=
-    Number(document.getElementById('batch-count').value);
-
-  const inventory=getInventory(type);
-
-  const info=
-    document.getElementById('batch-inventory-info');
-
-  info.innerHTML=`
-
-    <div class="sub-box">
-
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-      ">
-
-        <span>目前 ${type===ITEM.SKILL?'技能券':'教練券'}庫存</span>
-
-        <b style="
-          font-size:1.2rem;
-          color:${inventory>=count
-            ? 'var(--success)'
-            : 'var(--danger)'};
-        ">
-          ${inventory} 張
-        </b>
-
-      </div>
-
-      ${
-        inventory<count
-          ? `<div style="
-              margin-top:6px;
-              color:var(--danger);
-              font-size:.75rem;
-            ">
-              ⚠️ 庫存不足，無法開 ${count} 張。
-            </div>`
-          : ''
-      }
-
-    </div>
-  `;
-
-  const box=
-    document.getElementById('batch-rows');
-
-  box.innerHTML='';
-
-  for(let i=0;i<count;i++){
-
-    if(type===ITEM.SKILL){
-
-      const cats=Object.keys(skillList);
-
-      box.insertAdjacentHTML(
-        'beforeend',
-        `
-        <div
-          class="batch-row"
-          style="
-            display:grid;
-            grid-template-columns:1fr 1.4fr .7fr;
-            gap:5px;
-            margin-bottom:5px;
-          "
-        >
-
-          <select class="b-cat">
-            ${cats
-              .map(c=>`
-                <option value="${c}">
-                  ${c}
-                </option>
-              `)
-              .join('')}
-          </select>
-
-          <select class="b-name"></select>
-
-          <select class="b-tier">
-            <option value="III">III</option>
-            <option value="II">II</option>
-            <option value="I">I</option>
-          </select>
-
-        </div>
-        `
-      );
-
-    }else{
-
-      const cats=Object.keys(coachList);
-
-      box.insertAdjacentHTML(
-        'beforeend',
-        `
-        <div
-          class="batch-row"
-          style="
-            display:grid;
-            grid-template-columns:1fr 1.4fr .8fr;
-            gap:5px;
-            margin-bottom:5px;
-          "
-        >
-
-          <select class="b-cat">
-            ${cats
-              .map(c=>`
-                <option value="${c}">
-                  ${c}
-                </option>
-              `)
-              .join('')}
-          </select>
-
-          <select class="b-name"></select>
-
-          <select class="b-grade">
-            <option value="優良">優良</option>
-            <option value="普通">普通</option>
-            <option value="劣等">劣等</option>
-          </select>
-
-        </div>
-        `
-      );
-
-    }
-
-  }
-
-  document
-    .querySelectorAll('.batch-row')
-    .forEach(row=>{
-
-      const cat=row.querySelector('.b-cat');
-
-      cat.addEventListener('change',()=>{
-
-        const list=
-          type===ITEM.SKILL
-            ? skillList
-            : coachList;
-
-        const name=row.querySelector('.b-name');
-
-        name.innerHTML=
-          list[cat.value]
-            .map(x=>`<option>${esc(x)}</option>`)
-            .join('');
-
-      });
-
-      cat.dispatchEvent(new Event('change'));
-
-    });
-
-}
-
-async function submitBatch(){
-
-  const type=
-    document.getElementById('batch-type').value;
-
-  const rows=
-    [...document.querySelectorAll('.batch-row')];
-
-  const requested=rows.length;
-
-  const inventory=getInventory(type);
-
-  if(inventory<requested){
-
-    showToast(
-      `庫存不足：目前 ${inventory} 張，要求 ${requested} 張`,
-      'error'
-    );
-
-    return;
-
-  }
-
-  const sources=
-    getInventorySources(type);
-
-  if(sources.length<1){
-
-    showToast('找不到可用庫存來源','error');
-    return;
-
-  }
-
-  const ok=await customConfirm(
-    `確定開 ${requested} 張 ${type===ITEM.SKILL?'技能券':'教練券'}？`
-  );
-
-  if(!ok) return;
-
-  let sourceIndex=0;
-
-  rows.forEach(row=>{
-
-    while(
-      sourceIndex<sources.length &&
-      Number(sources[sourceIndex].quantity)<=0
-    ){
-      sourceIndex++;
-    }
-
-    if(sourceIndex>=sources.length)
-      return;
-
-    const source=sources[sourceIndex];
-
-    source.quantity--;
-
-    const content=
-      type===ITEM.SKILL
-        ? {
-            category:row.querySelector('.b-cat').value,
-            name:row.querySelector('.b-name').value,
-            tier:row.querySelector('.b-tier').value
-          }
-        : {
-            category:row.querySelector('.b-cat').value,
-            name:row.querySelector('.b-name').value,
-            grade:row.querySelector('.b-grade').value,
-            detail:''
-          };
-
-    records.push({
-
-      id:uid(),
-
-      eventType:'open',
-
-      itemType:type,
-
-      obtainDate:source.obtainDate,
-
-      openDate:todayStr,
-
-      quantity:1,
-
-      method:source.method,
-
-      source:{
-        type:sourceType(source.method),
-        label:source.method,
-        sourceRecordId:source.id
-      },
-
-      status:STAT.OPEN,
-
-      content,
-
-      memo:'批量開箱'
-
-    });
-
-  });
-
-  /* 清除已耗盡的來源 */
-
-  records=
-    records.filter(r=>
-      !(r.eventType==='obtain' &&
-        r.status===STAT.UNOPEN &&
-        Number(r.quantity)<=0)
-    );
-
-  closeModal('batch-modal');
-
-  saveAndRender();
-
-  showToast(
-    `批量開箱完成，共 ${requested} 張`
-  );
-
-}
-
-/* ============================================================
-   Screenshot
-============================================================ */
-
-function exportScreenshot(){
-
-  showToast(
-    '正在生成戰報圖...',
-    'info'
-  );
-
-  const target=
-    document.getElementById('export-area');
-
-  html2canvas(target,{
-    backgroundColor:'#1A1C23',
-    scale:2,
-    useCORS:true
-  })
-  .then(canvas=>{
-
-    const link=
-      document.createElement('a');
-
-    link.download=
-      `戰報_${todayStr}.png`;
-
-    link.href=
-      canvas.toDataURL('image/png');
-
-    link.click();
-
-    showToast('戰報圖片已下載');
-
-  })
-  .catch(err=>{
-
-    console.error(err);
-
-    showToast(
-      '截圖失敗',
-      'error'
-    );
-
-  });
-
-}
-
-/* ============================================================
-   Render All
-============================================================ */
-
+ 
 function renderAll(){
-
   updateMonthFilter();
   renderKPIs();
   renderCharts();
@@ -5134,204 +3100,42 @@ function renderAll(){
   renderTargetStats();
   renderSourceAnalysis();
   renderGoodCoaches();
-
 }
-
+ 
 function saveAndRender(){
-
-  records.sort((a,b)=>{
-
-    const da=
-      a.eventType==='open'
-        ? a.openDate
-        : a.obtainDate;
-
-    const db=
-      b.eventType==='open'
-        ? b.openDate
-        : b.obtainDate;
-
-    return String(db||'')
-      .localeCompare(String(da||'')) ||
-      String(b.id).localeCompare(String(a.id));
-
-  });
-
-  saveData();
-
-  renderAll();
-
-}
-
-/* ============================================================
-   Events
-============================================================ */
-
-/* Tabs */
-
-document.querySelectorAll('.tab-btn')
-  .forEach(button=>{
-
-    button.addEventListener('click',()=>{
-
-      switchTab(
-        button.dataset.tab,
-        button
-      );
-
-    });
-
-  });
-
-/* Filter */
-
-[
-  'filter-text',
-  'filter-date-from',
-  'filter-date-to',
-  'filter-month',
-  'filter-type',
-  'filter-source',
-  'filter-result'
-].forEach(id=>{
-
-  const el=document.getElementById(id);
-
-  el.addEventListener(
-    el.tagName==='INPUT'
-      ? 'input'
-      : 'change',
-    ()=>{
-      currentPage=1;
-      renderTable();
-    }
-  );
-
-});
-
-/* Pagination */
-
-document.getElementById('prev-page')
-  .addEventListener('click',()=>{
-
-    if(currentPage>1){
-
-      currentPage--;
-      renderTable();
-
-    }
-
-  });
-
-document.getElementById('next-page')
-  .addEventListener('click',()=>{
-
-    const total=
-      getFilteredRecords().length;
-
-    const pages=
-      Math.max(1,Math.ceil(total/PAGE_SIZE));
-
-    if(currentPage<pages){
-
-      currentPage++;
-      renderTable();
-
-    }
-
-  });
-
-/* Modal close */
-
-document.querySelectorAll('.modal-close')
-  .forEach(btn=>{
-
-    btn.addEventListener('click',()=>{
-
-      closeModal(btn.dataset.modal);
-
-    });
-
-  });
-
-/* 點背景關閉 */
-
-document.querySelectorAll('.modal-backdrop')
-  .forEach(modal=>{
-
-    modal.addEventListener('click',e=>{
-
-      if(e.target===modal &&
-         modal.id!=='confirm-modal'){
-
-        modal.style.display='none';
-
-      }
-
-    });
-
-  });
-
-/* ESC */
-
-document.addEventListener('keydown',e=>{
-
-  if(e.key!=='Escape') return;
-
-  document.querySelectorAll('.modal-backdrop')
-    .forEach(m=>{
-
-      if(m.style.display==='flex' &&
-         m.id!=='confirm-modal'){
-
-        m.style.display='none';
-
-      }
-
-    });
-
-});
-
-/* GAS URL */
-
-document.addEventListener('DOMContentLoaded',()=>{
-
-  const saved=
-    localStorage.getItem(STORAGE.GAS_URL);
-
-  if(saved)
-    document.getElementById('gas-url').value=saved;
-
-});
-
-/* ============================================================
-   初始化
-============================================================ */
-
-try{
-
-  if(typeof ChartDataLabels!=='undefined'){
-
-    Chart.register(ChartDataLabels);
-
-    Chart.defaults.set(
-      'plugins.datalabels',
-      {display:false}
-    );
-
+  if(saveData()){
+    renderAll();
+    return true;
   }
-
-}catch(e){
-
-  console.warn(e);
-
+  return false;
 }
-
-loadData();
-
-renderAll();
-
+ 
+// 移除部分 inline onclick 綁定以避免 ID injection 造成 HTML 破壞
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(button=>{ button.addEventListener('click',()=>switchTab(button.dataset.tab,button)); });
+// Filter
+['filter-text','filter-date-from','filter-date-to','filter-month','filter-type','filter-source','filter-result'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener(el.tagName==='INPUT'?'input':'change', ()=>{ currentPage=1; renderTable(); });
+});
+// Pagination
+document.getElementById('prev-page').addEventListener('click',()=>{ if(currentPage>1){ currentPage--; renderTable(); } });
+document.getElementById('next-page').addEventListener('click',()=>{ const total=getFilteredRecords().length; const pages=Math.max(1,Math.ceil(total/PAGE_SIZE)); if(currentPage<pages){ currentPage++; renderTable(); } });
+// Modal close / Backdrop click
+document.querySelectorAll('.modal-close').forEach(btn=>{ btn.addEventListener('click',()=>closeModal(btn.dataset.modal)); });
+document.querySelectorAll('.modal-backdrop').forEach(modal=>{ modal.addEventListener('click',e=>{ if(e.target===modal && modal.id!=='confirm-modal' && modal.id!=='delete-options-modal'){ modal.style.display='none'; } }); });
+// ESC key
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; document.querySelectorAll('.modal-backdrop').forEach(m=>{ if(m.style.display==='flex' && !['confirm-modal', 'delete-options-modal'].includes(m.id)){ m.style.display='none'; } }); });
+ 
+// Init
+document.addEventListener('DOMContentLoaded',()=>{
+  const saved=localStorage.getItem(STORAGE.GAS_URL); if(saved) document.getElementById('gas-url').value=saved;
+  try{ if(typeof ChartDataLabels!=='undefined'){ Chart.register(ChartDataLabels); Chart.defaults.set('plugins.datalabels',{display:false}); } }catch(e){ console.warn(e); }
+  loadData();
+  renderAll();
+});
+ 
 </script>
-
+ 
 </body>
 </html>

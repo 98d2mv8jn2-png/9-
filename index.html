@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>白教／白技掉落統計系統 V4.1.2</title>
+<title>白教／白技掉落統計系統 V4.1.3</title>
  
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -136,6 +136,14 @@ h1{
   gap:14px;
   margin-bottom:14px;
 }
+
+.pie-breakdown{margin-top:10px;display:grid;gap:5px;font-size:.82rem;color:var(--text-muted)}
+.pie-breakdown-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pie-breakdown-label{display:flex;align-items:center;gap:7px}
+.pie-breakdown-dot{width:10px;height:10px;border-radius:50%;flex:none}
+.pie-breakdown-value{color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.filter-check{display:flex;align-items:center;gap:5px;font-size:.78rem;white-space:nowrap;color:var(--text-muted)}
+.filter-check input{width:auto}
  
 @media(min-width:500px){
   .grid-2{grid-template-columns:1fr 1fr}
@@ -688,11 +696,20 @@ tr.target-highlight td:first-child{
 <body>
  
 <div id="toast-container"></div>
+
+<div id="recovery-modal" class="modal-backdrop" style="z-index:10020">
+  <div class="modal-content" style="max-width:400px">
+    <div class="card-title">本機資料需要復原</div>
+    <p>資料讀取或驗證失敗。原始資料仍保留，編輯已暫停。請先下載原始備份，再匯入有效的 JSON 備份。</p>
+    <button class="btn-primary" onclick="downloadRecoveryBackup()">下載原始資料</button>
+    <button class="btn-subtle" style="margin-top:8px;width:100%" onclick="document.getElementById('import-file').click()">匯入 JSON 備份</button>
+  </div>
+</div>
  
 <div class="header-container">
   <h1>
     ⚾ 白教／白技掉落統計系統
-    <span class="version">V4.1.2</span>
+    <span class="version">V4.1.3</span>
   </h1>
  
   <div class="tabs">
@@ -765,6 +782,12 @@ tr.target-highlight td:first-child{
         <div class="stat-label">聯賽自然掉落平均</div>
         <div class="stat-val" id="kpi-seasons-exp" style="font-size:1.15rem">--</div>
         <div class="stat-sub" id="kpi-seasons-sub">尚未登記完賽季數</div>
+      </div>
+
+      <div class="card stat-card">
+        <div class="stat-label">聯賽取得券（技 / 教）</div>
+        <div class="stat-val" id="kpi-league-obtained" style="font-size:1.15rem">0 / 0</div>
+        <div class="stat-sub" id="kpi-league-sources">自然掉落 0｜6 萬保底 0</div>
       </div>
  
       <div class="card stat-card" id="pity-card">
@@ -846,11 +869,13 @@ tr.target-highlight td:first-child{
         <div class="card">
           <div class="card-title" style="font-size:.85rem">白技階級分佈</div>
           <canvas id="tierChart" height="130"></canvas>
+          <div class="pie-breakdown" id="tier-breakdown"></div>
         </div>
  
         <div class="card">
           <div class="card-title" style="font-size:.85rem">教練品質評級</div>
           <canvas id="coachGradeChart" height="130"></canvas>
+          <div class="pie-breakdown" id="coach-breakdown"></div>
         </div>
  
       </div>
@@ -970,6 +995,8 @@ tr.target-highlight td:first-child{
         <option value="jackpot">⭐ 大獎</option>
         <option value="unopened">📦 未開啟</option>
       </select>
+
+      <label class="filter-check"><input type="checkbox" id="filter-depleted"> 顯示已用完庫存</label>
  
     </div>
  
@@ -1407,12 +1434,14 @@ tr.target-highlight td:first-child{
     
     <div class="form-group">
       <label>開箱日期</label>
-      <input type="date" id="batch-open-date" required>
+      <input type="date" id="batch-open-date" required onchange="buildBatch()">
     </div>
  
     <div id="batch-inventory-info"
          style="margin-bottom:10px">
     </div>
+
+    <div class="section-note">每張開箱結果請確認來源；同批可選不同取得紀錄。</div>
  
     <div class="grid grid-2" style="margin-bottom:10px">
  
@@ -1448,10 +1477,10 @@ tr.target-highlight td:first-child{
 <script>
  
 /* ============================================================
-   V4.1.2 核心設定 & Schema 5
+   V4.1.3 核心設定 & Schema 5
 ============================================================ */
  
-const APP_VERSION = '4.1.2';
+const APP_VERSION = '4.1.3';
 const SCHEMA_VERSION = 5;
  
 const STORAGE = {
@@ -1459,7 +1488,8 @@ const STORAGE = {
   OLD_RECORDS: 'coach_v3_rec',
   OLD_TARGETS: 'coach_v3_tar',
   GAS_URL: 'coach_v3_gas_url',
-  BEFORE_IMPORT: 'coach_v5_before_import'
+  BEFORE_IMPORT: 'coach_v5_before_import',
+  CORRUPT: 'coach_v5_recovery_raw'
 };
  
 const ITEM = {
@@ -1538,12 +1568,19 @@ const methodOpts = {
     '其他'
   ]
 };
+
+const LEAGUE_METHOD = Object.freeze({SKILL:'刷聯賽', COACH:'刷聯賽拿到', PITY:'聯賽60000分保底'});
+const isLeagueAcquisition = r => r.itemType===ITEM.SKILL
+  ? [LEAGUE_METHOD.SKILL,LEAGUE_METHOD.PITY].includes(r.method)
+  : r.itemType===ITEM.COACH && r.method===LEAGUE_METHOD.COACH;
+const isAcquisitionRecord = r => ['obtain','open'].includes(r.eventType);
  
 let records = [];
 let targets = [];
 let pityState = { points: null, updatedAt: null };
 let databaseUpdatedAt = null;
 let lastCloudSyncAt = null;
+let recoveryMode = false;
 let charts = {};
 let currentPage = 1;
 const PAGE_SIZE = 50;
@@ -1655,7 +1692,7 @@ function openedSortValue(r) {
  
 // 保底機制：自然掉落或保底掉落白技時，重置積分
 function resetPityPointsIfSkillDrop(type, method) {
-  if (type === ITEM.SKILL && ['刷聯賽', '聯賽60000分保底'].includes(method)) {
+  if (type===ITEM.SKILL && isLeagueAcquisition({itemType:type,method})) {
     pityState.points = 0;
     pityState.updatedAt = getNowISO();
   }
@@ -1713,6 +1750,7 @@ function loadData(){
       if(validateDatabase(parsed)){
         const normalized=normalizeImportedData(parsed);
         if(!normalized) throw new Error('資料格式不正確');
+        if(normalized.warnings.length) throw new Error('資料內有無效紀錄');
         const needsUpgrade=parsed.schemaVersion!==SCHEMA_VERSION ||
           parsed.records.some(r=>!r?.createdAt || (r.eventType==='open'&&!r.openedAt) || !r?.updatedAt);
         records = upgradeLoadedRecords(normalized.records);
@@ -1720,16 +1758,17 @@ function loadData(){
         pityState = normalized.pityState;
         databaseUpdatedAt = typeof parsed.updatedAt==='string' ? parsed.updatedAt : getNowISO();
         lastCloudSyncAt = typeof parsed.lastCloudSyncAt==='string' ? parsed.lastCloudSyncAt : null;
-        if(needsUpgrade || normalized.warnings.length){
+        if(needsUpgrade){
           saveData({touchUpdatedAt:false});
-        }
-        if(normalized.warnings.length){
-          showToast(`已略過 ${normalized.warnings.length} 筆無效本機紀錄`,'error');
         }
         return;
       }
     }catch(e){
       console.warn('資料讀取失敗',e);
+      recoveryMode=true;
+      try{localStorage.setItem(STORAGE.CORRUPT,v4);}catch(err){console.warn('保留原始資料失敗',err);}
+      document.getElementById('recovery-modal').style.display='flex';
+      return;
     }
   }
   migrateV3();
@@ -1802,12 +1841,13 @@ function migrateV3(){
 }
  
 function sourceType(method){
-  if(method === '聯賽60000分保底') return 'pity';
-  if(method === '刷聯賽' || method === '刷聯賽拿到') return 'league';
+  if(method === LEAGUE_METHOD.PITY) return 'pity';
+  if(method === LEAGUE_METHOD.SKILL || method === LEAGUE_METHOD.COACH) return 'league';
   return 'other';
 }
  
 function saveData({touchUpdatedAt=true}={}){
+  if(recoveryMode){showToast('本機資料待復原，請先匯入有效的 JSON 備份','error');return false;}
   try{
     if(touchUpdatedAt || !databaseUpdatedAt) databaseUpdatedAt=getNowISO();
     const db = {
@@ -1826,6 +1866,12 @@ function saveData({touchUpdatedAt=true}={}){
     showToast('本機資料儲存失敗，請立即匯出JSON備份', 'error');
     return false;
   }
+}
+
+function downloadRecoveryBackup(){
+  const raw=localStorage.getItem(STORAGE.CORRUPT)||localStorage.getItem(STORAGE.DATA);
+  if(!raw){showToast('找不到原始資料','error');return;}
+  downloadBlob(new Blob([raw],{type:'application/json'}),`白教白技_原始待復原資料_${localDateString()}.json`);
 }
  
 function backupBeforeImport() {
@@ -2275,8 +2321,14 @@ function renderKPIs(){
  
   // 聯賽
   const seasons=records.filter(r=>r.itemType===ITEM.LEAGUE).reduce((s,r)=>s+Number(r.quantity||0),0);
-  const leagueSkill=records.filter(r=>r.itemType===ITEM.SKILL && r.method==='刷聯賽' && ['obtain','open'].includes(r.eventType)).reduce((s,r)=>s+recordQuantity(r),0);
-  const leagueCoach=records.filter(r=>r.itemType===ITEM.COACH && r.method==='刷聯賽拿到' && ['obtain','open'].includes(r.eventType)).reduce((s,r)=>s+recordQuantity(r),0);
+  const leagueSkill=records.filter(r=>r.itemType===ITEM.SKILL && r.method===LEAGUE_METHOD.SKILL && isAcquisitionRecord(r)).reduce((s,r)=>s+recordQuantity(r),0);
+  const leaguePity=records.filter(r=>r.itemType===ITEM.SKILL && r.method===LEAGUE_METHOD.PITY && isAcquisitionRecord(r)).reduce((s,r)=>s+recordQuantity(r),0);
+  const leagueCoach=records.filter(r=>r.itemType===ITEM.COACH && isLeagueAcquisition(r) && isAcquisitionRecord(r)).reduce((s,r)=>s+recordQuantity(r),0);
+  const leagueTotal=leagueSkill+leaguePity;
+  document.getElementById('kpi-league-obtained').innerText=`${leagueTotal} / ${leagueCoach}`;
+  document.getElementById('kpi-league-sources').innerText=leagueTotal
+    ? `自然 ${leagueSkill}（${(leagueSkill/leagueTotal*100).toFixed(1)}%）｜保底 ${leaguePity}（${(leaguePity/leagueTotal*100).toFixed(1)}%）`
+    : '自然 0｜保底 0（尚無技能券）';
  
   if(seasons>0){
     document.getElementById('kpi-seasons-exp').innerHTML=`
@@ -2396,14 +2448,44 @@ function renderCharts(){
     if(r.itemType===ITEM.COACH && grade[r.content.grade]!==undefined) grade[r.content.grade]++;
   });
  
+  const qualityColors=['#92A38D','#8598A7','#BE8C8C']; // 最佳／中間／最差
   const pieOpt={
     plugins:{
-      legend:{position:'right',labels:{color:'#E8E4DF',boxWidth:10}},
-      datalabels:{ color:'#1A1C23', font:{weight:'bold'}, formatter:(v,ctx)=>{ const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0); return total&&v ? ((v/total*100>=5)?(v/total*100).toFixed(0)+'%':'') : ''; } }
+      legend:{display:false},
+      datalabels:{
+        display:ctx=>{
+          const values=ctx.chart.data.datasets[0].data;
+          const total=values.reduce((a,b)=>a+b,0);
+          return total>0 && values[ctx.dataIndex]>0 && values[ctx.dataIndex]/total>=.05;
+        },
+        color:'#1A1C23',font:{weight:'bold',size:12},
+        formatter:(v,ctx)=>{
+          const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+          return total ? (v/total*100).toFixed(0)+'%' : '';
+        }
+      }
     }
   };
-  updChart('tierChart','pie',Object.keys(tier),[{data:Object.values(tier),backgroundColor:['#BE8C8C','#92A38D','#9E9B96']}],pieOpt);
-  updChart('coachGradeChart','pie',Object.keys(grade),[{data:Object.values(grade),backgroundColor:['#92A38D','#8598A7','#BE8C8C']}],pieOpt);
+  const renderPieBreakdown=(id,labels,values)=>{
+    const container=document.getElementById(id);
+    const total=values.reduce((a,b)=>a+b,0);
+    if(!total){ container.textContent='尚無開箱資料'; return; }
+    container.replaceChildren();
+    labels.forEach((label,i)=>{
+      const row=document.createElement('div'); row.className='pie-breakdown-row';
+      const labelCell=document.createElement('span'); labelCell.className='pie-breakdown-label';
+      const dot=document.createElement('span'); dot.className='pie-breakdown-dot'; dot.style.backgroundColor=qualityColors[i];
+      labelCell.append(dot,document.createTextNode(label));
+      const value=document.createElement('span'); value.className='pie-breakdown-value';
+      value.textContent=`${(values[i]/total*100).toFixed(1)}%　${values[i]}／${total} 張`;
+      row.append(labelCell,value); container.appendChild(row);
+    });
+  };
+  const tierValues=Object.values(tier), gradeValues=Object.values(grade);
+  renderPieBreakdown('tier-breakdown',['III 階','II 階','I 階'],tierValues);
+  renderPieBreakdown('coach-breakdown',['優良','普通','劣等'],gradeValues);
+  updChart('tierChart','pie',Object.keys(tier),[{data:tierValues,backgroundColor:qualityColors}],pieOpt);
+  updChart('coachGradeChart','pie',Object.keys(grade),[{data:gradeValues,backgroundColor:qualityColors}],pieOpt);
 }
  
 function renderSourceAnalysis(){
@@ -2488,9 +2570,10 @@ function getFilteredRecords(){
   const type=document.getElementById('filter-type').value;
   const source=document.getElementById('filter-source').value;
   const result=document.getElementById('filter-result').value;
+  const showDepleted=document.getElementById('filter-depleted').checked;
  
   return records.filter(r=>{
-    if(r.eventType==='obtain' && r.depleted) return false;
+    if(r.eventType==='obtain' && r.depleted && !showDepleted) return false;
     const searchText=[r.itemType,r.method,r.memo,r.content?.name,r.content?.category,r.content?.tier,r.content?.grade].join(' ').toLowerCase();
     if(text&&!searchText.includes(text)) return false;
     const date = r.eventType==='open' ? r.openDate : r.obtainDate;
@@ -2501,7 +2584,7 @@ function getFilteredRecords(){
     if(source!=='all'&&r.method!==source) return false;
     if(result==='target'&&!isTarget(r)) return false;
     if(result==='jackpot'&&!isJackpot(r)) return false;
-    if(result==='unopened'&&!(r.eventType==='obtain'&&r.status===STAT.UNOPEN)) return false;
+    if(result==='unopened'&&!(r.eventType==='obtain'&&r.status===STAT.UNOPEN&&!r.depleted)) return false;
     return true;
   }).sort((a,b)=>{
     const da = a.eventType==='open' ? a.openDate : a.obtainDate;
@@ -2584,7 +2667,7 @@ function renderTable(){
       appendCell(row,`${Number(r.quantity||0)} 張`);
       const statusCell=appendCell(row);
       if(r.eventType==='obtain'){
-        statusCell.appendChild(createBadge('📦 未開','badge-pending'));
+        statusCell.appendChild(createBadge(r.depleted?'已用完':'📦 未開',r.depleted?'badge-opened':'badge-pending'));
       }else if(r.content){
         let badgeClass='badge-opened';
         let value='';
@@ -2867,14 +2950,23 @@ function buildBatch(){
     info.innerHTML='<div class="sub-box" style="color:var(--danger)">自訂張數必須是 1～30 的整數。</div>';
     return;
   }
+  const openDate=document.getElementById('batch-open-date').value;
+  const sources=getInventorySources(type).filter(source=>source.obtainDate<=openDate);
+  const sourceOptions=sources.map(source=>`<option value="${esc(source.id)}">${esc(source.obtainDate)}｜${esc(source.method)}｜剩 ${Number(source.quantity)} 張</option>`).join('');
+  let defaultIndex=0, defaultRemaining=Number(sources[0]?.quantity||0);
   for(let i=0;i<count;i++){
+    while(defaultIndex<sources.length && defaultRemaining<=0){defaultIndex++;defaultRemaining=Number(sources[defaultIndex]?.quantity||0);}
+    const defaultId=sources[defaultIndex]?.id||'';
+    defaultRemaining--;
+    const sourceField=`<div style="grid-column:1/-1"><label style="font-size:.75rem">第 ${i+1} 張來源</label><select class="b-source">${sourceOptions||'<option value="">當日沒有可用庫存</option>'}</select></div>`;
     if(type===ITEM.SKILL){
       const cats=Object.keys(skillList);
-      box.insertAdjacentHTML('beforeend',`<div class="batch-row" style="display:grid;grid-template-columns:1fr 1.4fr .7fr;gap:5px;margin-bottom:5px;"><select class="b-cat">${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><select class="b-name"></select><select class="b-tier"><option value="III">III</option><option value="II">II</option><option value="I">I</option></select></div>`);
+      box.insertAdjacentHTML('beforeend',`<div class="batch-row" style="display:grid;grid-template-columns:1fr 1.4fr .7fr;gap:5px;margin-bottom:10px;">${sourceField}<select class="b-cat">${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><select class="b-name"></select><select class="b-tier"><option value="III">III</option><option value="II">II</option><option value="I">I</option></select></div>`);
     }else{
       const cats=Object.keys(coachList);
-      box.insertAdjacentHTML('beforeend',`<div class="batch-row" style="display:grid;grid-template-columns:1fr 1.2fr .8fr 1fr;gap:5px;margin-bottom:5px;"><select class="b-cat">${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><select class="b-name"></select><select class="b-grade"><option value="優良">優良</option><option value="普通">普通</option><option value="劣等">劣等</option></select><input type="text" class="b-detail" placeholder="數值(選填)"></div>`);
+      box.insertAdjacentHTML('beforeend',`<div class="batch-row" style="display:grid;grid-template-columns:1fr 1.2fr .8fr 1fr;gap:5px;margin-bottom:10px;">${sourceField}<select class="b-cat">${cats.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><select class="b-name"></select><select class="b-grade"><option value="優良">優良</option><option value="普通">普通</option><option value="劣等">劣等</option></select><input type="text" class="b-detail" placeholder="數值(選填)"></div>`);
     }
+    box.lastElementChild.querySelector('.b-source').value=defaultId;
   }
   document.querySelectorAll('.batch-row').forEach(row=>{
     const cat=row.querySelector('.b-cat');
@@ -2900,24 +2992,22 @@ async function submitBatch(){
   const eligibleInventory=sources.reduce((sum,source)=>sum+Number(source.quantity||0),0);
   if(eligibleInventory<requested){ showToast(`開箱日期當下僅有 ${eligibleInventory} 張可用庫存`, 'error'); return; }
   if(sources.length<1){ showToast('找不到可用庫存來源','error'); return; }
-  if(!await customConfirm(`確定開 ${requested} 張 ${type===ITEM.SKILL?'技能券':'教練券'}？`)) return;
+  const byId=new Map(sources.map(source=>[source.id,source]));
+  const selected=rows.map(row=>byId.get(row.querySelector('.b-source').value));
+  if(selected.some(source=>!source)){showToast('請為每張券選擇當日可用的來源','error');return;}
+  const counts=new Map();
+  selected.forEach(source=>counts.set(source.id,(counts.get(source.id)||0)+1));
+  if([...counts].some(([id,n])=>n>Number(byId.get(id).quantity))){showToast('選擇的來源庫存不足，請重新分配','error');return;}
+  const sourceSummary=[...counts].map(([id,n])=>`${byId.get(id).method}（${byId.get(id).obtainDate}）${n} 張`).join('\n');
+  if(!await customConfirm(`確定開 ${requested} 張？\n來源：\n${sourceSummary}`)) return;
   const snapshot=JSON.stringify(records);
  
   // 暫存陣列預處理
   const newRecords = [];
-  let sourceIndex=0;
-  let remainingInCurrentSource = Number(sources[sourceIndex].quantity);
   const nowBase = Date.now();
   
   for(let i=0; i<requested; i++) {
-    while(sourceIndex < sources.length && remainingInCurrentSource <= 0) {
-      sourceIndex++;
-      if (sourceIndex < sources.length) remainingInCurrentSource = Number(sources[sourceIndex].quantity);
-    }
-    if(sourceIndex >= sources.length) { showToast('系統錯誤：來源不足', 'error'); return; } // 安全防護
-    
-    remainingInCurrentSource--;
-    const source = sources[sourceIndex];
+    const source = selected[i];
     const row = rows[i];
     const content = type===ITEM.SKILL ? { category:row.querySelector('.b-cat').value, name:row.querySelector('.b-name').value, tier:row.querySelector('.b-tier').value }
                                       : { category:row.querySelector('.b-cat').value, name:row.querySelector('.b-name').value, grade:row.querySelector('.b-grade').value, detail:row.querySelector('.b-detail').value.trim() };
@@ -2929,13 +3019,11 @@ async function submitBatch(){
   }
  
   // 套用修改
-  sourceIndex = 0; remainingInCurrentSource = Number(sources[sourceIndex].quantity);
-  for(let i=0; i<requested; i++) {
-    while(sourceIndex < sources.length && Number(sources[sourceIndex].quantity) <= 0) { sourceIndex++; }
-    if(sourceIndex>=sources.length){ showToast('系統錯誤：扣除庫存失敗', 'error'); return; }
-    sources[sourceIndex].quantity--;
-    sources[sourceIndex].depleted=Number(sources[sourceIndex].quantity)<=0;
-    sources[sourceIndex].updatedAt = getNowISO();
+  for(const [id,n] of counts) {
+    const source=byId.get(id);
+    source.quantity-=n;
+    source.depleted=source.quantity<=0;
+    source.updatedAt=getNowISO();
   }
   
   records.push(...newRecords);
@@ -2960,7 +3048,7 @@ function downloadBlob(blob,filename){
 function exportData(fmt){
   if(fmt==='json'){
     const data={ schemaVersion:SCHEMA_VERSION, appVersion:APP_VERSION, exportedAt:getNowISO(), updatedAt:databaseUpdatedAt, lastCloudSyncAt, records, targets, pityState };
-    downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), `白教白技_V4.1.2_backup_${localDateString()}.json`);
+    downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), `白教白技_V4.1.3_backup_${localDateString()}.json`);
     showToast('JSON 備份完成'); return;
   }
   let csv='獲取日期,開箱日期,事件,種類,獲得方式,數量,狀態,分類,名稱,階級/評價,詳細數值,備註\n';
@@ -2968,7 +3056,7 @@ function exportData(fmt){
     const values=[r.obtainDate||'',r.openDate||'',r.eventType||'',r.itemType||'',r.method||'',r.quantity||0,r.status||'',r.content?.category||'',r.content?.name||'',r.content?.tier||r.content?.grade||'',r.content?.detail||'',r.itemType===ITEM.LEAGUE?`完賽${r.quantity}季`:r.memo||''];
     csv+=values.map(v=>{let s=String(v??'');if(/^\s*[=+\-@]/.test(s))s="'"+s;return `"${s.replace(/"/g,'""')}"`;}).join(',')+'\n';
   });
-  downloadBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}), `白教白技_V4.1.2_records_${localDateString()}.csv`);
+  downloadBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}), `白教白技_V4.1.3_records_${localDateString()}.csv`);
   showToast('CSV 匯出完成');
 }
  
@@ -3006,6 +3094,7 @@ document.getElementById('import-file').addEventListener('change', async e => {
     const normalized = normalizeImportedData(parsed);
     
     if(!normalized){ showToast('JSON 格式或資料結構錯誤','error'); return; }
+    if(normalized.warnings.length){showToast(`匯入檔有 ${normalized.warnings.length} 筆無效紀錄，為避免遺失資料已停止匯入`,'error');return;}
     
     let msg = `即將匯入 ${normalized.records.length} 筆紀錄與 ${normalized.targets.length} 個心願。\n目前資料會被覆蓋，是否繼續？`;
     if(normalized.warnings && normalized.warnings.length > 0) msg += `\n\n注意: 略過了 ${normalized.warnings.length} 筆無效紀錄。`;
@@ -3016,7 +3105,11 @@ document.getElementById('import-file').addEventListener('change', async e => {
     pityState = normalized.pityState;
     databaseUpdatedAt = getNowISO();
     lastCloudSyncAt = null;
-    if(saveAndRender()) showToast('JSON 還原成功');
+    const wasRecovering=recoveryMode; recoveryMode=false;
+    if(saveAndRender()){
+      document.getElementById('recovery-modal').style.display='none';
+      showToast('JSON 還原成功');
+    }else recoveryMode=wasRecovering;
   } catch(err) { console.error(err); showToast('JSON 讀取失敗', 'error'); } finally { e.target.value=''; }
 });
  
@@ -3158,14 +3251,18 @@ async function fetchCloudData(url){
 }
  
 async function syncToCloud(){
+  if(recoveryMode){showToast('本機資料待復原，無法上傳雲端','error');return;}
   const url=getCloudUrl();
   if(!url){ showToast('請先設定有效的 GAS Web App URL','error'); return; }
   document.getElementById('gas-url').value=url;
   if(!saveCloudUrl({silent:true})) return;
   try{
     showToast('正在同步至 GAS...','info');
-    let cloudData=null;
-    try{ cloudData=await fetchCloudData(url); }catch(error){ console.warn('無法預讀雲端版本',error); }
+    const cloudData=await fetchCloudData(url);
+    if(!validateDatabase(cloudData)) throw new Error('無法確認雲端資料版本，已停止上傳');
+    if(lastCloudSyncAt && !cloudData.updatedAt && cloudData.records.length){
+      throw new Error('雲端資料缺少版本時間，已停止上傳');
+    }
     const cloudUpdated=typeof cloudData?.updatedAt==='string' ? cloudData.updatedAt : '';
     const localChanged=Boolean(lastCloudSyncAt && databaseUpdatedAt>lastCloudSyncAt);
     const cloudChanged=Boolean(lastCloudSyncAt && cloudUpdated>lastCloudSyncAt);
@@ -3204,6 +3301,7 @@ async function downloadFromCloud(){
     
     const normalized = normalizeImportedData(data);
     if(!normalized) throw new Error('雲端資料格式錯誤');
+    if(normalized.warnings.length) throw new Error(`雲端資料有 ${normalized.warnings.length} 筆無效紀錄，已停止下載`);
     if(!await customConfirm(`雲端有 ${normalized.records.length} 筆紀錄。\n下載後會覆蓋目前資料，確定？`)) return;
  
     backupBeforeImport();
@@ -3211,9 +3309,10 @@ async function downloadFromCloud(){
     pityState=normalized.pityState;
     databaseUpdatedAt=cloudUpdated || getNowISO();
     lastCloudSyncAt=databaseUpdatedAt;
-    if(!saveData({touchUpdatedAt:false})) return;
+    const wasRecovering=recoveryMode; recoveryMode=false;
+    if(!saveData({touchUpdatedAt:false})){recoveryMode=wasRecovering;return;}
     
-    closeModal('cloud-modal'); renderAll(); showToast('雲端資料已還原');
+    closeModal('cloud-modal'); document.getElementById('recovery-modal').style.display='none'; renderAll(); showToast('雲端資料已還原');
   }catch(err){ console.error(err); showToast('雲端下載失敗：'+err.message,'error'); }
 }
  
@@ -3236,6 +3335,7 @@ async function clearAllData(){
   localStorage.removeItem(STORAGE.OLD_RECORDS);
   localStorage.removeItem(STORAGE.OLD_TARGETS);
   localStorage.removeItem(STORAGE.BEFORE_IMPORT);
+  localStorage.removeItem(STORAGE.CORRUPT);
   localStorage.removeItem(STORAGE.GAS_URL);
   document.getElementById('gas-url').value='';
   databaseUpdatedAt=null;
@@ -3298,6 +3398,7 @@ document.getElementById('filter-text').addEventListener('input',debounce(renderF
 ['filter-date-from','filter-date-to','filter-month','filter-type','filter-source','filter-result'].forEach(id=>{
   document.getElementById(id).addEventListener('change',renderFilteredTable);
 });
+document.getElementById('filter-depleted').addEventListener('change',renderFilteredTable);
 // Pagination
 document.getElementById('prev-page').addEventListener('click',()=>{ if(currentPage>1){ currentPage--; renderTable(); } });
 document.getElementById('next-page').addEventListener('click',()=>{ const total=getFilteredRecords().length; const pages=Math.max(1,Math.ceil(total/PAGE_SIZE)); if(currentPage<pages){ currentPage++; renderTable(); } });
